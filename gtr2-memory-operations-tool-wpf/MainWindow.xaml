@@ -1,0 +1,42 @@
+﻿<Window x:Class="gtr2_memory_operations_tool_wpf.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:gtr2_memory_operations_tool_wpf"
+        xmlns:views="clr-namespace:gtr2_memory_operations_tool_wpf.Views"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800">
+    <Grid>
+        <Menu Height="18" VerticalAlignment="Top" VerticalContentAlignment="Center">
+            <MenuItem Header="File"/>
+            <MenuItem Header="Edit"/>
+            <MenuItem Header="View"/>
+            <MenuItem Header="Tools"/>
+            <MenuItem Header="Actions">
+                <MenuItem Header="Test">
+                    <MenuItem Header="Test Open Process"/>
+                    <MenuItem Header="Test Connect Process"/>
+                    <MenuItem Header="Test Read Process"/>
+                    <MenuItem Header="Test Read Process"/>
+                    <MenuItem Header="Test Write Process"/>
+                </MenuItem>
+            </MenuItem>
+            <MenuItem Header="Help"/>
+        </Menu>
+        <TabControl Margin="0,18,0,0">
+            <TabItem Header="Home">
+                <views:HomeView/>
+            </TabItem>
+            <TabItem Header="Data">
+                <views:DataView/>
+            </TabItem>
+            <TabItem Header="Log">
+                <views:LogView/>
+            </TabItem>
+        </TabControl>
+        <StatusBar VerticalAlignment="Bottom">
+            <StatusBarItem Content="Ready"/>
+        </StatusBar>
+    </Grid>
+</Window>
