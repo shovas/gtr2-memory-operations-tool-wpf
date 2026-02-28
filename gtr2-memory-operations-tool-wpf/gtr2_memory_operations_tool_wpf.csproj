@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0-windows</TargetFramework>
+    <TargetFramework>net10.0-windows7.0</TargetFramework>
     <UseWPF>true</UseWPF>
     <RootNamespace>gtr2_memory_operations_tool_wpf</RootNamespace>
     <AssemblyName>gtr2-memory-operations-tool-wpf</AssemblyName>

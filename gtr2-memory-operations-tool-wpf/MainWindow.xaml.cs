@@ -25,9 +25,18 @@ namespace gtr2_memory_operations_tool_wpf
             InitializeComponent();
         }
 
-        private void MenuItem_Click(object sender, RoutedEventArgs e)
+        private void MenuItem_File_Exit_Click(object sender, RoutedEventArgs e)
+        {
+            Application.Current.Shutdown();
+        }
+
+        private void MenuItem_Actions_Test_TestOpenProcess(object sender, RoutedEventArgs e)
         {
 
+        }
+        private void MenuItem_Help_About_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("GTR2 Memory Operations Tool\nVersion 1.0 (WIP)", "About");
         }
     }
 }

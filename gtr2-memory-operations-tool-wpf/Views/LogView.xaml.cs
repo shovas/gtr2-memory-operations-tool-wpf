@@ -23,6 +23,7 @@ namespace gtr2_memory_operations_tool_wpf.Views
         public LogView()
         {
             InitializeComponent();
+            //LogBox.AppendText("GTR2 Memory Operations Tool Log\n");
         }
     }
 }

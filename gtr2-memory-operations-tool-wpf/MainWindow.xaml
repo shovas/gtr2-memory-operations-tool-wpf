@@ -6,23 +6,27 @@
         xmlns:local="clr-namespace:gtr2_memory_operations_tool_wpf"
         xmlns:views="clr-namespace:gtr2_memory_operations_tool_wpf.Views"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="GTR2 Memory Operations Tool" Height="450" Width="800">
     <Grid>
         <Menu Height="18" VerticalAlignment="Top" VerticalContentAlignment="Center">
-            <MenuItem Header="File"/>
+            <MenuItem Header="File">
+                <MenuItem Header="Exit" Click="MenuItem_File_Exit_Click"/>
+            </MenuItem>
             <MenuItem Header="Edit"/>
             <MenuItem Header="View"/>
             <MenuItem Header="Tools"/>
             <MenuItem Header="Actions">
                 <MenuItem Header="Test">
-                    <MenuItem Header="Test Open Process"/>
+                    <MenuItem Header="Test Open Process" Click="MenuItem_Actions_Test_TestOpenProcess"/>
                     <MenuItem Header="Test Connect Process"/>
                     <MenuItem Header="Test Read Process"/>
                     <MenuItem Header="Test Read Process"/>
                     <MenuItem Header="Test Write Process"/>
                 </MenuItem>
             </MenuItem>
-            <MenuItem Header="Help"/>
+            <MenuItem Header="Help">
+                <MenuItem Header="About" Click="MenuItem_Help_About_Click"/> "
+            </MenuItem>
         </Menu>
         <TabControl Margin="0,18,0,0">
             <TabItem Header="Home">
