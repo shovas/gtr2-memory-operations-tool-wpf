@@ -1,0 +1,18 @@
+﻿SHO GTR2 Memory Operations Tool
+
+DEVELOPMENT
+
+Version 1 (2026-02-26..YYMMDD)
+
+
+- TODO: Port the basic console app logic as a starting point
+
+
+
+- DONE: Port classes from gtr2-memops9 Windows Console App to the new GUI app
+
+- DONE: Initial work with the Log tab and getting it read to display real log messages
+
+- DONE: Upgrade to .NET 8
+
+- DONE: Initial prototyping of Windows GUI app with standard menus and a tabbed interface
