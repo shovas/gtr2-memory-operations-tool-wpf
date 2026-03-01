@@ -1,9 +1,0 @@
-﻿SHO GTR2 Memory Operations Tool
-
-DEVELOPMENT
-
-Version 1 (2026-02-26)
-
-
-
-- Initial prototyping of Windows GUI app with standard menus and a tabbed interface
