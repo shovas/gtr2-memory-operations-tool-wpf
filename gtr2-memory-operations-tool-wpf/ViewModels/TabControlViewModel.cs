@@ -15,13 +15,13 @@ namespace gtr2_memory_operations_tool_wpf.ViewModels
         public ObservableCollection<TabItem> TabItems { get; set; }
         public TabControlViewModel()
         {
-            TabItems = new ObservableCollection<TabItem>();
-            var home = new TabItem { Header = "Home", Content = new HomeView() };
-            var data = new TabItem { Header = "Data", Content = new DataView() };
-            var log = new TabItem { Header = "Log", Content = new LogView() };
-            TabItems.Add(home);
-            TabItems.Add(data);
-            TabItems.Add(log);
+            //TabItems = new ObservableCollection<TabItem>();
+            //var home = new TabItem { Header = "Home", Content = new HomeView() };
+            //var data = new TabItem { Header = "Data", Content = new DataView() };
+            //var log = new TabItem { Header = "Log", Content = new LogView() };
+            //TabItems.Add(home);
+            //TabItems.Add(data);
+            //TabItems.Add(log);
         }
     }
 }

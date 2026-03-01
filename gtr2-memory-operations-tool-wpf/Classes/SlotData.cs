@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace gtr2_memops9
+namespace gtr2_memory_operations_tool_wpf.Classes
 {
     internal class SlotData
     {
@@ -12,7 +12,7 @@ namespace gtr2_memops9
         public string DriverName { get; set; }
         public float WeightPenalty { get; set; }
         public string CarFilePath { get; set; }
-        public List<string> CarParts { get; set; }
+        public List<string> CarParts { get; set; } = new List<string>();
 
         public SlotData()
         {
