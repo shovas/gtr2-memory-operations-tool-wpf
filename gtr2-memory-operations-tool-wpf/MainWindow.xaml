@@ -17,11 +17,12 @@
             <MenuItem Header="Tools"/>
             <MenuItem Header="Actions">
                 <MenuItem Header="Test">
-                    <MenuItem Header="Test Open Process" Click="MenuItem_Actions_Test_TestOpenProcess"/>
-                    <MenuItem Header="Test Connect Process"/>
+                    <MenuItem Header="Test Get Process" Click="MenuItem_Actions_Test_TestGetProcess"/>
+                    <MenuItem Header="Test Open Process" Click="MenuItem_Actions_Test_TestOpenProcess" />
                     <MenuItem Header="Test Read Process"/>
                     <MenuItem Header="Test Read Process"/>
                     <MenuItem Header="Test Write Process"/>
+                    <MenuItem Header="Test GTR2 Process" Click="MenuItem_Actions_Test_TestGTR2Process"/>
                 </MenuItem>
             </MenuItem>
             <MenuItem Header="Help">

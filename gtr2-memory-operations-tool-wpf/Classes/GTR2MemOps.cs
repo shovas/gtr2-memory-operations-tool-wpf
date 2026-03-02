@@ -6,7 +6,7 @@ using System.Text;
 
 namespace gtr2_memory_operations_tool_wpf
 {
-    public class GTR2MemOps
+    public class Gtr2MemOps
     {
         private const uint PROCESS_QUERY_INFORMATION = 0x0400;
         private const uint PROCESS_VM_READ = 0x0010;
@@ -79,7 +79,7 @@ namespace gtr2_memory_operations_tool_wpf
         [DllImport("kernel32.dll", SetLastError = true)]
         private static extern bool CloseHandle(nint hObject);
 
-        public GTR2MemOps()
+        public Gtr2MemOps()
         {
             // Register Code Pages provider so that Windows-1252 is available to use
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
@@ -103,7 +103,7 @@ namespace gtr2_memory_operations_tool_wpf
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                App.Log.Add(ex.Message);
             }
 
         }
@@ -133,7 +133,7 @@ namespace gtr2_memory_operations_tool_wpf
                 {
                     throw new Exception("Error: Failed finding GTR2 process.");
                 }
-                Console.WriteLine($"Found gtr2.exe (PID {gtr2Process.Id})");
+                App.Log.Add($"Found gtr2.exe (PID {gtr2Process.Id})");
 
                 // ---------------------------------------------------------
                 // 2. Open process
@@ -144,7 +144,7 @@ namespace gtr2_memory_operations_tool_wpf
                     throw new Exception("Error: Failed opening GTR2 process.");
                 }
                 //gtr2ProcessPointer = gtr2TempProcessPointer.Value;
-                Console.WriteLine("Opened process");
+                App.Log.Add("Opened process");
 
                 // ---------------------------------------------------------
                 // 3. Scan memory for the slot list header
@@ -154,7 +154,7 @@ namespace gtr2_memory_operations_tool_wpf
                 {
                     throw new Exception("Error: Failed to locate slot list header.");
                 }
-                Console.WriteLine($"Found slot list header at 0x{gridAddr:X}");
+                App.Log.Add($"Found slot list header at 0x{gridAddr:X}");
 
                 // ---------------------------------------------------------
                 // 4. Walk the linked list and locate the first WeightPenalty
@@ -164,13 +164,13 @@ namespace gtr2_memory_operations_tool_wpf
                 {
                     throw new Exception("Error: Failed finding grid data in slot list.");
                 }
-                Console.WriteLine($"Found GridData for {gridData.NumVeh} vehicles");
+                App.Log.Add($"Found GridData for {gridData.NumVeh} vehicles");
 
                 success = true;
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                App.Log.Add(ex.Message);
             }
             finally
             {
@@ -213,10 +213,10 @@ namespace gtr2_memory_operations_tool_wpf
                     else if (pitGroupId == -1)
                     {
                         // End of grid slots
-                        Console.WriteLine("Reached end of slot list.");
+                        App.Log.Add("Reached end of slot list.");
                         break;
                     }
-                    Console.WriteLine($"pitGroupId={pitGroupId}");
+                    App.Log.Add($"pitGroupId={pitGroupId}");
 
                     // Read data from the slot and add to gridData.Slots
                     SlotData slotData = new SlotData();
@@ -263,7 +263,7 @@ namespace gtr2_memory_operations_tool_wpf
                     nint nextSlotAddr = nint.Add(curSlotAddr, slotStep);
                     if (ValidateEndOfGrid(hProc, nextSlotAddr))
                     {
-                        Console.WriteLine("Next slot is end of list marker. Ending read.");
+                        App.Log.Add("Next slot is end of list marker. Ending read.");
                         break;
                     }
                     //nint slotAddr = nint.Add(curSlotAddr, slotStep);
@@ -276,17 +276,17 @@ namespace gtr2_memory_operations_tool_wpf
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error while reading grid data: {ex.Message}");
+                App.Log.Add($"Error while reading grid data: {ex.Message}");
             }
 
             // Record number of vehicles found based on how many valid slots we can read before hitting the end of the linked list (indicated by a header that fails validation)
             gridData.NumVeh = gridData.Slots.Count;
-            Console.WriteLine($"Total valid slots read: {gridData.NumVeh}");
+            App.Log.Add($"Total valid slots read: {gridData.NumVeh}");
 
             return gridData;
         }
 
-        private static bool TestGtr2Process()
+        public static bool TestGtr2Process()
         {
             // Overview:
             // 1. Find GTR2.EXE process
@@ -311,7 +311,7 @@ namespace gtr2_memory_operations_tool_wpf
                 {
                     throw new Exception("Error: Failed finding GTR2 process.");
                 }
-                Console.WriteLine($"Found gtr2.exe (PID {gtr2Process.Id})");
+                App.Log.Add($"Found gtr2.exe (PID {gtr2Process.Id})");
 
                 // ---------------------------------------------------------
                 // 2. Open process
@@ -322,7 +322,7 @@ namespace gtr2_memory_operations_tool_wpf
                     throw new Exception("Error: Failed opening GTR2 process.");
                 }
                 //gtr2ProcessPointer = gtr2TempProcessPointer.Value;
-                Console.WriteLine("Opened process");
+                App.Log.Add("Opened process");
 
                 // ---------------------------------------------------------
                 // 3. Scan memory for the slot list header
@@ -332,7 +332,7 @@ namespace gtr2_memory_operations_tool_wpf
                 {
                     throw new Exception("Error: Failed to locate slot list header.");
                 }
-                Console.WriteLine($"Found slot list header at 0x{gridAddr:X}");
+                App.Log.Add($"Found slot list header at 0x{gridAddr:X}");
 
                 // ---------------------------------------------------------
                 // 4. Walk the linked list and locate the first WeightPenalty
@@ -342,7 +342,7 @@ namespace gtr2_memory_operations_tool_wpf
                 {
                     throw new Exception("Error: Failed finding weight penalty in slot list.");
                 }
-                Console.WriteLine($"Found WeightPenalty address for first slot: 0x{weightPenaltyAddr:X}");
+                App.Log.Add($"Found WeightPenalty address for first slot: 0x{weightPenaltyAddr:X}");
 
                 // ---------------------------------------------------------
                 // 5. Read current value to verify we can read and for later comparison after new write
@@ -353,7 +353,7 @@ namespace gtr2_memory_operations_tool_wpf
                     throw new Exception("Error: Failed reading current WeightPenalty value.");
                 }
                 float weightPenaltyFloatData = tempWeightPenaltyFloatData.Value;
-                Console.WriteLine($"Current WeightPenalty read: {weightPenaltyFloatData}");
+                App.Log.Add($"Current WeightPenalty read: {weightPenaltyFloatData}");
 
                 // ---------------------------------------------------------
                 // 6. Write new value
@@ -364,7 +364,7 @@ namespace gtr2_memory_operations_tool_wpf
                 {
                     throw new Exception("Error: Failed writing WeightPenalty value.");
                 }
-                Console.WriteLine($"New WeightPenalty written: {newWeightPenaltyFloat}");
+                App.Log.Add($"New WeightPenalty written: {newWeightPenaltyFloat}");
 
                 // ---------------------------------------------------------
                 // 7. Read new value back to confirm the write worked
@@ -375,14 +375,14 @@ namespace gtr2_memory_operations_tool_wpf
                     throw new Exception("Error: Failed reading new WeightPenalty value.");
                 }
                 float newWeightPenaltyFloatValue = newWeightPenaltyFloatData.Value;
-                Console.WriteLine($"New WeightPenalty read: {newWeightPenaltyFloatValue}");
+                App.Log.Add($"New WeightPenalty read: {newWeightPenaltyFloatValue}");
 
                 // Mark success
                 success = true;
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                App.Log.Add(ex.Message);
             }
             finally
             {
@@ -397,6 +397,57 @@ namespace gtr2_memory_operations_tool_wpf
             return success;
         }
 
+        public bool TestGtr2GetProcess ()
+        {
+            try
+            {
+                string gtr2ProcessName = "gtr2";
+                Process? gtr2Process = GetProcessByName(gtr2ProcessName);
+                if (gtr2Process is null)
+                {
+                    throw new Exception("Error: Failed finding GTR2 process.");
+                }
+                App.Log.Add($"Found gtr2.exe (PID {gtr2Process.Id})");
+            } catch (Exception ex)
+            {
+                App.Log.Add(ex.Message);
+                return false;
+            }
+
+            return true;
+        }
+
+        public bool TestGtr2OpenProcess ()
+        {
+            try
+            {
+                // 1. Get Process
+                string gtr2ProcessName = "gtr2";
+                Process? gtr2Process = GetProcessByName(gtr2ProcessName);
+                if (gtr2Process is null)
+                {
+                    throw new Exception("Error: Failed finding GTR2 process.");
+                }
+                App.Log.Add($"Found gtr2.exe (PID {gtr2Process.Id})");
+
+                // 2. Open process
+                nint? gtr2ProcessPointer = OpenProcessForReadWrite(gtr2Process);
+                if (gtr2ProcessPointer == null || gtr2ProcessPointer == nint.Zero)
+                {
+                    throw new Exception("Error: Failed opening GTR2 process.");
+                }
+                //gtr2ProcessPointer = gtr2TempProcessPointer.Value;
+                App.Log.Add($"Opened process successfully");
+            }
+            catch (Exception ex)
+            {
+                App.Log.Add(ex.Message);
+                return false;
+            }
+
+            return true;
+        }
+
         /// <summary>
         /// Finds the GTR2 process by name.
         /// </summary>
@@ -407,20 +458,20 @@ namespace gtr2_memory_operations_tool_wpf
             Process[] gtr2Processes = Process.GetProcessesByName(processName);
             if (gtr2Processes.Length == 0)
             {
-                Console.WriteLine($"Error: Process \"{processName}\" is not running.");
+                App.Log.Add($"Error: Process \"{processName}\" is not running.");
                 return null;
             }
             //Process gtr2 = Process.GetProcessesByName("gtr2")[0];
             else if (gtr2Processes.Length > 1)
             {
-                Console.WriteLine($"Error: Multiple \"{processName}\" processes found. Aborting.");
+                App.Log.Add($"Error: Multiple \"{processName}\" processes found. Aborting.");
                 return null;
             }
             // Exactly one process found
             Process gtr2Process = gtr2Processes[0];
             if (gtr2Process == null) // This shouldn't even be necessary but whatever
             {
-                Console.WriteLine("Error: Unexpected condition: Process \"{gtr2ProcessName}\" found but invalid (null).");
+                App.Log.Add("Error: Unexpected condition: Process \"{gtr2ProcessName}\" found but invalid (null).");
                 return null;
             }
             return gtr2Process;
@@ -439,16 +490,17 @@ namespace gtr2_memory_operations_tool_wpf
                 process.Id);
             if (processPointer == 0)
             {
-                Console.WriteLine($"Error: Failed opening process: {process.Id}");
+                App.Log.Add($"Error: Failed opening process: {process.Id}");
                 return nint.Zero;
             }
+            App.Log.Add($"Opened process {process.Id} for READ/WRITE");
             return processPointer;
         }
 
         // GTR2 must be loaded into a driving session: Practice, Qualifying, Warmup, Race
         public static nint FindGridAddress(nint hProcess)
         {
-            Console.WriteLine("Starting memory scan for Grid address...");
+            App.Log.Add("Starting memory scan for Grid address...");
 
             /* --------------------------------------------------------------
              *  SIGNATURES (exact bytes from the Python code)
@@ -478,7 +530,7 @@ namespace gtr2_memory_operations_tool_wpf
             const nint gdbOffsetFromAiw = GTR2_MEMORY_AIW_OFFSET_GDB;
             const nint plrOffsetFromAiw = GTR2_MEMORY_AIW_OFFSET_PLR;
 
-            Console.WriteLine("Scanning memory with multi-signature validation...");
+            App.Log.Add("Scanning memory with multi-signature validation...");
 
             nint curAddr = 0;
             int mbiSize = Marshal.SizeOf<MEMORY_BASIC_INFORMATION>();
@@ -516,7 +568,7 @@ namespace gtr2_memory_operations_tool_wpf
                 {
                     if (MemorySignatureMatches(region, i, sigAiw))
                     {
-                        Console.WriteLine($"Found AIW signature at 0x{(regionStart + i):X}");
+                        App.Log.Add($"Found AIW signature at 0x{(regionStart + i):X}");
                         aiwAddr = regionStart + i;
                         break;
                     }
@@ -530,13 +582,13 @@ namespace gtr2_memory_operations_tool_wpf
                 if (plrAddr < regionStart || plrAddr + sigPlr.Length > regionEnd ||
                     !MemorySignatureMatches(region, plrAddr - regionStart, sigPlr))
                 {
-                    Console.WriteLine($"PLR signature mismatch at expected offset. Expected at 0x{plrAddr:X}");
+                    App.Log.Add($"PLR signature mismatch at expected offset. Expected at 0x{plrAddr:X}");
                     curAddr = regionEnd;
                     continue;
                 }
                 else
                 {
-                    Console.WriteLine($"Confirmed PLR signature at expected offset: 0x{plrAddr:X}");
+                    App.Log.Add($"Confirmed PLR signature at expected offset: 0x{plrAddr:X}");
                 }
 
                 /* ----------------------------------------------------------
@@ -546,13 +598,13 @@ namespace gtr2_memory_operations_tool_wpf
                 if (gdbAddr < regionStart || gdbAddr + sigGdb.Length > regionEnd ||
                     !MemorySignatureMatches(region, gdbAddr - regionStart, sigGdb))
                 {
-                    Console.WriteLine($"GDB Horizon signature mismatch at expected offset. Expected at 0x{gdbAddr:X}");
+                    App.Log.Add($"GDB Horizon signature mismatch at expected offset. Expected at 0x{gdbAddr:X}");
                     curAddr = regionEnd;
                     continue;
                 }
                 else
                 {
-                    Console.WriteLine($"Confirmed GDB Horizon signature at expected offset: 0x{gdbAddr:X}");
+                    App.Log.Add($"Confirmed GDB Horizon signature at expected offset: 0x{gdbAddr:X}");
                 }
 
                 /* ----------------------------------------------------------
@@ -560,11 +612,11 @@ namespace gtr2_memory_operations_tool_wpf
                  * ---------------------------------------------------------- */
                 nint gridAddr = aiwAddr + gridOffsetFromAiw;
 
-                Console.WriteLine($"Grid Address Memory Search Results:");
-                Console.WriteLine($" - AIW        : 0x{aiwAddr:X}");
-                Console.WriteLine($" - Grid Data  : 0x{gridAddr:X}");
-                Console.WriteLine($" - GDB Horizon: 0x{gdbAddr:X}");
-                Console.WriteLine($" - PLR AI     : 0x{plrAddr:X}");
+                App.Log.Add($"Grid Address Memory Search Results:");
+                App.Log.Add($" - AIW        : 0x{aiwAddr:X}");
+                App.Log.Add($" - Grid Data  : 0x{gridAddr:X}");
+                App.Log.Add($" - GDB Horizon: 0x{gdbAddr:X}");
+                App.Log.Add($" - PLR AI     : 0x{plrAddr:X}");
 
                 // If the header pattern is wrong, keep searching but that's extremely unlikely given the multi signature match it took to get here
                 if (ValidateGridSlot(hProcess, gridAddr))
@@ -573,7 +625,7 @@ namespace gtr2_memory_operations_tool_wpf
                 curAddr = regionEnd;
             }
 
-            Console.WriteLine("Failed searching memory for Grid address using multi-signature scan.");
+            App.Log.Add("Failed searching memory for Grid address using multi-signature scan.");
             return nint.Zero;
         }
 
@@ -662,7 +714,7 @@ namespace gtr2_memory_operations_tool_wpf
                     throw new Exception($"Error: Failed reading string value at offset {findStringOffset}.");
                 }
                 string stringData = tempStringData.ToString();
-                Console.WriteLine($"Found {findName} string: {stringData}");
+                App.Log.Add($"Found {findName} string: {stringData}");
                 return stringData;
             }
 
@@ -684,7 +736,7 @@ namespace gtr2_memory_operations_tool_wpf
                     throw new Exception($"Error: Failed reading current Int32 value at offset {findOffset}.");
                 }
                 Int32 int32Data = tempInt32Data.Value;
-                Console.WriteLine($"Found {findName} Int32: {int32Data}");
+                App.Log.Add($"Found {findName} Int32: {int32Data}");
                 return int32Data;
             }
 
@@ -706,7 +758,7 @@ namespace gtr2_memory_operations_tool_wpf
                     throw new Exception($"Error: Failed reading current float value at offset {findFloatOffset}.");
                 }
                 float floatData = tempFloatData.Value;
-                Console.WriteLine($"Found {findName} float: {floatData}");
+                App.Log.Add($"Found {findName} float: {floatData}");
                 return floatData;
             }
 
@@ -787,7 +839,7 @@ namespace gtr2_memory_operations_tool_wpf
             {
                 return null;
             }
-            //Console.WriteLine($"Raw bytes in ReadMemoryFloat: {BitConverter.ToString(buf)} = 0x{BitConverter.ToUInt32(buf, 0):X8}");
+            //App.Log.Add($"Raw bytes in ReadMemoryFloat: {BitConverter.ToString(buf)} = 0x{BitConverter.ToUInt32(buf, 0):X8}");
             return BitConverter.ToSingle(buf, 0);
         }
         private static bool WriteFloat(nint hProc, nint addr, float value)
