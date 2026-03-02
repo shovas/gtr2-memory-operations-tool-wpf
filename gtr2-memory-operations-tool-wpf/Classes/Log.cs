@@ -13,7 +13,7 @@ namespace gtr2_memory_operations_tool_wpf
         }
         public void Add(string message)
         {
-
+            message= $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {message}";
             EntryAdded?.Invoke(message);
         }
     }

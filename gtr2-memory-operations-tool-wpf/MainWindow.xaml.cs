@@ -20,11 +20,9 @@ namespace gtr2_memory_operations_tool_wpf
     /// </summary>
     public partial class MainWindow : Window
     {
-        Log Log { get; set; } = new Log();
         public MainWindow()
         {
             InitializeComponent();
-            LogView.Log = Log;
         }
 
         private void MenuItem_File_Exit_Click(object sender, RoutedEventArgs e)

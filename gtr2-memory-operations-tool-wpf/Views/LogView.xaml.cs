@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.Pkcs;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -20,13 +21,11 @@ namespace gtr2_memory_operations_tool_wpf.Views
     /// </summary>
     public partial class LogView : UserControl
     {
-        public Log Log { get; set; }
         public LogView()
         {
             InitializeComponent();
-            Log = new Log();
-            Log.EntryAdded += OnEntryAdded;
-            Log.Add("GTR2 Memory Operations Tool Log\n");
+            App.Log.EntryAdded += OnEntryAdded;
+            App.Log.Add("GTR2 Memory Operations Tool Log\n");
             //LogBox.AppendText("GTR2 Memory Operations Tool Log\n");
         }
         private void OnEntryAdded(string message)

@@ -481,7 +481,6 @@ namespace gtr2_memory_operations_tool_wpf
             Console.WriteLine("Scanning memory with multi-signature validation...");
 
             nint curAddr = 0;
-            //MEMORY_BASIC_INFORMATION mbi;
             int mbiSize = Marshal.SizeOf<MEMORY_BASIC_INFORMATION>();
 
 
