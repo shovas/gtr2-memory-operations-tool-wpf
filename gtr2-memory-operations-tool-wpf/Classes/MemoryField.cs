@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace gtr2_memory_operations_tool_wpf.Classes
+namespace gtr2_memory_operations_tool_wpf
 {
-    internal class MemoryField
+    public class MemoryField
     {
         public string Name { get; set; }
         public Type HeldType { get; set; }

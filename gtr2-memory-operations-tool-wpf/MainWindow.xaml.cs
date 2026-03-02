@@ -20,9 +20,11 @@ namespace gtr2_memory_operations_tool_wpf
     /// </summary>
     public partial class MainWindow : Window
     {
+        Log Log { get; set; } = new Log();
         public MainWindow()
         {
             InitializeComponent();
+            LogView.Log = Log;
         }
 
         private void MenuItem_File_Exit_Click(object sender, RoutedEventArgs e)
@@ -34,6 +36,7 @@ namespace gtr2_memory_operations_tool_wpf
         {
 
         }
+
         private void MenuItem_Help_About_Click(object sender, RoutedEventArgs e)
         {
             MessageBox.Show("GTR2 Memory Operations Tool\nVersion 1.0 (WIP)", "About");

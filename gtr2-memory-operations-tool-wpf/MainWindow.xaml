@@ -30,13 +30,13 @@
         </Menu>
         <TabControl Margin="0,18,0,0">
             <TabItem Header="Home">
-                <views:HomeView/>
+                <views:HomeView x:Name="HomeView"/>
             </TabItem>
             <TabItem Header="Data">
-                <views:DataView/>
+                <views:DataView x:Name="DataView"/>
             </TabItem>
             <TabItem Header="Log">
-                <views:LogView/>
+                <views:LogView x:Name="LogView"/>
             </TabItem>
         </TabControl>
         <StatusBar VerticalAlignment="Bottom">

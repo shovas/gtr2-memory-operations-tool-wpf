@@ -5,9 +5,9 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace gtr2_memory_operations_tool_wpf.Classes
+namespace gtr2_memory_operations_tool_wpf
 {
-    internal class MemoryRegion
+    public class MemoryRegion
     {
         public MemoryField[] Fields { get; set; }
         public MemoryRegion(MemoryField[] fields)

@@ -5,6 +5,8 @@ DEVELOPMENT
 Version 1 (2026-02-26..YYMMDD)
 
 
+- TODO: Add LogView buttons: Clear, Copy
+
 - TODO: Port the basic console app logic as a starting point
 
 

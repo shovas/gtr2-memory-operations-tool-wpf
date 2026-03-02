@@ -20,10 +20,18 @@ namespace gtr2_memory_operations_tool_wpf.Views
     /// </summary>
     public partial class LogView : UserControl
     {
+        public Log Log { get; set; }
         public LogView()
         {
             InitializeComponent();
+            Log = new Log();
+            Log.EntryAdded += OnEntryAdded;
+            Log.Add("GTR2 Memory Operations Tool Log\n");
             //LogBox.AppendText("GTR2 Memory Operations Tool Log\n");
+        }
+        private void OnEntryAdded(string message)
+        {
+            Dispatcher.Invoke(() => LogBox.AppendText(message));
         }
     }
 }

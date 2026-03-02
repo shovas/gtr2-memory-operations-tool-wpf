@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace gtr2_memory_operations_tool_wpf.Classes
+namespace gtr2_memory_operations_tool_wpf
 {
-    internal class SlotData
+    public class SlotData
     {
         public int SlotId { get; set; }
         public string DriverName { get; set; }

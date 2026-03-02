@@ -5,9 +5,9 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace gtr2_memory_operations_tool_wpf.Classes
+namespace gtr2_memory_operations_tool_wpf
 {
-    internal class GridDataMemoryRegion
+    public class GridDataMemoryRegion
     {
         public MemoryRegion Region { get; set; }
         public int OffsetStatic { get; set; } // Offset from some base address. Would be better to detect this dynamically.

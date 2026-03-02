@@ -4,9 +4,9 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace gtr2_memory_operations_tool_wpf.Classes
+namespace gtr2_memory_operations_tool_wpf
 {
-    internal class GTR2MemOps
+    public class GTR2MemOps
     {
         private const uint PROCESS_QUERY_INFORMATION = 0x0400;
         private const uint PROCESS_VM_READ = 0x0010;
