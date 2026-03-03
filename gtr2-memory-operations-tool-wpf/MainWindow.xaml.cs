@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.DirectoryServices;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,6 +13,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace gtr2_memory_operations_tool_wpf
 {
@@ -79,5 +81,16 @@ namespace gtr2_memory_operations_tool_wpf
         {
 
         }
+
+        private async void MenuItem_Actions_Test_TestSharedMemory(object sender, RoutedEventArgs e)
+        {
+            // Activate Shared Memory tab so user can see the results of the test there
+            MainTabControl.SelectedItem = SharedMemoryTab;
+            //MainTabControl.UpdateLayout(); // Ensure the UI updates before running the test
+            await Task.Yield();
+            SharedMemoryView.TestGtr2SharedMemory();
+            
+        }
+        
     }
 }

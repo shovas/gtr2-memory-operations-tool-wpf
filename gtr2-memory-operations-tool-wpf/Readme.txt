@@ -15,6 +15,9 @@ See Docs for Release Notes, Development Notes, Plans, License, and other informa
 
 Requirements
 
+- Steam GTR2.EXE SHA256: 0d355d96975d1748bdab216c340a7277d69f8faa92f677fbafea0a832f26550f
+  - If you 4GB Patch'd it or did something else to the Steam GTR2.EXE it might still work
+  - My GTR2.EXE hashes to ae0d573cd4a2567c76e3dc4dafaf79128febfbb817303607bae027b695023755 and still works with CCGEP
 - .NET 10.0 Desktop Runtime
   - https://dotnet.microsoft.com/en-us/download/dotnet/10.0
   - Search Microsoft.com if the link breaks

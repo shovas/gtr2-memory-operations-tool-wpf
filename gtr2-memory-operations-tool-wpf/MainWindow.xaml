@@ -23,20 +23,25 @@
                     <MenuItem Header="Test Read Process"/>
                     <MenuItem Header="Test Write Process"/>
                     <MenuItem Header="Test GTR2 Process" Click="MenuItem_Actions_Test_TestGTR2Process"/>
+                    <Separator/>
+                    <MenuItem Header="Test Shared Memory" Click="MenuItem_Actions_Test_TestSharedMemory"/>
                 </MenuItem>
             </MenuItem>
             <MenuItem Header="Help">
                 <MenuItem Header="About" Click="MenuItem_Help_About_Click"/>
             </MenuItem>
         </Menu>
-        <TabControl Margin="0,18,0,0">
-            <TabItem Header="Home">
+        <TabControl x:Name="MainTabControl" Margin="0,18,0,0">
+            <TabItem x:Name="HomeTab" Header="Home">
                 <views:HomeView x:Name="HomeView"/>
             </TabItem>
-            <TabItem Header="Data">
-                <views:DataView x:Name="DataView"/>
+            <TabItem x:Name="SharedMemoryTab" Header="Shared Memory">
+                <views:SharedMemoryView x:Name="SharedMemoryView"/>
             </TabItem>
-            <TabItem Header="Log">
+            <TabItem x:Name="ProgramMemoryTab" Header="Program Memory">
+                <views:ProgramMemoryView x:Name="ProgramMemoryView"/>
+            </TabItem>
+            <TabItem x:Name="LogTab"  Header="Log">
                 <views:LogView x:Name="LogView"/>
             </TabItem>
         </TabControl>

@@ -25,7 +25,7 @@ namespace gtr2_memory_operations_tool_wpf.Views
         {
             InitializeComponent();
             App.Log.EntryAdded += OnEntryAdded;
-            App.Log.Add("GTR2 Memory Operations Tool Log\n");
+            App.Log.Add("GTR2 Memory Operations Tool Log");
             //LogBox.AppendText("GTR2 Memory Operations Tool Log\n");
         }
         private void OnEntryAdded(string message)
