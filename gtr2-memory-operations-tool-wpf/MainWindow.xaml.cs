@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.DirectoryServices;
 using System.Linq;
 using System.Text;
@@ -27,7 +28,20 @@ namespace gtr2_memory_operations_tool_wpf
         public MainWindow()
         {
             InitializeComponent();
+            
+            InitializeGtr2MemoryOperationsTool();
 
+        }
+
+        private void InitializeGtr2MemoryOperationsTool()
+        {
+            App.Log.AddInfo("GTR2 Memory Operations Tool Initialized");
+            ShowStatusWelcome();
+            CheckGtr2Process();
+        }
+
+        private void ShowStatusWelcome()
+        {
             // Show a Welcome message on the StatusBar
             StatusBarItemText.Text = "GTR2 Memory Operations Tool Loaded";
             int timerTime = 5;
@@ -38,7 +52,21 @@ namespace gtr2_memory_operations_tool_wpf
                 timer.Stop();
             };
             timer.Start();
+        }
 
+        private void CheckGtr2Process()
+        {
+            bool isRunning = Gtr2MemOps.IsGtr2ProcessRunning();
+            if (isRunning)
+            {
+                App.Log.AddInfo("GTR2 Process Detected");
+                StatusBarItemText.Text = "GTR2 Detected";
+            }
+            else
+            {
+                App.Log.AddError("GTR2 Process Not Detected");
+                StatusBarItemText.Text = "GTR2 Not Detected";
+            }
         }
 
         private void MenuItem_File_Exit_Click(object sender, RoutedEventArgs e)
@@ -51,11 +79,11 @@ namespace gtr2_memory_operations_tool_wpf
             bool success = Gtr2MemOps.TestGtr2Process();
             if (success)
             {
-                App.Log.Add("Test Pass: Test GTR2 Process");
+                App.Log.AddInfo("Test Pass: Test GTR2 Process");
             }
             else
             {
-                App.Log.Add("Test Failed: Test GTR2 Process");
+                App.Log.AddError("Test Failed: Test GTR2 Process");
             }
         }
 
@@ -64,11 +92,11 @@ namespace gtr2_memory_operations_tool_wpf
             bool success = Gtr2MemOps.TestGtr2GetProcess();
             if (success)
             {
-                App.Log.Add("Test Pass: Test GTR2 Open Process");
+                App.Log.AddInfo("Test Pass: Test GTR2 Open Process");
             }
             else
             {
-                App.Log.Add("Test Failed: Test GTR2 Open Process");
+                App.Log.AddError("Test Failed: Test GTR2 Open Process");
             }
         }
 
@@ -77,11 +105,11 @@ namespace gtr2_memory_operations_tool_wpf
             bool success = Gtr2MemOps.TestGtr2OpenProcess();
             if (success)
             {
-                App.Log.Add("Test Pass: Test GTR2 Open Process");
+                App.Log.AddInfo("Test Pass: Test GTR2 Open Process");
             }
             else
             {
-                App.Log.Add("Test Failed: Test GTR2 Open Process");
+                App.Log.AddError("Test Failed: Test GTR2 Open Process");
             }
         }
 
@@ -104,6 +132,10 @@ namespace gtr2_memory_operations_tool_wpf
             SharedMemoryView.TestGtr2SharedMemory();
             
         }
-        
+
+        private void MenuItem_Help_SupportMyWork_Click(object sender, RoutedEventArgs e)
+        {
+            Process.Start(new ProcessStartInfo("https://www.simwiki.net/wiki/Help_Support_Simwiki") { UseShellExecute = true });
+        }
     }
 }

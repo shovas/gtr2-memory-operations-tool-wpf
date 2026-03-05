@@ -2,19 +2,34 @@
 
 DEVELOPMENT
 
-Version 1 (2026-02-26..YYMMDD)
+Todo
 
-
-- TODO: Add LogView buttons: Clear, Copy
-
-- TODO: Port the basic console app logic as a starting point
+- Add LogView buttons: Clear, Copy, Log Level Filter
 
 
 
-- DONE: Port classes from gtr2-memops9 Windows Console App to the new GUI app
+Doing
 
-- DONE: Initial work with the Log tab and getting it read to display real log messages
 
-- DONE: Upgrade to .NET 8
 
-- DONE: Initial prototyping of Windows GUI app with standard menus and a tabbed interface
+Done
+
+- Log tab is now the primary tab, shows a welcome message, does some startup checks like check for GTR2 process
+
+- Made MainWindow responsive to window resizing
+
+- Added log levels: Debug, Info, Warning, Error, Exception. Will add log filtering by level later.
+
+- Add Help > Suppory My Work menu item with link to SimWiki support page
+
+- Show a StatusBar welcome message for a few seconds and then indicate ready
+
+- Port the basic console app logic as a starting point
+
+- Port classes from gtr2-memops9 Windows Console App to the new GUI app
+
+- Initial work with the Log tab and getting it read to display real log messages
+
+- Upgrade to .NET 8
+
+- Initial prototyping of Windows GUI app with standard menus and a tabbed interface

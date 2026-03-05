@@ -33,7 +33,7 @@ namespace gtr2_memory_operations_tool_wpf
         public const int MAX_STATUS_MSG_LEN = 128;
         public const int MAX_RULES_INSTRUCTION_MSG_LEN = 96;
         public const int MAX_HWCONTROL_NAME_LEN = 96;
-        public const string GTR2_PROCESS_NAME = "gtr2";
+        public const string GTR2_PROCESS_NAME = Gtr2MemOps.GTR2_PROCESS_NAME;
 
         public const byte RowX = 0;
         public const byte RowY = 1;

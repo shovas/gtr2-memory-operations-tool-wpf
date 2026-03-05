@@ -8,7 +8,15 @@
         mc:Ignorable="d"
         Title="GTR2 Memory Operations Tool" Height="450" Width="800">
     <Grid>
-        <Menu Height="18" VerticalAlignment="Top" VerticalContentAlignment="Center">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="18"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="22"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Menu Grid.Row="0" Grid.Column="0" VerticalAlignment="Top" VerticalContentAlignment="Center">
             <MenuItem Header="File">
                 <MenuItem Header="Exit" Click="MenuItem_File_Exit_Click"/>
             </MenuItem>
@@ -29,24 +37,28 @@
             </MenuItem>
             <MenuItem Header="Help">
                 <MenuItem Header="About" Click="MenuItem_Help_About_Click"/>
+                <MenuItem Header="Support My Work Via SimWiki.net" Click="MenuItem_Help_SupportMyWork_Click"/>
             </MenuItem>
         </Menu>
-        <TabControl x:Name="MainTabControl" Margin="0,18,0,0">
-            <TabItem x:Name="HomeTab" Header="Home">
-                <views:HomeView x:Name="HomeView"/>
+        <TabControl x:Name="MainTabControl" Grid.Row="1" Grid.Column="0">
+            <TabItem x:Name="LogTab"  Header="Log">
+                <views:LogView x:Name="LogView"/>
             </TabItem>
+            <!--<TabItem x:Name="StatusTab" Header="Home">
+                <views:StatusView x:Name="StatusView" VerticalAlignment="Stretch"/>
+            </TabItem>-->
+            <!--<TabItem x:Name="HomeTab" Header="Home">
+                <views:HomeView x:Name="HomeView" VerticalAlignment="Stretch"/>
+            </TabItem>-->
             <TabItem x:Name="SharedMemoryTab" Header="Shared Memory">
                 <views:SharedMemoryView x:Name="SharedMemoryView"/>
             </TabItem>
             <TabItem x:Name="ProgramMemoryTab" Header="Program Memory">
                 <views:ProgramMemoryView x:Name="ProgramMemoryView"/>
             </TabItem>
-            <TabItem x:Name="LogTab"  Header="Log">
-                <views:LogView x:Name="LogView"/>
-            </TabItem>
         </TabControl>
-        <StatusBar x:Name="StatusBar" VerticalAlignment="Bottom">
-            <StatusBarItem x:Name="StatusBarItem">
+        <StatusBar x:Name="StatusBar" Grid.Row="2" Grid.Column="0">
+            <StatusBarItem x:Name="StatusBarItem" Height="22">
                 <TextBlock x:Name="StatusBarItemText" Text="Ready" />
             </StatusBarItem>
         </StatusBar>

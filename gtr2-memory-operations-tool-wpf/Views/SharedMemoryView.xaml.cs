@@ -49,7 +49,7 @@ namespace gtr2_memory_operations_tool_wpf.Views
                 scoringBuffer.GetMappedData(ref scoring);
                 telemetryBuffer.GetMappedData(ref telemetry);
 
-                App.Log.Add($"Telemetry mVersion: {Utilities.GetStringFromBytes(extended.mVersion)}");
+                App.Log.AddDebug($"Telemetry mVersion: {Utilities.GetStringFromBytes(extended.mVersion)}");
 
                 SharedMemoryItems.Clear();
                 foreach (FieldInfo field in typeof(Gtr2Extended).GetFields(BindingFlags.Public | BindingFlags.Instance))
@@ -61,7 +61,7 @@ namespace gtr2_memory_operations_tool_wpf.Views
                     if ( value == null) continue;
                     string displayValue;
 
-                    App.Log.Add($"Processing field: {field.Name}, Type: {field.FieldType.Name}, Value: {value}");
+                    App.Log.AddDebug($"Processing field: {field.Name}, Type: {field.FieldType.Name}, Value: {value}");
 
                     if (field.FieldType == typeof(byte[]))
                         displayValue = Encoding.UTF8.GetString((byte[])value).TrimEnd('\0');
@@ -75,11 +75,11 @@ namespace gtr2_memory_operations_tool_wpf.Views
                     SharedMemoryItems.Add(new SharedMemoryItem(field.Name, displayValue, field.FieldType.Name));
                 }
 
-                App.Log.Add("Test Pass: Test Shared Memory");
+                App.Log.AddInfo("Test Pass: Test Shared Memory");
             }
             catch (Exception)
             {
-                App.Log.Add("Test Failed: Test Shared Memory");
+                App.Log.AddError("Test Failed: Test Shared Memory");
                 try
                 {
                     extendedBuffer.Disconnect();

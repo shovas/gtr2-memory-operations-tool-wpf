@@ -13,6 +13,7 @@ namespace gtr2_memory_operations_tool_wpf
     /// </summary>
     public partial class App : Application
     {
-        public static Log Log { get; } = new Log();
+        public static Log.LogLevel LoggingLevel { get; set; } = Log.LogLevel.Debug;
+        public static Log Log { get; } = new Log(LoggingLevel);
     }
 }
