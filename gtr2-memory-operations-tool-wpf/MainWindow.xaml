@@ -45,8 +45,10 @@
                 <views:LogView x:Name="LogView"/>
             </TabItem>
         </TabControl>
-        <StatusBar VerticalAlignment="Bottom">
-            <StatusBarItem Content="Ready"/>
+        <StatusBar x:Name="StatusBar" VerticalAlignment="Bottom">
+            <StatusBarItem x:Name="StatusBarItem">
+                <TextBlock x:Name="StatusBarItemText" Text="Ready" />
+            </StatusBarItem>
         </StatusBar>
     </Grid>
 </Window>

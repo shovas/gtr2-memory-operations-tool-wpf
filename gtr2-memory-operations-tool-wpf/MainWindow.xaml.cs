@@ -13,6 +13,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace gtr2_memory_operations_tool_wpf
@@ -26,6 +27,18 @@ namespace gtr2_memory_operations_tool_wpf
         public MainWindow()
         {
             InitializeComponent();
+
+            // Show a Welcome message on the StatusBar
+            StatusBarItemText.Text = "GTR2 Memory Operations Tool Loaded";
+            int timerTime = 5;
+            var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(timerTime) };
+            timer.Tick += (s, e) =>
+            {
+                StatusBarItemText.Text = "Ready";
+                timer.Stop();
+            };
+            timer.Start();
+
         }
 
         private void MenuItem_File_Exit_Click(object sender, RoutedEventArgs e)
