@@ -4,8 +4,6 @@ DEVELOPMENT
 
 Todo
 
-- Add LogView buttons: Clear, Copy, Log Level Filter
-
 
 
 Doing
@@ -13,6 +11,8 @@ Doing
 
 
 Done
+
+- Add LogView buttons: Clear Log, Copy Log, Save Log, Log Level
 
 - Log tab is now the primary tab, shows a welcome message, does some startup checks like check for GTR2 process
 

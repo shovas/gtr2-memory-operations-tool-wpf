@@ -16,7 +16,7 @@ namespace gtr2_memory_operations_tool_wpf
             Exception
         }
         public LogLevel LoggingLevel { get; set; }
-        public event Action<string>? EntryAdded;
+        public event Action<string, LogLevel>? EntryAdded;
         public Log(LogLevel loggingLevel) {
             // Can't log from here because EntryAdded isn't set yet
             LoggingLevel = loggingLevel;
@@ -27,7 +27,7 @@ namespace gtr2_memory_operations_tool_wpf
             Debug.WriteLine(message);
             var logLevelLabel = GetLogLevelLabel(level);
             message = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] [{logLevelLabel}] {message}\n";
-            EntryAdded?.Invoke(message);
+            EntryAdded?.Invoke(message, level);
         }
 
         public void AddDebug(string message)

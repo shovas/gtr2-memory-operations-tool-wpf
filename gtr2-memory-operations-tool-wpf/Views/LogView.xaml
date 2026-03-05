@@ -8,6 +8,30 @@
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
         <!--<TextBlock Text="Log View" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>-->
-        <TextBox x:Name="LogBox" HorizontalAlignment="Stretch" Margin="0,0,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Stretch" VerticalScrollBarVisibility="Auto" IsReadOnly="True"/>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Grid Grid.Row="0" Grid.Column="0" Background="#EEE" VerticalAlignment="Center">
+            <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" Background="White">
+                <Button x:Name="ClearLogButton" Content="Clear Log" Click="ClearLogButton_Click" Height="20" Margin="5,5,5,5" Padding="5,0,5,0"/>
+                <Button x:Name="CopyLogButton" Content="Copy Log" Click="CopyLogButton_Click" Height="20" Margin="5,5,5,5" Padding="5,0,5,0"/>
+                <Button x:Name="SaveLogButton" Content="Save Log" Click="SaveLogButton_Click" Height="20" Margin="5,5,5,5" Padding="5,0,5,0"/>
+                <TextBlock Text="Log Level:" VerticalAlignment="center" Margin="5,5,5,5" FontSize="14"/>
+                <ComboBox x:Name="LogFilterSelector" Width="150" SelectionChanged="LogFilterSelector_SelectionChanged" VerticalAlignment="center" VerticalContentAlignment="center" HorizontalAlignment="center" HorizontalContentAlignment="Left" Height="20" Margin="5,5,5,5" Padding="5,0,5,0">
+                    <ComboBoxItem Content="Exception only"/>
+                    <ComboBoxItem Content="Error and above"/>
+                    <ComboBoxItem Content="Warning and above"/>
+                    <ComboBoxItem Content="Info and above"/>
+                    <ComboBoxItem Content="Debug and above" IsSelected="True"/>
+                </ComboBox>
+            </StackPanel>
+        </Grid>
+        <Grid Grid.Row="1" Grid.Column="0">
+            <TextBox x:Name="LogBox" TextWrapping="Wrap" Text="" VerticalAlignment="Stretch" VerticalScrollBarVisibility="Visible" IsReadOnly="True"/>
+        </Grid>
     </Grid>
 </UserControl>

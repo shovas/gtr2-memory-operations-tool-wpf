@@ -27,9 +27,74 @@ namespace gtr2_memory_operations_tool_wpf.Views
             App.Log.EntryAdded += OnEntryAdded;
             //LogBox.AppendText("GTR2 Memory Operations Tool Log\n");
         }
-        private void OnEntryAdded(string message)
+        private void OnEntryAdded(string message, Log.LogLevel loggingLevel)
         {
+            if (loggingLevel < App.Log.LoggingLevel)
+            {
+                return;
+            }
             Dispatcher.Invoke(() => LogBox.AppendText(message));
+        }
+
+        private void ClearLogButton_Click(object sender, RoutedEventArgs e)
+        {
+            LogBox.Clear();
+        }
+
+        private void CopyLogButton_Click(object sender, RoutedEventArgs e)
+        {
+            LogBox.SelectAll();
+            LogBox.Copy();
+            //LogBox.Select(0, 0);
+        }
+
+        private void SaveLogButton_Click(object sender, RoutedEventArgs e)
+        {
+            var saveFileDialog = new Microsoft.Win32.SaveFileDialog
+            {
+                Filter = "Text file (*.txt)|*.txt|All files (*.*)|*.*",
+                DefaultExt = "txt",
+                FileName = $"GTR2_Memory_Operations_Tool_Log_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.txt"
+            };
+            if (saveFileDialog.ShowDialog() == true)
+            {
+                System.IO.File.WriteAllText(saveFileDialog.FileName, LogBox.Text);
+            }
+        }
+
+        private void LogFilterSelector_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var selectedItem = LogFilterSelector.SelectedItem as ComboBoxItem;
+            var selectedFormat = selectedItem?.Content as string;
+            if ( selectedFormat == null)
+            {
+                App.Log.AddError("Unexpected condition: Log filter selected but not content");
+                return;
+            }
+            switch (selectedItem?.Content as string )
+            {
+                case "All":
+                    App.Log.LoggingLevel = Log.LogLevel.Debug;
+                    break;
+                case "Debug":
+                    App.Log.LoggingLevel = Log.LogLevel.Debug;
+                    break;
+                case "Info":
+                    App.Log.LoggingLevel = Log.LogLevel.Info;
+                    break;
+                case "Warning":
+                    App.Log.LoggingLevel = Log.LogLevel.Warning;
+                    break;
+                case "Error":
+                    App.Log.LoggingLevel = Log.LogLevel.Error;
+                    break;
+                case "Exception":
+                    App.Log.LoggingLevel = Log.LogLevel.Exception;
+                    break;
+                default:
+                    App.Log.AddError($"Unexpected log filter selected: {selectedFormat}");
+                    break;
+            }
         }
     }
 }
