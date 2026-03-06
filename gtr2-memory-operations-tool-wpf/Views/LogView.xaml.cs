@@ -65,34 +65,34 @@ namespace gtr2_memory_operations_tool_wpf.Views
         private void LogFilterSelector_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var selectedItem = LogFilterSelector.SelectedItem as ComboBoxItem;
-            var selectedFormat = selectedItem?.Content as string;
-            if ( selectedFormat == null)
+            var selectedTag = selectedItem?.Tag as string;
+            if ( selectedTag == null)
             {
                 App.Log.AddError("Unexpected condition: Log filter selected but not content");
                 return;
             }
-            switch (selectedItem?.Content as string )
+            switch ( selectedTag )
             {
-                case "All":
+                //case "All":
+                //    App.Log.LoggingLevel = Log.LogLevel.Debug;
+                //    break;
+                case "debug":
                     App.Log.LoggingLevel = Log.LogLevel.Debug;
                     break;
-                case "Debug":
-                    App.Log.LoggingLevel = Log.LogLevel.Debug;
-                    break;
-                case "Info":
+                case "info":
                     App.Log.LoggingLevel = Log.LogLevel.Info;
                     break;
-                case "Warning":
+                case "warning":
                     App.Log.LoggingLevel = Log.LogLevel.Warning;
                     break;
-                case "Error":
+                case "error":
                     App.Log.LoggingLevel = Log.LogLevel.Error;
                     break;
-                case "Exception":
+                case "exception":
                     App.Log.LoggingLevel = Log.LogLevel.Exception;
                     break;
                 default:
-                    App.Log.AddError($"Unexpected log filter selected: {selectedFormat}");
+                    App.Log.AddError($"Unexpected log filter selected: {selectedTag}");
                     break;
             }
         }

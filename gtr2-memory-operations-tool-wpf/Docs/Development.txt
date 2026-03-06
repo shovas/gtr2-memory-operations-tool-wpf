@@ -7,13 +7,14 @@ Todo
 - Map out all grid data fields in a way that I can dynamically go find them in memory
   - For example, a list of field names and their offsets in memory so that I can loop over the list and grab them all and put them in a list I can then use, update, etc.
 
-- Add buttons to Shared Memory tab:
-  - Filter By Shared Memory Region: Telemetry, Scoring, PitInfo, Extended, HWControl, etc.
-  - On select, read memory again and update key:value table from the region selected
+- Add settings ini logic, use object to hold settings in memory, add a settings tab to the UI to edit them, and save them back to the ini file
+  - Log Level setting
 
 Doing
 
-
+- Add buttons to Shared Memory tab:
+  - Filter By Shared Memory Region: Telemetry, Scoring, PitInfo, Extended, HWControl, etc.
+  - On select, read memory again and update key:value table from the region selected
 
 Done
 

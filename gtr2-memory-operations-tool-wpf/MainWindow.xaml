@@ -18,22 +18,24 @@
         </Grid.ColumnDefinitions>
         <Menu Grid.Row="0" Grid.Column="0" VerticalAlignment="Top" VerticalContentAlignment="Center">
             <MenuItem Header="File">
+                
                 <MenuItem Header="Exit" Click="MenuItem_File_Exit_Click"/>
             </MenuItem>
             <MenuItem Header="Edit"/>
             <MenuItem Header="View"/>
             <MenuItem Header="Tools"/>
-            <MenuItem Header="Actions">
-                <MenuItem Header="Test">
-                    <MenuItem Header="Test Get Process" Click="MenuItem_Actions_Test_TestGetProcess"/>
-                    <MenuItem Header="Test Open Process" Click="MenuItem_Actions_Test_TestOpenProcess" />
-                    <MenuItem Header="Test Read Process"/>
-                    <MenuItem Header="Test Read Process"/>
-                    <MenuItem Header="Test Write Process"/>
-                    <MenuItem Header="Test GTR2 Process" Click="MenuItem_Actions_Test_TestGTR2Process"/>
-                    <Separator/>
-                    <MenuItem Header="Test Shared Memory" Click="MenuItem_Actions_Test_TestSharedMemory"/>
-                </MenuItem>
+            <MenuItem Header="Process">
+                <!--<MenuItem Header="Connect" Click="MenuItem_Process_Connect_Click"/>-->
+                <MenuItem Header="Check" Click="MenuItem_Process_Check_Click"/>
+            </MenuItem>
+            <MenuItem Header="Tests">
+                <MenuItem Header="Test Get Process" Click="MenuItem_Tests_TestGetProcess"/>
+                <MenuItem Header="Test Open Process" Click="MenuItem_Tests_TestOpenProcess" />
+                <MenuItem Header="TODO: Test Read Process"/>
+                <MenuItem Header="TODO: Test Write Process"/>
+                <MenuItem Header="Test GTR2 Process" Click="MenuItem_Tests_TestGTR2Process"/>
+                <Separator/>
+                <MenuItem Header="Test Shared Memory" Click="MenuItem_Tests_TestSharedMemory"/>
             </MenuItem>
             <MenuItem Header="Help">
                 <MenuItem Header="About" Click="MenuItem_Help_About_Click"/>

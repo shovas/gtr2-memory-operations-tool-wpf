@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Reflection;
 using System.Text;
 using System.Windows;
@@ -21,17 +22,20 @@ namespace gtr2_memory_operations_tool_wpf.Views
     /// </summary>
     public partial class SharedMemoryView : UserControl
     {
+        private MappedBuffer<Gtr2Telemetry> TelemetryBuffer;
+        private MappedBuffer<Gtr2Scoring> ScoringBuffer;
+        private MappedBuffer<Gtr2Extended> ExtendedBuffer;
         public ObservableCollection<SharedMemoryItem> SharedMemoryItems { get; set; } = new ObservableCollection<SharedMemoryItem>();
         public SharedMemoryView()
         {
             InitializeComponent();
             DataContext = this;
+            TelemetryBuffer = new MappedBuffer<Gtr2Telemetry>(Gtr2Constants.MM_TELEMETRY_FILE_NAME, false /*partial*/, true /*skipUnchanged*/);
+            ScoringBuffer = new MappedBuffer<Gtr2Scoring>(Gtr2Constants.MM_SCORING_FILE_NAME, true  /*partial*/, true /*skipUnchanged*/);
+            ExtendedBuffer = new MappedBuffer<Gtr2Extended>(Gtr2Constants.MM_EXTENDED_FILE_NAME, false /*partial*/, true /*skipUnchanged*/);
         }
         public void TestGtr2SharedMemory()
         {
-            MappedBuffer<Gtr2Telemetry> telemetryBuffer = new MappedBuffer<Gtr2Telemetry>(Gtr2Constants.MM_TELEMETRY_FILE_NAME, false /*partial*/, true /*skipUnchanged*/);
-            MappedBuffer<Gtr2Scoring> scoringBuffer = new MappedBuffer<Gtr2Scoring>(Gtr2Constants.MM_SCORING_FILE_NAME, true  /*partial*/, true /*skipUnchanged*/);
-            MappedBuffer<Gtr2Extended> extendedBuffer = new MappedBuffer<Gtr2Extended>(Gtr2Constants.MM_EXTENDED_FILE_NAME, false /*partial*/, true /*skipUnchanged*/);
 
             // Marshalled views:
             Gtr2Telemetry telemetry = new Gtr2Telemetry();
@@ -41,13 +45,13 @@ namespace gtr2_memory_operations_tool_wpf.Views
             try
             {
                 // Extended buffer is the last one constructed, so it is an indicator GTR2SM is ready.
-                extendedBuffer.Connect();
-                telemetryBuffer.Connect();
-                scoringBuffer.Connect();
+                ExtendedBuffer.Connect();
+                TelemetryBuffer.Connect();
+                ScoringBuffer.Connect();
 
-                extendedBuffer.GetMappedData(ref extended);
-                scoringBuffer.GetMappedData(ref scoring);
-                telemetryBuffer.GetMappedData(ref telemetry);
+                ExtendedBuffer.GetMappedData(ref extended);
+                ScoringBuffer.GetMappedData(ref scoring);
+                TelemetryBuffer.GetMappedData(ref telemetry);
 
                 App.Log.AddDebug($"Telemetry mVersion: {Utilities.GetStringFromBytes(extended.mVersion)}");
 
@@ -56,9 +60,9 @@ namespace gtr2_memory_operations_tool_wpf.Views
                 {
                     // Skip JsonIgnore fields
                     if (field.GetCustomAttribute<JsonIgnoreAttribute>() != null) continue;
-                    
+
                     object? value = field.GetValue(extended);
-                    if ( value == null) continue;
+                    if (value == null) continue;
                     string displayValue;
 
                     App.Log.AddDebug($"Processing field: {field.Name}, Type: {field.FieldType.Name}, Value: {value}");
@@ -82,14 +86,65 @@ namespace gtr2_memory_operations_tool_wpf.Views
                 App.Log.AddError("Test Failed: Test Shared Memory");
                 try
                 {
-                    extendedBuffer.Disconnect();
-                    telemetryBuffer.Disconnect();
-                    scoringBuffer.Disconnect(); ;
+                    ExtendedBuffer.Disconnect();
+                    TelemetryBuffer.Disconnect();
+                    ScoringBuffer.Disconnect(); ;
                 }
                 catch (Exception)
                 {
                     // Ignore
                 }
+            }
+        }
+
+        private void KeyFilterBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            ICollectionView view = CollectionViewSource.GetDefaultView(SharedMemoryItems);
+            view.Filter = item =>
+            {
+                var sharedMemoryItem = (SharedMemoryItem)item;
+                return sharedMemoryItem.Key.Contains(KeyFilterBox.Text, StringComparison.OrdinalIgnoreCase);
+            };
+            //    = obj => {
+            //    var p = (Person)obj;
+            //    return p.Name
+            //      .Contains(searchBox.Text,
+            //        StringComparison.OrdinalIgnoreCase);
+            //};
+        }
+
+        private void DataFilterSelector_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (DataFilterSelector is null)
+            {
+                return;
+            }
+            if (DataFilterSelector.SelectedItem is null)
+            {
+                return;
+            }
+            ComboBoxItem selectedItem = (ComboBoxItem)DataFilterSelector.SelectedItem;
+            if (selectedItem.Content is null)
+            {
+                return;
+            }
+            if ( selectedItem.Content.ToString() is null)
+            {
+                return; 
+            }
+            string filter = selectedItem.Content.ToString()!;
+            ICollectionView view = CollectionViewSource.GetDefaultView(SharedMemoryItems);
+            if (filter == "All")
+            {
+                view.Filter = null; // Show all items
+            }
+            else
+            {
+                view.Filter = item =>
+                {
+                    var sharedMemoryItem = (SharedMemoryItem)item;
+                    return sharedMemoryItem.Type == filter;
+                };
             }
         }
     }

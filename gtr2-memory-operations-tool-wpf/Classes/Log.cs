@@ -65,6 +65,8 @@ namespace gtr2_memory_operations_tool_wpf
                     return "Warning";
                 case LogLevel.Error:
                     return "Error";
+                case LogLevel.Exception:
+                    return "Exception";
                 default:
                     App.Log.AddError($"Unknown log level: {logLevel}");
                     return "Unspecified";

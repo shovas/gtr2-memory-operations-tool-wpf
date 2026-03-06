@@ -65,7 +65,8 @@ namespace gtr2_memory_operations_tool_wpf
             else
             {
                 App.Log.AddError("GTR2 Process Not Detected");
-                StatusBarItemText.Text = "GTR2 Not Detected";
+                App.Log.AddInfo("Select Process > Check to check for GTR2 process again");
+                //StatusBarItemText.Text = "GTR2 Not Detected";
             }
         }
 
@@ -74,7 +75,7 @@ namespace gtr2_memory_operations_tool_wpf
             Application.Current.Shutdown();
         }
 
-        private void MenuItem_Actions_Test_TestGTR2Process(object sender, RoutedEventArgs e)
+        private void MenuItem_Tests_TestGTR2Process(object sender, RoutedEventArgs e)
         {
             bool success = Gtr2MemOps.TestGtr2Process();
             if (success)
@@ -87,7 +88,7 @@ namespace gtr2_memory_operations_tool_wpf
             }
         }
 
-        private void MenuItem_Actions_Test_TestGetProcess(object sender, RoutedEventArgs e)
+        private void MenuItem_Tests_TestGetProcess(object sender, RoutedEventArgs e)
         {
             bool success = Gtr2MemOps.TestGtr2GetProcess();
             if (success)
@@ -100,7 +101,7 @@ namespace gtr2_memory_operations_tool_wpf
             }
         }
 
-        private void MenuItem_Actions_Test_TestOpenProcess(object sender, RoutedEventArgs e)
+        private void MenuItem_Tests_TestOpenProcess(object sender, RoutedEventArgs e)
         {
             bool success = Gtr2MemOps.TestGtr2OpenProcess();
             if (success)
@@ -123,7 +124,7 @@ namespace gtr2_memory_operations_tool_wpf
 
         }
 
-        private async void MenuItem_Actions_Test_TestSharedMemory(object sender, RoutedEventArgs e)
+        private async void MenuItem_Tests_TestSharedMemory(object sender, RoutedEventArgs e)
         {
             // Activate Shared Memory tab so user can see the results of the test there
             MainTabControl.SelectedItem = SharedMemoryTab;
@@ -136,6 +137,16 @@ namespace gtr2_memory_operations_tool_wpf
         private void MenuItem_Help_SupportMyWork_Click(object sender, RoutedEventArgs e)
         {
             Process.Start(new ProcessStartInfo("https://www.simwiki.net/wiki/Help_Support_Simwiki") { UseShellExecute = true });
+        }
+
+        private void MenuItem_Process_Connect_Click(object sender, RoutedEventArgs e)
+        {
+            CheckGtr2Process();
+        }
+
+        private void MenuItem_Process_Check_Click(object sender, RoutedEventArgs e)
+        {
+            CheckGtr2Process();
         }
     }
 }

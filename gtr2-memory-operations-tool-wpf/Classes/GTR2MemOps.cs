@@ -142,7 +142,7 @@ namespace gtr2_memory_operations_tool_wpf
                 gtr2ProcessPointer = OpenProcessForReadWrite(gtr2Process);
                 if (gtr2ProcessPointer == null || gtr2ProcessPointer == nint.Zero)
                 {
-                    throw new Exception("Error: Failed opening GTR2 process.");
+                    throw new Exception("Failed opening GTR2 process.");
                 }
                 //gtr2ProcessPointer = gtr2TempProcessPointer.Value;
                 App.Log.AddDebug("Opened process");
@@ -269,7 +269,7 @@ namespace gtr2_memory_operations_tool_wpf
                     }
                     //nint slotAddr = nint.Add(curSlotAddr, slotStep);
                     //if (!IsAddressValid(hProc, slotAddr))
-                    //    throw new Exception("Error: Invalid slot address detected");
+                    //    throw new Exception("Invalid slot address detected");
 
                     // Increment slot address
                     curSlotAddr = nint.Add(curSlotAddr, slotStep);
@@ -449,20 +449,22 @@ namespace gtr2_memory_operations_tool_wpf
 
         public bool IsGtr2ProcessRunning()
         {
+            Process? gtr2Process;
             try
             {
-                Process? gtr2Process = GetProcessByName(GTR2_PROCESS_NAME);
-                if (gtr2Process is null)
-                {
-                    throw new Exception("Failed finding GTR2 process.");
-                }
-                App.Log.AddDebug($"Found gtr2.exe (PID {gtr2Process.Id})");
+                gtr2Process = GetProcessByName(GTR2_PROCESS_NAME);
             }
             catch (Exception ex)
             {
                 App.Log.AddException(ex);
                 return false;
             }
+            if ( gtr2Process is null )
+            {
+                App.Log.AddDebug($"Failed finding GTR2 process");
+                return false;
+            }
+            App.Log.AddDebug($"Found gtr2.exe (PID {gtr2Process!.Id})");
             return true;
         }
 
@@ -476,19 +478,19 @@ namespace gtr2_memory_operations_tool_wpf
             Process[] gtr2Processes = Process.GetProcessesByName(processName);
             if (gtr2Processes.Length == 0)
             {
-                App.Log.AddError($"Process \"{processName}\" is not running.");
+                App.Log.AddDebug($"Process \"{processName}\" is not running.");
                 return null;
             }
             else if (gtr2Processes.Length > 1)
             {
-                App.Log.AddError($"Multiple \"{processName}\" processes found. Aborting.");
+                App.Log.AddDebug($"Multiple \"{processName}\" processes found. Aborting.");
                 return null;
             }
             // Exactly one process found
             Process gtr2Process = gtr2Processes[0];
             if (gtr2Process == null) // This shouldn't even be necessary but whatever
             {
-                App.Log.AddError("Unexpected condition: Process \"{gtr2ProcessName}\" found but invalid (null).");
+                App.Log.AddDebug("Unexpected condition: Process \"{gtr2ProcessName}\" found but invalid (null).");
                 return null;
             }
             return gtr2Process;
