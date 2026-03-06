@@ -55,29 +55,60 @@ namespace gtr2_memory_operations_tool_wpf.Views
 
                 App.Log.AddDebug($"Telemetry mVersion: {Utilities.GetStringFromBytes(extended.mVersion)}");
 
+                // For debugging, log all fields and values of the structs
                 SharedMemoryItems.Clear();
-                foreach (FieldInfo field in typeof(Gtr2Extended).GetFields(BindingFlags.Public | BindingFlags.Instance))
+                var structsList = new List<IGtr2Struct> { telemetry, scoring, extended };
+                foreach ( var structItem in structsList)
                 {
-                    // Skip JsonIgnore fields
-                    if (field.GetCustomAttribute<JsonIgnoreAttribute>() != null) continue;
+                    string structName = structItem.GetType().Name;
+                    App.Log.AddDebug($"Struct: {structName}");
+                    foreach (FieldInfo field in structItem.GetType().GetFields(BindingFlags.Public | BindingFlags.Instance))
+                    {
+                        // Skip JsonIgnore fields
+                        if (field.GetCustomAttribute<JsonIgnoreAttribute>() != null) continue;
 
-                    object? value = field.GetValue(extended);
-                    if (value == null) continue;
-                    string displayValue;
+                        object? value = field.GetValue(structItem);
+                        if (value == null) continue;
+                        string displayValue;
 
-                    App.Log.AddDebug($"Processing field: {field.Name}, Type: {field.FieldType.Name}, Value: {value}");
+                        App.Log.AddDebug($"Processing field: {field.Name}, Type: {field.FieldType.Name}, Value: {value}");
 
-                    if (field.FieldType == typeof(byte[]))
-                        displayValue = Encoding.UTF8.GetString((byte[])value).TrimEnd('\0');
-                    else if (field.FieldType.IsArray)
-                        displayValue = $"[Array: {field.FieldType.GetElementType()?.Name}]"; // skip or handle separately
-                    else if (field.FieldType.IsValueType && !field.FieldType.IsPrimitive && field.FieldType.IsLayoutSequential)
-                        displayValue = $"[Struct: {field.FieldType.Name}]"; // nested struct
-                    else
-                        displayValue = value?.ToString() ?? "null";
+                        if (field.FieldType == typeof(byte[]))
+                            displayValue = Encoding.UTF8.GetString((byte[])value).TrimEnd('\0');
+                        else if (field.FieldType.IsArray)
+                            displayValue = $"[Array: {field.FieldType.GetElementType()?.Name}]"; // skip or handle separately
+                        else if (field.FieldType.IsValueType && !field.FieldType.IsPrimitive && field.FieldType.IsLayoutSequential)
+                            displayValue = $"[Struct: {field.FieldType.Name}]"; // nested struct
+                        else
+                            displayValue = value?.ToString() ?? "null";
 
-                    SharedMemoryItems.Add(new SharedMemoryItem(field.Name, displayValue, field.FieldType.Name));
+                        SharedMemoryItems.Add(new SharedMemoryItem(structName, field.Name, displayValue, field.FieldType.Name));
+                    }
                 }
+ //SharedMemoryItems.Clear();
+                //foreach (FieldInfo field in typeof(Gtr2Extended).GetFields(BindingFlags.Public | BindingFlags.Instance))
+                //{
+                //    // Skip JsonIgnore fields
+                //    if (field.GetCustomAttribute<JsonIgnoreAttribute>() != null) continue;
+
+                //    object? value = field.GetValue(extended);
+                //    if (value == null) continue;
+                //    string displayValue;
+
+                //    App.Log.AddDebug($"Processing field: {field.Name}, Type: {field.FieldType.Name}, Value: {value}");
+
+                //    if (field.FieldType == typeof(byte[]))
+                //        displayValue = Encoding.UTF8.GetString((byte[])value).TrimEnd('\0');
+                //    else if (field.FieldType.IsArray)
+                //        displayValue = $"[Array: {field.FieldType.GetElementType()?.Name}]"; // skip or handle separately
+                //    else if (field.FieldType.IsValueType && !field.FieldType.IsPrimitive && field.FieldType.IsLayoutSequential)
+                //        displayValue = $"[Struct: {field.FieldType.Name}]"; // nested struct
+                //    else
+                //        displayValue = value?.ToString() ?? "null";
+
+                //    SharedMemoryItems.Add(new SharedMemoryItem(field.Name, displayValue, field.FieldType.Name));
+                //}
+               
 
                 App.Log.AddInfo("Test Pass: Test Shared Memory");
             }
@@ -132,7 +163,7 @@ namespace gtr2_memory_operations_tool_wpf.Views
             {
                 return; 
             }
-            string filter = selectedItem.Content.ToString()!;
+            string filter = selectedItem.Tag.ToString()!;
             ICollectionView view = CollectionViewSource.GetDefaultView(SharedMemoryItems);
             if (filter == "All")
             {
@@ -143,7 +174,7 @@ namespace gtr2_memory_operations_tool_wpf.Views
                 view.Filter = item =>
                 {
                     var sharedMemoryItem = (SharedMemoryItem)item;
-                    return sharedMemoryItem.Type == filter;
+                    return sharedMemoryItem.StructName == filter;
                 };
             }
         }

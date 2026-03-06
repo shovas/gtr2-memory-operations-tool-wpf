@@ -20,11 +20,13 @@ using System.Xml.Serialization;
 
   namespace gtr2_memory_operations_tool_wpf
 {
+    public interface IGtr2Struct { }
+
     ////////////////////////////////////////////////////////////////////////////
     // DIFFERENCE FROM CC: in CC, GTR2 reuses rF2 Version Blocks.
     ////////////////////////////////////////////////////////////////////////////
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 4)]
-    public struct Gtr2MappedBufferVersionBlock
+    public struct Gtr2MappedBufferVersionBlock : IGtr2Struct
     {
       // If both version variables are equal, buffer is not being written to, or we're extremely unlucky and second check is necessary.
       // If versions don't match, buffer is being written to, or is incomplete (game crash, or missed transition).
@@ -34,7 +36,7 @@ using System.Xml.Serialization;
 
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 4)]
-    public struct Gtr2MappedBufferVersionBlockWithSize
+    public struct Gtr2MappedBufferVersionBlockWithSize : IGtr2Struct
     {
       [JsonIgnore] public uint mVersionUpdateBegin;                             // Incremented right before buffer is written to.
       [JsonIgnore] public uint mVersionUpdateEnd;                               // Incremented after buffer write is done.
@@ -44,7 +46,7 @@ using System.Xml.Serialization;
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 4)]
-    public struct Gtr2Vec3
+    public struct Gtr2Vec3 : IGtr2Struct
     {
       public float x, y, z;
     }
@@ -53,7 +55,7 @@ using System.Xml.Serialization;
     // Based on TelemWheelV2
     ////////////////////////////////////
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 4)]
-    public struct Gtr2Wheel
+    public struct Gtr2Wheel : IGtr2Struct
     {
       [JsonIgnore] public float mRotation;             // radians/sec
       [JsonIgnore] public float mSuspensionDeflection; // meters
@@ -81,7 +83,7 @@ using System.Xml.Serialization;
     // Identical to TelemInfoV2, except where noted by MM_NEW/MM_NOT_USED comments.
     //////////////////////////////////////////////////////////////////////////////////////////
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 4)]
-    public struct Gtr2VehicleTelemetry
+    public struct Gtr2VehicleTelemetry : IGtr2Struct
     {
       // Time
       public float mDeltaTime;                                    // time since last update (seconds)
@@ -146,7 +148,7 @@ using System.Xml.Serialization;
     // Identical to ScoringInfoV2, except where noted by MM_NEW/MM_NOT_USED comments.
     //////////////////////////////////////////////////////////////////////////////////////////
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 4)]
-    public struct Gtr2ScoringInfo
+    public struct Gtr2ScoringInfo : IGtr2Struct
     {
       [MarshalAsAttribute(UnmanagedType.ByValArray, SizeConst = 64)]
       public byte[] mTrackName;                                    // current track name
@@ -222,7 +224,7 @@ using System.Xml.Serialization;
     // Identical to VehicleScoringInfoV2, except where noted by MM_NEW/MM_NOT_USED comments.
     //////////////////////////////////////////////////////////////////////////////////////////
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 4)]
-    public struct Gtr2VehicleScoring
+    public struct Gtr2VehicleScoring : IGtr2Struct
     {
       [MarshalAsAttribute(UnmanagedType.ByValArray, SizeConst = 32)]
       public byte[] mDriverName;                                   // driver name
@@ -282,8 +284,9 @@ using System.Xml.Serialization;
     ///////////////////////////////////////////
     // Mapped wrapper structures
     ///////////////////////////////////////////
+
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 4)]
-    public struct Gtr2Telemetry
+    public struct Gtr2Telemetry : IGtr2Struct
     {
       [JsonIgnore] public uint mVersionUpdateBegin;                             // Incremented right before buffer is written to.
       [JsonIgnore] public uint mVersionUpdateEnd;                               // Incremented after buffer write is done.
@@ -292,7 +295,7 @@ using System.Xml.Serialization;
     }
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 4)]
-    public struct Gtr2Scoring
+    public struct Gtr2Scoring : IGtr2Struct
     {
       [JsonIgnore] public uint mVersionUpdateBegin;                             // Incremented right before buffer is written to.
       [JsonIgnore] public uint mVersionUpdateEnd;                               // Incremented after buffer write is done.
@@ -308,7 +311,7 @@ using System.Xml.Serialization;
 
 
     [StructLayout(LayoutKind.Sequential, Pack = 4)]
-    public struct Gtr2TrackedDamage
+    public struct Gtr2TrackedDamage : IGtr2Struct
     {
       public float mMaxImpactMagnitude;                           // Max impact magnitude.  Tracked on every telemetry update, and reset on visit to pits or Session restart.
       public float mAccumulatedImpactMagnitude;                   // Accumulated impact magnitude.  Tracked on every telemetry update, and reset on visit to pits or Session restart.
@@ -316,7 +319,7 @@ using System.Xml.Serialization;
 
 
     [StructLayout(LayoutKind.Sequential, Pack = 4)]
-    public struct Gtr2ExtendedBaseWheel
+    public struct Gtr2ExtendedBaseWheel : IGtr2Struct
     {
       [JsonIgnore] public float mWear;
       [JsonIgnore] public byte mFlat;
@@ -328,7 +331,7 @@ using System.Xml.Serialization;
 
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 4)]
-    public struct Gtr2ExtendedVehicleScoring
+    public struct Gtr2ExtendedVehicleScoring : IGtr2Struct
     {
       public int mPitState;
       // LIMITATION: Currently, this is the rear compound only.  Reason: atm front compound for AI is not known.  Perhaps it
@@ -388,7 +391,7 @@ using System.Xml.Serialization;
 
 
     [StructLayout(LayoutKind.Sequential, Pack = 4)]
-    public struct Gtr2VehScoringCapture
+    public struct Gtr2VehScoringCapture : IGtr2Struct
     {
       // VehicleScoringInfoV2 members:
       public int mID;                                              // slot ID (note that it can be re-used in multiplayer after someone leaves)
@@ -399,7 +402,7 @@ using System.Xml.Serialization;
 
 
     [StructLayout(LayoutKind.Sequential, Pack = 4)]
-    public struct Gtr2SessionTransitionCapture
+    public struct Gtr2SessionTransitionCapture : IGtr2Struct
     {
       // ScoringInfoV2 members:
       [JsonIgnore] public byte mGamePhase;
@@ -413,7 +416,7 @@ using System.Xml.Serialization;
 
 
     [StructLayout(LayoutKind.Sequential, Pack = 4)]
-    public struct Gtr2ExtendedWheel
+    public struct Gtr2ExtendedWheel : IGtr2Struct
     {
       public float mFlatSpotSeverity;
       public float mDirtPickupSeverity;
@@ -429,7 +432,7 @@ using System.Xml.Serialization;
 
 
     [StructLayout(LayoutKind.Sequential, Pack = 4)]
-    public struct Gtr2TimeGap
+    public struct Gtr2TimeGap : IGtr2Struct
     {
       public float mTimeDifference;
       public int mLapsDifference;
@@ -438,7 +441,7 @@ using System.Xml.Serialization;
 
 
     [StructLayout(LayoutKind.Sequential, Pack = 4)]
-    public struct Gtr2SafetyCar
+    public struct Gtr2SafetyCar : IGtr2Struct
     {
       public float mLapDist;
       public Gtr2Vec3 mPos;
@@ -451,7 +454,7 @@ using System.Xml.Serialization;
 
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 4)]
-    public struct Gtr2Extended
+    public struct Gtr2Extended : IGtr2Struct
     {
       [JsonIgnore] public uint mVersionUpdateBegin;                             // Incremented right before buffer is written to.
       [JsonIgnore] public uint mVersionUpdateEnd;                               // Incremented after buffer write is done.

@@ -20,10 +20,10 @@
                 <TextBox x:Name="KeyFilterBox" Width="150" VerticalAlignment="center" VerticalContentAlignment="center" HorizontalAlignment="center" HorizontalContentAlignment="Left" Height="20" Margin="5,5,5,5" Padding="5,0,5,0" TextChanged="KeyFilterBox_TextChanged"/>
                 <TextBlock Text="Data:" VerticalAlignment="center" Margin="5,5,5,5" FontSize="14"/>
                 <ComboBox x:Name="DataFilterSelector" Width="150" SelectionChanged="DataFilterSelector_SelectionChanged" VerticalAlignment="center" VerticalContentAlignment="center" HorizontalAlignment="center" HorizontalContentAlignment="Left" Height="20" Margin="5,5,5,5" Padding="5,0,5,0">
-                    <ComboBoxItem Content="All" IsSelected="true"/>
-                    <ComboBoxItem Content="Extended"/>
-                    <ComboBoxItem Content="Scoring"/>
-                    <ComboBoxItem Content="Telemetry"/>
+                    <ComboBoxItem Content="All" Tag="All" IsSelected="true"/>
+                    <ComboBoxItem Content="Extended" Tag="Gtr2Extended"/>
+                    <ComboBoxItem Content="Scoring" Tag="Gtr2Scoring"/>
+                    <ComboBoxItem Content="Telemetry" Tag="Gtr2Telemetry"/>
                 </ComboBox>
             </StackPanel>
         </Grid>
