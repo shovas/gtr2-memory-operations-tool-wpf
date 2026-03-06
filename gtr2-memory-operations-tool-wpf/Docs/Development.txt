@@ -4,7 +4,12 @@ DEVELOPMENT
 
 Todo
 
+- Map out all grid data fields in a way that I can dynamically go find them in memory
+  - For example, a list of field names and their offsets in memory so that I can loop over the list and grab them all and put them in a list I can then use, update, etc.
 
+- Add buttons to Shared Memory tab:
+  - Filter By Shared Memory Region: Telemetry, Scoring, PitInfo, Extended, HWControl, etc.
+  - On select, read memory again and update key:value table from the region selected
 
 Doing
 
@@ -21,6 +26,12 @@ Done
 - Added log levels: Debug, Info, Warning, Error, Exception. Will add log filtering by level later.
 
 - Add Help > Suppory My Work menu item with link to SimWiki support page
+
+- Port CCGEP Monitor's shared memory reading logic to the new WPF app
+  - Displayed as new Shared Memory tab
+  - Menu item added to test shared memory
+  - Running shared memory test populates Shared Memory tab with a key:value table
+  - Hardwired to show Extended region data for now
 
 - Show a StatusBar welcome message for a few seconds and then indicate ready
 

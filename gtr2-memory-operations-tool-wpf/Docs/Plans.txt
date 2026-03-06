@@ -2,22 +2,7 @@
 
 PLANS
 
-
-
-- Map out all grid data fields in a way that I can dynamically go find them in memory
-  - For example, a list of field names and their offsets in memory so that I can loop over the list and grab them all and put them in a list I can then use, update, etc.
-
-- Helpers for memory writing. Already have WriteFloat().
-
 - Review Cheat Engine for its use in exploring GTR2 memory and enabling ways to discover where values are in memory
-
-- Add CCGEP Monitor's shared memory reading logic
-  - Add a GUI tab to display the various views (GTR2Data.cs):
-      MM_TELEMETRY_FILE_NAME = "$GTR2CrewChief_Telemetry$";
-      MM_SCORING_FILE_NAME = "$GTR2CrewChief_Scoring$";
-      MM_PITINFO_FILE_NAME = "$GTR2CrewChief_PitInfo$";
-      MM_EXTENDED_FILE_NAME = "$GTR2CrewChief_Extended$";
-      MM_HWCONTROL_FILE_NAME = "$GTR2CrewChief_HWControl$";
 
 - Compare CCGEP Monitor's logic with T-Shirt's python scripts. See if there's any valuable differences.
 
