@@ -2,6 +2,9 @@
 
 PLANS
 
+- Add settings ini logic, use object to hold settings in memory, add a settings tab to the UI to edit them, and save them back to the ini file
+  - Log Level setting
+
 - Review Cheat Engine for its use in exploring GTR2 memory and enabling ways to discover where values are in memory
 
 - Compare CCGEP Monitor's logic with T-Shirt's python scripts. See if there's any valuable differences.

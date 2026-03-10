@@ -49,7 +49,7 @@ namespace gtr2_memory_operations_tool_wpf
         private const int GTR2_MEMORY_CAR_FILEPATH_LENGTH = 128; // Byte length of CarFilePath string in memory
 
         // GTR2 memory strings are encoded in Windows-1252 encoding (a common single-byte encoding that can represent standard ASCII characters and some additional characters used in Western European languages). This is important to know when reading/writing string data to ensure correct encoding/decoding.
-        private const int GTR2_ENCODING_CODEPAGE = 1252; // GTR2 uses Windows-1252 encoding for strings
+        public const int GTR2_ENCODING_CODEPAGE = 1252; // GTR2 uses Windows-1252 encoding for strings
 
         [StructLayout(LayoutKind.Sequential)]
         private struct MEMORY_BASIC_INFORMATION

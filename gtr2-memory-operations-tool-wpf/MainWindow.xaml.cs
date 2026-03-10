@@ -127,11 +127,12 @@ namespace gtr2_memory_operations_tool_wpf
         private async void MenuItem_Tests_TestSharedMemory(object sender, RoutedEventArgs e)
         {
             // Activate Shared Memory tab so user can see the results of the test there
-            MainTabControl.SelectedItem = SharedMemoryTab;
+            //MainTabControl.SelectedItem = SharedMemoryTab;
             //MainTabControl.UpdateLayout(); // Ensure the UI updates before running the test
-            await Task.Yield();
+            await Task.Yield(); // Allow the UI to update before running the test when auto-selecting the tab
             SharedMemoryView.TestGtr2SharedMemory();
-            
+            App.Log.AddInfo("Test Completed: View the results in the Shared Memory tab");
+
         }
 
         private void MenuItem_Help_SupportMyWork_Click(object sender, RoutedEventArgs e)

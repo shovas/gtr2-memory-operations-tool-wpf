@@ -58,6 +58,9 @@
             <TabItem x:Name="ProgramMemoryTab" Header="Program Memory">
                 <views:ProgramMemoryView x:Name="ProgramMemoryView"/>
             </TabItem>
+            <TabItem x:Name="SettingsTab" Header="Settings">
+                <views:SettingsView x:Name="SettingsView"/>
+            </TabItem>
         </TabControl>
         <StatusBar x:Name="StatusBar" Grid.Row="2" Grid.Column="0">
             <StatusBarItem x:Name="StatusBarItem" Height="22">

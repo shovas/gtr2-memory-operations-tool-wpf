@@ -24,8 +24,15 @@ namespace gtr2_memory_operations_tool_wpf.Views
         public LogView()
         {
             InitializeComponent();
+            LogBox.TextChanged += LogBox_TextChanged;
             App.Log.EntryAdded += OnEntryAdded;
-            //LogBox.AppendText("GTR2 Memory Operations Tool Log\n");
+        }
+        private void LogBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if ( LogBox.IsFocused ) { // Auto-scrolling when the user is interacting with the control would be annoying
+                return;
+            }
+            LogBox.ScrollToEnd();
         }
         private void OnEntryAdded(string message, Log.LogLevel loggingLevel)
         {
