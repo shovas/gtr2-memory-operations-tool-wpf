@@ -13,7 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace gtr2_memory_operations_tool_wpf.Views
+namespace Gtr2MemOpsTool.Views
 {
     /// <summary>
     /// Interaction logic for HomeView.xaml

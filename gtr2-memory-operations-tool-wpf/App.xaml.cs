@@ -6,7 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 
-namespace gtr2_memory_operations_tool_wpf
+namespace Gtr2MemOpsTool
 {
     /// <summary>
     /// Interaction logic for App.xaml

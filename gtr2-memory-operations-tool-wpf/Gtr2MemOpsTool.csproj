@@ -1,10 +1,10 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0-windows7.0</TargetFramework>
     <UseWPF>true</UseWPF>
-    <RootNamespace>gtr2_memory_operations_tool_wpf</RootNamespace>
+    <RootNamespace>Gtr2MemOpsTool</RootNamespace>
     <AssemblyName>gtr2-memory-operations-tool-wpf</AssemblyName>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>

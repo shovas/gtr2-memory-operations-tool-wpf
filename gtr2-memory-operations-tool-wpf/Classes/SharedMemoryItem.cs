@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace gtr2_memory_operations_tool_wpf
+namespace Gtr2MemOpsTool
 {
     public class SharedMemoryItem
     {

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace gtr2_memory_operations_tool_wpf
+namespace Gtr2MemOpsTool
 {
     public class SlotData
     {

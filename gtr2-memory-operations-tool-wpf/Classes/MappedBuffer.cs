@@ -15,7 +15,7 @@ using System.IO.MemoryMappedFiles;
 using System.Runtime.InteropServices;
 using System.Threading;
 
-namespace gtr2_memory_operations_tool_wpf
+namespace Gtr2MemOpsTool
 {
     public class MappedBuffer<MappedBufferT>
     {

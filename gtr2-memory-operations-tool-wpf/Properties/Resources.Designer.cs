@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace gtr2_memory_operations_tool_wpf.Properties {
+namespace Gtr2MemOpsTool.Properties {
     using System;
     
     

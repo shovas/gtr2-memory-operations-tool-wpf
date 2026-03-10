@@ -18,7 +18,7 @@ using System.Xml.Serialization;
 
 
 
-  namespace gtr2_memory_operations_tool_wpf
+  namespace Gtr2MemOpsTool
 {
     public interface IGtr2Struct { }
 

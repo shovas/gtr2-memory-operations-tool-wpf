@@ -17,7 +17,7 @@ using System.Windows.Shapes;
 using System.Windows.Threading;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
-namespace gtr2_memory_operations_tool_wpf
+namespace Gtr2MemOpsTool
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
