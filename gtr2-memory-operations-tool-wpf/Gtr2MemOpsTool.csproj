@@ -5,7 +5,7 @@
     <TargetFramework>net10.0-windows7.0</TargetFramework>
     <UseWPF>true</UseWPF>
     <RootNamespace>Gtr2MemOpsTool</RootNamespace>
-    <AssemblyName>gtr2-memory-operations-tool-wpf</AssemblyName>
+    <AssemblyName>Gtr2MemOpsTool</AssemblyName>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>12</LangVersion>
