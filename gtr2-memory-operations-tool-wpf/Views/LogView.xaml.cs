@@ -25,7 +25,7 @@ namespace Gtr2MemOpsTool.Views
         {
             InitializeComponent();
             LogBox.TextChanged += LogBox_TextChanged;
-            App.Log.EntryAdded += OnEntryAdded;
+            App.LogObj.EntryAdded += OnEntryAdded;
         }
         private void LogBox_TextChanged(object sender, TextChangedEventArgs e)
         {

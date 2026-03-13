@@ -6,6 +6,7 @@ namespace Gtr2MemOpsTool
 {
     public class SharedMemoryItem
     {
+        public int Index { get; set; } = -1;
         public string StructName { get; set; } = "";
         public string Key { get; set; } = "";
         public string Value { get; set; } = "";

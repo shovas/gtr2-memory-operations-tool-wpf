@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.DirectoryServices;
 using System.Linq;
 using System.Text;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -25,12 +26,67 @@ namespace Gtr2MemOpsTool
     public partial class MainWindow : Window
     {
         private Gtr2MemOps Gtr2MemOps { get; set; } = new Gtr2MemOps();
+
+        public static Log.LogLevel LoggingLevel { get; set; } = Gtr2MemOpsTool.Log.LogLevel.Debug;
+        //public static Log LogObj { get; } = new Gtr2MemOpsTool.Log(Gtr2MemOpsTool.Log.LogLevel.Debug);
+        //public static AsyncBatchLogger Log { get; private set; } = null!;
+
+        //public static AsyncBatchLogger Log = new AsyncBatchLogger();
+        private readonly Channel<LogItem> _channel = Channel.CreateUnbounded<LogItem>();
+        private CancellationTokenSource? _cts;
+
         public MainWindow()
         {
             InitializeComponent();
             
             InitializeGtr2MemoryOperationsTool();
 
+        }
+
+        protected override void OnInitialized(EventArgs e)
+        {
+            base.OnInitialized(e);
+            Debug.WriteLine("MainWindow initialized");
+
+            Debug.WriteLine("Application starting...");
+            Log.LogLevel loggingLevel = Gtr2MemOpsTool.Log.LogLevel.Debug;
+            App.Log = new AsyncBatchLogger(_channel, loggingLevel);
+            _cts = new CancellationTokenSource();
+            _ = StartLogConsumerAsync(_cts.Token);
+            App.Log.AddDebug("AsyncBatchLogger: Application started");
+        }
+
+        //protected override void OnExit(ExitEventArgs e)
+        //{
+        //    _cts!.Cancel();
+        //    base.OnExit(e);
+        //}
+
+        private async Task StartLogConsumerAsync(CancellationToken ct)
+        {
+            Int32 taskDelay = 1000;
+            var buffer = new List<LogItem>();
+
+            while (!ct.IsCancellationRequested)
+            {
+                // Wait for at least one item
+                await _channel.Reader.WaitToReadAsync(ct);
+
+                // Drain everything available right now (the batch)
+                while (_channel.Reader.TryRead(out var logItem))
+                    buffer.Add(logItem);
+
+                // Marshal batch to UI thread
+                await Application.Current.Dispatcher.InvokeAsync(() =>
+                {
+                    foreach (var logItem in buffer)
+                        App.LogObj.Add(logItem.Message, logItem.LogLevel);
+                });
+
+                //buffer.Clear();
+                buffer = new List<LogItem>();
+                await Task.Delay(taskDelay, ct);
+            }
         }
 
         private void InitializeGtr2MemoryOperationsTool()
@@ -44,7 +100,7 @@ namespace Gtr2MemOpsTool
         {
             // Show a Welcome message on the StatusBar
             StatusBarItemText.Text = "GTR2 Memory Operations Tool Loaded";
-            int timerTime = 5;
+            int timerTime = 1;
             var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(timerTime) };
             timer.Tick += (s, e) =>
             {

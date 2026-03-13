@@ -11,9 +11,13 @@ Todo
 
 - Add Copy ability for Log tab ListView cells
 
+- Deal with non-error/non-warning VS messages. Good learning experience.
+
 Doing
 
 - Display nested structs in Shared Memory as key/value pairs
+  - Get UI updates out of non-UI code (ie. non-xaml cs): eg. App.Log calls
+  - Chunk GetGtr2SharedMemoryItems() onto background thread so that I can update the UI incrementally
 
 Done
 
