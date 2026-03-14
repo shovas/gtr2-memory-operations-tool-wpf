@@ -20,7 +20,7 @@ namespace Gtr2MemOpsTool
         public static Log LogObj { get; } = new Gtr2MemOpsTool.Log(Gtr2MemOpsTool.Log.LogLevel.Debug);
         ////public static AsyncBatchLogger Log { get; private set; } = null!;
 
-        public static AsyncBatchLogger Log = new AsyncBatchLogger();
+        public static AsyncBatchLogger Log = new AsyncBatchLogger(Gtr2MemOpsTool.Log.LogLevel.Debug);
         //private readonly Channel<LogItem> _channel = Channel.CreateUnbounded<LogItem>();
         //private CancellationTokenSource? _cts;
 
@@ -33,7 +33,7 @@ namespace Gtr2MemOpsTool
         //protected override void OnStartup(StartupEventArgs e)
         //{
         //    base.OnStartup(e);
-        //    Debug.WriteLine("Application starting...");
+        //    Debug.WriteLine("Application starting..."); // Argh. Debug.WriteLine is a synchronous blocking call and ridiculously slow. It freezes the UI. Don't use it.
         //    Log.LogLevel loggingLevel = Gtr2MemOpsTool.Log.LogLevel.Debug;
         //    Log = new AsyncBatchLogger(_channel, loggingLevel);
         //    _cts = new CancellationTokenSource();

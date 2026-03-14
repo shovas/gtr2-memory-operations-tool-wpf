@@ -8,18 +8,14 @@ namespace Gtr2MemOpsTool
 {
     public class AsyncBatchLogger
     {
-        private readonly Channel<LogItem> _channel;
+        // Using a Channel to implement an async logging system that batches log entries and updates the UI at regular intervals without blocking the main thread.
+        private readonly Channel<LogItem> _channel = Channel.CreateUnbounded<LogItem>();
+        public ChannelReader<LogItem> Reader => _channel.Reader; // Expose the reader to allow the MainWindow to consume log items without exposing the writer, ensuring encapsulation and thread safety.
 
-        public Log.LogLevel LoggingLevel { get; set; }
+        public Log.LogLevel LoggingLevel { get; set; } = Gtr2MemOpsTool.Log.LogLevel.Debug;
 
-        public AsyncBatchLogger() // Fake constructor for App.xaml.cs, will be replaced in OnStartup
+        public AsyncBatchLogger(Log.LogLevel loggingLevel)
         {
-            _channel = Channel.CreateUnbounded<LogItem>();
-            LoggingLevel = Gtr2MemOpsTool.Log.LogLevel.Debug;
-        }   
-        public AsyncBatchLogger(Channel<LogItem> channel, Log.LogLevel loggingLevel)
-        {
-            _channel = channel;
             LoggingLevel = loggingLevel;
         }
 
@@ -32,7 +28,7 @@ namespace Gtr2MemOpsTool
         public void Add(string message, Gtr2MemOpsTool.Log.LogLevel loggingLevel)
         {
             // Only for console apps I guess: Console.WriteLine(message);
-            Debug.WriteLine(message);
+            //Debug.WriteLine(message); // Argh. Debug.WriteLine is a synchronous blocking call and ridiculously slow. It freezes the UI. Don't use it.
             LogItem logItem = new LogItem(message, loggingLevel);
             _channel.Writer.TryWrite(logItem);
         }

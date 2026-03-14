@@ -24,7 +24,7 @@ namespace Gtr2MemOpsTool
         public void Add(string message, LogLevel level)
         {
             // Only for console apps I guess: Console.WriteLine(message);
-            Debug.WriteLine(message);
+            //Debug.WriteLine(message); // Argh. Debug.WriteLine is a synchronous blocking call and ridiculously slow. It freezes the UI. Don't use it.
             var logLevelLabel = GetLogLevelLabel(level);
             message = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] [{logLevelLabel}] {message}\n";
             EntryAdded?.Invoke(message, level);

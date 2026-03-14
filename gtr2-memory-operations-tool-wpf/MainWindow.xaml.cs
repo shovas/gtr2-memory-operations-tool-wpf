@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.DirectoryServices;
 using System.Linq;
 using System.Text;
@@ -25,15 +26,12 @@ namespace Gtr2MemOpsTool
     /// </summary>
     public partial class MainWindow : Window
     {
+        // Gtr2MemOps instance to handle all memory operations related to GTR2, ensuring a single point of access and consistent state management across the application.
         private Gtr2MemOps Gtr2MemOps { get; set; } = new Gtr2MemOps();
 
-        public static Log.LogLevel LoggingLevel { get; set; } = Gtr2MemOpsTool.Log.LogLevel.Debug;
-        //public static Log LogObj { get; } = new Gtr2MemOpsTool.Log(Gtr2MemOpsTool.Log.LogLevel.Debug);
-        //public static AsyncBatchLogger Log { get; private set; } = null!;
-
-        //public static AsyncBatchLogger Log = new AsyncBatchLogger();
-        private readonly Channel<LogItem> _channel = Channel.CreateUnbounded<LogItem>();
-        private CancellationTokenSource? _cts;
+        
+        // CancellationTokenSource to signal the log consumer task to stop when the application is closing
+        private CancellationTokenSource _cts = new CancellationTokenSource();
 
         public MainWindow()
         {
@@ -43,37 +41,39 @@ namespace Gtr2MemOpsTool
 
         }
 
+        /// <summary>
+        /// Note: OnInitialized is called after the window is created but before it's rendered. It's a good place to start background tasks that will update the UI.
+        /// </summary>
+        /// <param name="e">The event data associated with the window initialization event.</param>
         protected override void OnInitialized(EventArgs e)
         {
             base.OnInitialized(e);
-            Debug.WriteLine("MainWindow initialized");
+            App.Log.AddDebug("MainWindow initialized");
 
-            Debug.WriteLine("Application starting...");
-            Log.LogLevel loggingLevel = Gtr2MemOpsTool.Log.LogLevel.Debug;
-            App.Log = new AsyncBatchLogger(_channel, loggingLevel);
-            _cts = new CancellationTokenSource();
-            _ = StartLogConsumerAsync(_cts.Token);
+            _ = StartLogConsumerAsync(); // Fire and forget the log consumer task, it will run until the application is closed and the cancellation token is triggered.
             App.Log.AddDebug("AsyncBatchLogger: Application started");
         }
 
-        //protected override void OnExit(ExitEventArgs e)
-        //{
-        //    _cts!.Cancel();
-        //    base.OnExit(e);
-        //}
+        protected override void OnClosed(EventArgs e)
+        {
+            base.OnClosed(e);
+            _cts!.Cancel();
+        }
 
-        private async Task StartLogConsumerAsync(CancellationToken ct)
+        private async Task StartLogConsumerAsync()
         {
             Int32 taskDelay = 1000;
+            ChannelReader<LogItem> reader = App.Log.Reader;
+            CancellationToken ct = _cts.Token;
             var buffer = new List<LogItem>();
 
             while (!ct.IsCancellationRequested)
             {
                 // Wait for at least one item
-                await _channel.Reader.WaitToReadAsync(ct);
+                await reader.WaitToReadAsync(ct);
 
                 // Drain everything available right now (the batch)
-                while (_channel.Reader.TryRead(out var logItem))
+                while (reader.TryRead(out var logItem))
                     buffer.Add(logItem);
 
                 // Marshal batch to UI thread
@@ -110,9 +110,10 @@ namespace Gtr2MemOpsTool
             timer.Start();
         }
 
-        private void CheckGtr2Process()
+        private async void CheckGtr2Process()
         {
-            bool isRunning = Gtr2MemOps.IsGtr2ProcessRunning();
+            bool isRunning = false;
+            await Task.Run(() => isRunning = Gtr2MemOps.IsGtr2ProcessRunning());
             if (isRunning)
             {
                 App.Log.AddInfo("GTR2 Process Detected");
@@ -126,12 +127,12 @@ namespace Gtr2MemOpsTool
             }
         }
 
-        private void MenuItem_File_Exit_Click(object sender, RoutedEventArgs e)
+        private async void MenuItem_File_Exit_Click(object sender, RoutedEventArgs e)
         {
             Application.Current.Shutdown();
         }
 
-        private void MenuItem_Tests_TestGTR2Process(object sender, RoutedEventArgs e)
+        private async void MenuItem_Tests_TestGTR2Process(object sender, RoutedEventArgs e)
         {
             bool success = Gtr2MemOps.TestGtr2Process();
             if (success)
@@ -144,7 +145,7 @@ namespace Gtr2MemOpsTool
             }
         }
 
-        private void MenuItem_Tests_TestGetProcess(object sender, RoutedEventArgs e)
+        private async void MenuItem_Tests_TestGetProcess(object sender, RoutedEventArgs e)
         {
             bool success = Gtr2MemOps.TestGtr2GetProcess();
             if (success)
@@ -157,7 +158,7 @@ namespace Gtr2MemOpsTool
             }
         }
 
-        private void MenuItem_Tests_TestOpenProcess(object sender, RoutedEventArgs e)
+        private async void MenuItem_Tests_TestOpenProcess(object sender, RoutedEventArgs e)
         {
             bool success = Gtr2MemOps.TestGtr2OpenProcess();
             if (success)
@@ -170,12 +171,12 @@ namespace Gtr2MemOpsTool
             }
         }
 
-        private void MenuItem_Help_About_Click(object sender, RoutedEventArgs e)
+        private async void MenuItem_Help_About_Click(object sender, RoutedEventArgs e)
         {
             MessageBox.Show("GTR2 Memory Operations Tool\nVersion 1.0 (WIP)", "About");
         }
 
-        private void MenuItem_Click(object sender, RoutedEventArgs e)
+        private async void MenuItem_Click(object sender, RoutedEventArgs e)
         {
 
         }
@@ -191,19 +192,19 @@ namespace Gtr2MemOpsTool
 
         }
 
-        private void MenuItem_Help_SupportMyWork_Click(object sender, RoutedEventArgs e)
+        private async void MenuItem_Help_SupportMyWork_Click(object sender, RoutedEventArgs e)
         {
             Process.Start(new ProcessStartInfo("https://www.simwiki.net/wiki/Help_Support_Simwiki") { UseShellExecute = true });
         }
 
-        private void MenuItem_Process_Connect_Click(object sender, RoutedEventArgs e)
+        private async void MenuItem_Process_Connect_Click(object sender, RoutedEventArgs e)
         {
-            CheckGtr2Process();
+            await Task.Run(() => CheckGtr2Process());
         }
 
-        private void MenuItem_Process_Check_Click(object sender, RoutedEventArgs e)
+        private async void MenuItem_Process_Check_Click(object sender, RoutedEventArgs e)
         {
-            CheckGtr2Process();
+            await Task.Run(() => CheckGtr2Process());
         }
     }
 }

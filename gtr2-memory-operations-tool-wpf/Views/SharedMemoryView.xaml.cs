@@ -126,12 +126,11 @@ namespace Gtr2MemOpsTool.Views
             }
         }
 
-        public List<SharedMemoryItem> GetGtr2SharedMemoryItems()
+        public IEnumerable<SharedMemoryItem> GetGtr2SharedMemoryItems()
         {
             App.Log.AddInfo("Getting GTR2 Shared Memory Items");
-            List<SharedMemoryItem> items = new List<SharedMemoryItem>();
-            try
-            {
+            //try
+            //{
                 MarshalGtr2MemoryRegions();
 
                 ConnectGtr2MemoryBuffers();
@@ -140,28 +139,30 @@ namespace Gtr2MemOpsTool.Views
 
                 App.Log.AddDebug($"Telemetry mVersion: {Utilities.GetStringFromBytes(Gtr2Extended.mVersion)}");
 
-                GetMemoryStructs();
+                var structs = GetMemoryStructs();
+                foreach (var structItem in structs ) {
+                    App.Log.AddDebug($"Yielding struct item: {structItem.StructName}.{structItem.Key} = {structItem.Value} ({structItem.Type})");
+                    yield return structItem;
+                }
 
-                App.Log.AddInfo("Test Pass: Test Shared Memory");
-            }
-            catch (Exception ex)
-            {
-                App.Log.AddDebug($"Exception: {ex.Message} at {ex.StackTrace}");
-                App.Log.AddError("Test Failed: Test Shared Memory");
-                try
-                {
-                    DisconnectGtr2MemoryBuffers();
-                }
-                catch (Exception)
-                {
-                    // Ignore
-                    App.Log.AddDebug($"Exception: {ex.Message} at {ex.StackTrace}");
-                }
-            }
-            return items;
+                App.Log.AddInfo("Finished Getting GTR2 Shared Memory Items");
+            //}
+            //catch (Exception ex)
+            //{
+            //    App.Log.AddDebug($"Exception: {ex.Message} at {ex.StackTrace}");
+            //    App.Log.AddError("Failed Getting GTR2 Shared Memory Items");
+            //    try
+            //    {
+            //        DisconnectGtr2MemoryBuffers();
+            //    }
+            //    catch (Exception)
+            //    {
+            //        App.Log.AddDebug($"Exception: {ex.Message} at {ex.StackTrace}");
+            //    }
+            //}
         }
 
-        private void GetMemoryStructs()
+        private IEnumerable<SharedMemoryItem> GetMemoryStructs()
         {
             // Loop over all structs and their fields, and add them to the SharedMemoryItems collection for display
             var structsList = new List<IGtr2Struct> {
@@ -169,14 +170,22 @@ namespace Gtr2MemOpsTool.Views
                     Gtr2Scoring,
                     Gtr2Extended
                 };
-            foreach (var structItem in structsList)
+            //List<SharedMemoryItem> items = [];
+            foreach (var structsItem in structsList)
             {
-                App.Log.AddDebug($"Processing struct: {structItem}");
-                // Get structu fields
+                App.Log.AddDebug($"Processing struct: {structsItem}");
+                // Get struct fields
 
-                // Display struct fields
-                GetMemoryStruct(structItem);
+                // Get struct fields
+                var structItems = GetMemoryStruct(structsItem);
+                foreach (var structItem in structItems)
+                {
+                    yield return structItem;
+                }
+                
+                //items.AddRange( structItems );
             }
+            //return items;
         }
 
         private List<SharedMemoryItem> GetMemoryStruct(IGtr2Struct structItem)
@@ -298,7 +307,8 @@ namespace Gtr2MemOpsTool.Views
                         FieldInfo[] fieldItemValueStructFields = fieldItemValueStruct.GetType().GetFields(BindingFlags.Public | BindingFlags.Instance);
 
                         ////////////////////////////////////////////////////////
-                        // fixme
+                        // fixme? We are processing the fields of the struct here, but we are not adding the struct itself as a SharedMemoryItem to the list. This means the struct will not be displayed in the UI, only its fields will be. We may want to add a SharedMemoryItem for the struct itself before processing its fields, similar to how we do it in DisplayMemoryStructField.
+                        // Not sure about this though
                         ////////////////////////////////////////////////////////
 
                         List<SharedMemoryItem> nestedItems = GetMemoryStruct(fieldItemValueStruct);
@@ -581,9 +591,6 @@ namespace Gtr2MemOpsTool.Views
             SharedMemoryItems.Clear();
             var progress = new Progress<List<SharedMemoryItem>>(items => {
                 SharedMemoryItems.AddRange(items); // New custom BulkObservableCollection method to add a range of items with a single CollectionChanged event
-                //foreach (var item in items) {
-                //    SharedMemoryItems.Add(item);
-                //}
             }); // runs on UI thread
             await Task.Run(() => LoadItems(progress));
             RefreshButton.IsEnabled = true;
@@ -593,8 +600,9 @@ namespace Gtr2MemOpsTool.Views
         {
             int batchLimit = 50; // TODO: Make this a setting
             var batch = new List<SharedMemoryItem>();
-            List<SharedMemoryItem> items = GetGtr2SharedMemoryItems();
-            foreach (var item in items) // your slow data source
+            //List<SharedMemoryItem> items = GetGtr2SharedMemoryItems();
+            //foreach (var item in items) // your slow data source
+            foreach (var item in GetGtr2SharedMemoryItems()) // your slow data source
             {
                 batch.Add(item);
                 if (batch.Count < batchLimit)
