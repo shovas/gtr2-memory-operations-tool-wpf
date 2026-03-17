@@ -20,7 +20,7 @@ namespace Gtr2MemOpsTool
         //public static Log LogObj { get; } = new Gtr2MemOpsTool.Log(Gtr2MemOpsTool.Log.LogLevel.Debug);
         ////public static AsyncBatchLogger Log { get; private set; } = null!;
 
-        public static AsyncBatchLogger Log = new AsyncBatchLogger(Gtr2MemOpsTool.Log.LogLevel.Debug);
+        public static AsyncBatchLogger Log = new AsyncBatchLogger(AsyncBatchLogger.LogLevel.Info);
         //private readonly Channel<LogItem> _channel = Channel.CreateUnbounded<LogItem>();
         //private CancellationTokenSource? _cts;
 

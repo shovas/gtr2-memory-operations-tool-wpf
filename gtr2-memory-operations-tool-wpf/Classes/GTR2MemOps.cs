@@ -105,7 +105,7 @@ namespace Gtr2MemOpsTool
             }
             catch (Exception ex)
             {
-                App.Log.AddException(ex);
+                App.Log.AddDebug(ex.ToString());
             }
 
         }
@@ -133,6 +133,7 @@ namespace Gtr2MemOpsTool
                 if (gtr2Process is null)
                 {
                     throw new Exception("Failed finding GTR2 process.");
+                    //App.Log.AddDebug("Failed finding GTR2 process.");
                 }
                 App.Log.AddDebug($"Found gtr2.exe (PID {gtr2Process.Id})");
 
@@ -171,7 +172,7 @@ namespace Gtr2MemOpsTool
             }
             catch (Exception ex)
             {
-                App.Log.AddException(ex);
+                App.Log.AddDebug(ex.ToString());
             }
             finally
             {
@@ -278,7 +279,7 @@ namespace Gtr2MemOpsTool
             catch (Exception ex)
             {
                 App.Log.AddError($"Exception while reading grid data: {ex.Message}");
-                App.Log.AddException(ex);
+                //App.Log.AddException(ex);
             }
 
             // Record number of vehicles found based on how many valid slots we can read before hitting the end of the linked list (indicated by a header that fails validation)
@@ -383,7 +384,7 @@ namespace Gtr2MemOpsTool
             }
             catch (Exception ex)
             {
-                App.Log.AddException(ex);
+                App.Log.AddDebug(ex.ToString());
             }
             finally
             {
@@ -410,7 +411,7 @@ namespace Gtr2MemOpsTool
                 App.Log.AddDebug($"Found gtr2.exe (PID {gtr2Process.Id})");
             } catch (Exception ex)
             {
-                App.Log.AddException(ex);
+                App.Log.AddDebug(ex.ToString());
                 return false;
             }
 
@@ -440,7 +441,7 @@ namespace Gtr2MemOpsTool
             }
             catch (Exception ex)
             {
-                App.Log.AddException(ex);
+                App.Log.AddDebug(ex.ToString());
                 return false;
             }
 
@@ -456,7 +457,7 @@ namespace Gtr2MemOpsTool
             }
             catch (Exception ex)
             {
-                App.Log.AddException(ex);
+                App.Log.AddDebug(ex.ToString());
                 return false;
             }
             if ( gtr2Process is null )

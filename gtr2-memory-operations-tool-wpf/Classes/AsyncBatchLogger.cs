@@ -13,9 +13,17 @@ namespace Gtr2MemOpsTool
         private readonly Channel<LogItem> _channel = Channel.CreateUnbounded<LogItem>();
         public ChannelReader<LogItem> Reader => _channel.Reader; // Expose the reader to allow the MainWindow to consume log items without exposing the writer, ensuring encapsulation and thread safety.
 
-        public Log.LogLevel LoggingLevel { get; set; } = Gtr2MemOpsTool.Log.LogLevel.Debug;
-        public event Action<string, LogLevel>? EntryAdded;
-        public AsyncBatchLogger(Log.LogLevel loggingLevel)
+        public enum LogLevel
+        {
+            Debug,
+            Info,
+            Warning,
+            Error,
+            Exception
+        }
+        public LogLevel LoggingLevel { get; set; } = LogLevel.Debug;
+        //public event Action<string, LogLevel>? EntryAdded;
+        public AsyncBatchLogger(LogLevel loggingLevel)
         {
             LoggingLevel = loggingLevel;
         }
@@ -26,7 +34,7 @@ namespace Gtr2MemOpsTool
             _channel.Writer.TryWrite(logItem);
         }
 
-        public void Add(string message, Log.LogLevel loggingLevel)
+        public void Add(string message, LogLevel loggingLevel)
         {
             // Only for console apps I guess: Console.WriteLine(message);
             //Debug.WriteLine(message); // Argh. Debug.WriteLine is a synchronous blocking call and ridiculously slow. It freezes the UI. Don't use it.
@@ -39,43 +47,62 @@ namespace Gtr2MemOpsTool
 
         public void AddDebug(string message)
         {
-            Add(message, Gtr2MemOpsTool.Log.LogLevel.Debug);
+            Add(message, LogLevel.Debug);
         }
 
         public void AddInfo(string message)
         {
-            Add(message, Gtr2MemOpsTool.Log.LogLevel.Info);
+            Add(message, LogLevel.Info);
         }
 
         public void AddWarning(string message)
         {
-            Add(message, Gtr2MemOpsTool.Log.LogLevel.Warning);
+            Add(message, LogLevel.Warning);
         }
 
         public void AddError(string message)
         {
-            Add(message, Gtr2MemOpsTool.Log.LogLevel.Error);
+            Add(message, LogLevel.Error);
         }
 
-        public void AddException(Exception ex)
-        {
-            Add($"Exception: {ex.Message}\nStack Trace: {ex.StackTrace}", Gtr2MemOpsTool.Log.LogLevel.Exception);
+        //public void AddException(Exception ex)
+        //{
+        //    Add($"Exception: {ex.Message}\nStack Trace: {ex.StackTrace}", LogLevel.Exception);
+        //}
+
+        public LogLevel GetLogLevel( string logLevelLabel ) {
+            switch (logLevelLabel)
+            {
+                case "Debug":
+                    return LogLevel.Debug;
+                case "Info":
+                    return LogLevel.Info;
+                case "Warning":
+                    return LogLevel.Warning;
+                case "Error":
+                    return LogLevel.Error;
+                //case "Exception":
+                //    return LogLevel.Exception;
+                default:
+                    App.Log.AddError($"Unknown log level label: {logLevelLabel}");
+                    return LogLevel.Debug; // Safe default
+            }
         }
 
-        public string GetLogLevelLabel(Log.LogLevel logLevel)
+        public string GetLogLevelLabel(LogLevel logLevel)
         {
             switch (logLevel)
             {
-                case Gtr2MemOpsTool.Log.LogLevel.Debug:
+                case LogLevel.Debug:
                     return "Debug";
-                case Gtr2MemOpsTool.Log.LogLevel.Info:
+                case LogLevel.Info:
                     return "Info";
-                case Gtr2MemOpsTool.Log.LogLevel.Warning:
+                case LogLevel.Warning:
                     return "Warning";
-                case Gtr2MemOpsTool.Log.LogLevel.Error:
+                case LogLevel.Error:
                     return "Error";
-                case Gtr2MemOpsTool.Log.LogLevel.Exception:
-                    return "Exception";
+                //case LogLevel.Exception:
+                //    return "Exception";
                 default:
                     App.Log.AddError($"Unknown log level: {logLevel}");
                     return "Unspecified";

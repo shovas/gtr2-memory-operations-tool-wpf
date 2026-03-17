@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Reflection.Emit;
 using System.Security.Cryptography.Pkcs;
@@ -25,7 +26,7 @@ namespace Gtr2MemOpsTool.Views
     public partial class LogView : UserControl
     {
         private StringBuilder _logBuffer = new();
-        private DispatcherTimer? _logTimer;
+        //private DispatcherTimer? _logTimer;
 
         // CancellationTokenSource to signal the log consumer task to stop when the application is closing
         private CancellationTokenSource _cts = new CancellationTokenSource();
@@ -42,8 +43,15 @@ namespace Gtr2MemOpsTool.Views
             //InitializeLog();
 
             //InitializeLogBufferTimer();
-            
+
+            // Select the right log filter for display
+            string loggingLevelLabel = App.Log.GetLogLevelLabel(App.Log.LoggingLevel);
+            LogFilterSelector.SelectedItem = LogFilterSelector.Items
+                .OfType<ComboBoxItem>()
+                .FirstOrDefault(i => i.Tag?.ToString() == loggingLevelLabel);
+
         }
+
         //private void LogBox_TextChanged(object sender, TextChangedEventArgs e)
         //{
         //    if ( LogBox.IsFocused ) { // Auto-scrolling when the user is interacting with the control would be annoying
@@ -108,11 +116,14 @@ namespace Gtr2MemOpsTool.Views
                 {
                     foreach (var logItem in buffer)
                     {
-                        var logMessage = logItem.Message;
-                        var logLevelLabel = App.Log.GetLogLevelLabel(logItem.LogLevel);
-                        string logItemTsStr = logItem.Timestamp.ToString("yyyy-MM-dd HH:mm:ss.fff");
-                        string message = $"[{logItemTsStr}] [{logLevelLabel}] {logMessage}\n";
-                        LogBox.AppendText(message);
+                        if (logItem.LogLevel >= App.Log.LoggingLevel)
+                        {
+                            var logMessage = logItem.Message;
+                            var logLevelLabel = App.Log.GetLogLevelLabel(logItem.LogLevel);
+                            string logItemTsStr = logItem.Timestamp.ToString("yyyy-MM-dd HH:mm:ss.fff");
+                            string message = $"[{logItemTsStr}] [{logLevelLabel}] {logMessage}\n";
+                            LogBox.AppendText(message);
+                        }
                     }
                 });
 
@@ -157,30 +168,31 @@ namespace Gtr2MemOpsTool.Views
                 App.Log.AddError("Unexpected condition: Log filter selected but not content");
                 return;
             }
-            switch ( selectedTag )
-            {
-                //case "All":
-                //    App.Log.LoggingLevel = Log.LogLevel.Debug;
-                //    break;
-                case "debug":
-                    App.Log.LoggingLevel = Log.LogLevel.Debug;
-                    break;
-                case "info":
-                    App.Log.LoggingLevel = Log.LogLevel.Info;
-                    break;
-                case "warning":
-                    App.Log.LoggingLevel = Log.LogLevel.Warning;
-                    break;
-                case "error":
-                    App.Log.LoggingLevel = Log.LogLevel.Error;
-                    break;
-                case "exception":
-                    App.Log.LoggingLevel = Log.LogLevel.Exception;
-                    break;
-                default:
-                    App.Log.AddError($"Unexpected log filter selected: {selectedTag}");
-                    break;
-            }
+            App.Log.LoggingLevel = App.Log.GetLogLevel(selectedTag);
+            //switch ( selectedTag )
+            //{
+            //    //case "All":
+            //    //    App.Log.LoggingLevel = AsyncBatchLogger.LogLevel.Debug;
+            //    //    break;
+            //    case "debug":
+            //        App.Log.LoggingLevel = AsyncBatchLogger.LogLevel.Debug;
+            //        break;
+            //    case "info":
+            //        App.Log.LoggingLevel = AsyncBatchLogger.LogLevel.Info;
+            //        break;
+            //    case "warning":
+            //        App.Log.LoggingLevel = AsyncBatchLogger.LogLevel.Warning;
+            //        break;
+            //    case "error":
+            //        App.Log.LoggingLevel = AsyncBatchLogger.LogLevel.Error;
+            //        break;
+            //    case "exception":
+            //        App.Log.LoggingLevel = AsyncBatchLogger.LogLevel.Exception;
+            //        break;
+            //    default:
+            //        App.Log.AddError($"Unexpected log filter selected: {selectedTag}");
+            //        break;
+            //}
         }
     }
 }

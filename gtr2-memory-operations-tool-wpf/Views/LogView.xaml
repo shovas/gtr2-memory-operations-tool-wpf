@@ -22,11 +22,11 @@
                 <Button x:Name="SaveLogButton" Content="Save Log" Click="SaveLogButton_Click" Height="20" Margin="5,5,5,5" Padding="5,0,5,0"/>
                 <TextBlock Text="Log Level:" VerticalAlignment="center" Margin="5,5,5,5" FontSize="14"/>
                 <ComboBox x:Name="LogFilterSelector" Width="150" SelectionChanged="LogFilterSelector_SelectionChanged" VerticalAlignment="center" VerticalContentAlignment="center" HorizontalAlignment="center" HorizontalContentAlignment="Left" Height="20" Margin="5,5,5,5" Padding="5,0,5,0">
-                    <ComboBoxItem Content="Exception only" Tag="exception"/>
-                    <ComboBoxItem Content="Error and above" Tag="error"/>
-                    <ComboBoxItem Content="Warning and above" Tag="warning"/>
-                    <ComboBoxItem Content="Info and above" Tag="info"/>
-                    <ComboBoxItem Content="Debug and above" Tag="debug"  IsSelected="True"/>
+                    <ComboBoxItem Content="Exception only" Tag="Exception"/>
+                    <ComboBoxItem Content="Error and above" Tag="Error"/>
+                    <ComboBoxItem Content="Warning and above" Tag="Warning"/>
+                    <ComboBoxItem Content="Info and above" Tag="Info"/>
+                    <ComboBoxItem Content="Debug and above" Tag="Debug"/>
                 </ComboBox>
             </StackPanel>
         </Grid>
