@@ -30,8 +30,7 @@ namespace Gtr2MemOpsTool
         private Gtr2MemOps Gtr2MemOps { get; set; } = new Gtr2MemOps();
 
         
-        // CancellationTokenSource to signal the log consumer task to stop when the application is closing
-        private CancellationTokenSource _cts = new CancellationTokenSource();
+        
 
         public MainWindow()
         {
@@ -48,46 +47,18 @@ namespace Gtr2MemOpsTool
         protected override void OnInitialized(EventArgs e)
         {
             base.OnInitialized(e);
-            App.Log.AddDebug("MainWindow initialized");
+            //App.Log.AddDebug("MainWindow initialized");
 
-            _ = StartLogConsumerAsync(); // Fire and forget the log consumer task, it will run until the application is closed and the cancellation token is triggered.
-            App.Log.AddDebug("AsyncBatchLogger: Application started");
+            
         }
 
-        protected override void OnClosed(EventArgs e)
-        {
-            base.OnClosed(e);
-            _cts!.Cancel();
-        }
+        //protected override void OnClosed(EventArgs e)
+        //{
+        //    base.OnClosed(e);
+        //    _cts!.Cancel();
+        //}
 
-        private async Task StartLogConsumerAsync()
-        {
-            Int32 taskDelay = 1000;
-            ChannelReader<LogItem> reader = App.Log.Reader;
-            CancellationToken ct = _cts.Token;
-            var buffer = new List<LogItem>();
-
-            while (!ct.IsCancellationRequested)
-            {
-                // Wait for at least one item
-                await reader.WaitToReadAsync(ct);
-
-                // Drain everything available right now (the batch)
-                while (reader.TryRead(out var logItem))
-                    buffer.Add(logItem);
-
-                // Marshal batch to UI thread
-                await Application.Current.Dispatcher.InvokeAsync(() =>
-                {
-                    foreach (var logItem in buffer)
-                        App.LogObj.Add(logItem.Message, logItem.LogLevel);
-                });
-
-                //buffer.Clear();
-                buffer = new List<LogItem>();
-                await Task.Delay(taskDelay, ct);
-            }
-        }
+        
 
         private void InitializeGtr2MemoryOperationsTool()
         {

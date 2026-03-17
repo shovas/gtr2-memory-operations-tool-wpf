@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Emit;
 using System.Security.Cryptography.Pkcs;
 using System.Text;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -13,6 +15,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 
 namespace Gtr2MemOpsTool.Views
 {
@@ -21,26 +24,102 @@ namespace Gtr2MemOpsTool.Views
     /// </summary>
     public partial class LogView : UserControl
     {
+        private StringBuilder _logBuffer = new();
+        private DispatcherTimer? _logTimer;
+
+        // CancellationTokenSource to signal the log consumer task to stop when the application is closing
+        private CancellationTokenSource _cts = new CancellationTokenSource();
+
         public LogView()
         {
             InitializeComponent();
-            LogBox.TextChanged += LogBox_TextChanged;
-            App.LogObj.EntryAdded += OnEntryAdded;
+
+            _ = StartLogConsumerAsync(); // Fire and forget the log consumer task, it will run until the application is closed and the cancellation token is triggered.
+            App.Log.AddDebug("AsyncBatchLogger: Application started");
+
+
+
+            //InitializeLog();
+
+            //InitializeLogBufferTimer();
+            
         }
-        private void LogBox_TextChanged(object sender, TextChangedEventArgs e)
+        //private void LogBox_TextChanged(object sender, TextChangedEventArgs e)
+        //{
+        //    if ( LogBox.IsFocused ) { // Auto-scrolling when the user is interacting with the control would be annoying
+        //        return;
+        //    }
+        //    LogBox.ScrollToEnd();
+        //}
+
+        //private void InitializeLog()
+        //{
+        //    //App.Log.EntryAdded += OnEntryAdded;
+        //}
+
+        //private void InitializeLogBufferTimer()
+        //{
+        //    _logTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(100) };
+        //    _logTimer.Tick += (s, e) =>
+        //    {
+        //        if (_logBuffer.Length == 0) return;
+        //        lock (_logBuffer)
+        //        {
+        //            LogBox.AppendText(_logBuffer.ToString());
+        //            _logBuffer = new();
+        //        }
+        //        LogBox.ScrollToEnd();
+        //    };
+        //    _logTimer.Start();
+        //}
+
+        // AsyncBatchLogger calls this event which adds to our own _logBuffer and then our own timer in the constructor adds the buffer contents to the LogBox and clears the buffer
+        //private void OnEntryAdded(string message, Log.LogLevel loggingLevel)
+        //{
+        //    if (loggingLevel < App.Log.LoggingLevel) return;
+        //    lock (_logBuffer) _logBuffer.Append(message);
+        //    //Dispatcher.Invoke(() => LogBox.AppendText(message));
+        //}
+
+        //protected override void OnClos(EventArgs e)
+        //{
+        //    base.OnClosed(e);
+        //    _cts!.Cancel();
+        //}
+
+        private async Task StartLogConsumerAsync()
         {
-            if ( LogBox.IsFocused ) { // Auto-scrolling when the user is interacting with the control would be annoying
-                return;
-            }
-            LogBox.ScrollToEnd();
-        }
-        private void OnEntryAdded(string message, Log.LogLevel loggingLevel)
-        {
-            if (loggingLevel < App.Log.LoggingLevel)
+            Int32 taskDelay = 1000;
+            ChannelReader<LogItem> reader = App.Log.Reader;
+            CancellationToken ct = _cts.Token;
+            var buffer = new List<LogItem>();
+
+            while (!ct.IsCancellationRequested)
             {
-                return;
+                // Wait for at least one item
+                await reader.WaitToReadAsync(ct);
+
+                // Drain everything available right now (the batch)
+                while (reader.TryRead(out var logItem))
+                    buffer.Add(logItem);
+
+                // Marshal batch to UI thread
+                await Application.Current.Dispatcher.InvokeAsync(() =>
+                {
+                    foreach (var logItem in buffer)
+                    {
+                        var logMessage = logItem.Message;
+                        var logLevelLabel = App.Log.GetLogLevelLabel(logItem.LogLevel);
+                        string logItemTsStr = logItem.Timestamp.ToString("yyyy-MM-dd HH:mm:ss.fff");
+                        string message = $"[{logItemTsStr}] [{logLevelLabel}] {logMessage}\n";
+                        LogBox.AppendText(message);
+                    }
+                });
+
+                //buffer.Clear();
+                buffer = new List<LogItem>();
+                await Task.Delay(taskDelay, ct);
             }
-            Dispatcher.Invoke(() => LogBox.AppendText(message));
         }
 
         private void ClearLogButton_Click(object sender, RoutedEventArgs e)

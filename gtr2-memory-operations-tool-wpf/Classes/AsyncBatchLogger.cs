@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using System.Threading.Channels;
+using static Gtr2MemOpsTool.Log;
 
 namespace Gtr2MemOpsTool
 {
@@ -13,7 +14,7 @@ namespace Gtr2MemOpsTool
         public ChannelReader<LogItem> Reader => _channel.Reader; // Expose the reader to allow the MainWindow to consume log items without exposing the writer, ensuring encapsulation and thread safety.
 
         public Log.LogLevel LoggingLevel { get; set; } = Gtr2MemOpsTool.Log.LogLevel.Debug;
-
+        public event Action<string, LogLevel>? EntryAdded;
         public AsyncBatchLogger(Log.LogLevel loggingLevel)
         {
             LoggingLevel = loggingLevel;
@@ -25,12 +26,15 @@ namespace Gtr2MemOpsTool
             _channel.Writer.TryWrite(logItem);
         }
 
-        public void Add(string message, Gtr2MemOpsTool.Log.LogLevel loggingLevel)
+        public void Add(string message, Log.LogLevel loggingLevel)
         {
             // Only for console apps I guess: Console.WriteLine(message);
             //Debug.WriteLine(message); // Argh. Debug.WriteLine is a synchronous blocking call and ridiculously slow. It freezes the UI. Don't use it.
-            LogItem logItem = new LogItem(message, loggingLevel);
+            DateTime logItemTs = DateTime.Now;
+            //string logItemTsStr = logItemTs.ToString("yyyy-MM-dd HH:mm:ss");
+            LogItem logItem = new LogItem(logItemTs, message, loggingLevel);
             _channel.Writer.TryWrite(logItem);
+            //EntryAdded?.Invoke(message, loggingLevel);
         }
 
         public void AddDebug(string message)

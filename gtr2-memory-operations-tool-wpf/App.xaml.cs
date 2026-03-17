@@ -17,7 +17,7 @@ namespace Gtr2MemOpsTool
     {
 
         //public static Log.LogLevel LoggingLevel { get; set; } = Gtr2MemOpsTool.Log.LogLevel.Debug;
-        public static Log LogObj { get; } = new Gtr2MemOpsTool.Log(Gtr2MemOpsTool.Log.LogLevel.Debug);
+        //public static Log LogObj { get; } = new Gtr2MemOpsTool.Log(Gtr2MemOpsTool.Log.LogLevel.Debug);
         ////public static AsyncBatchLogger Log { get; private set; } = null!;
 
         public static AsyncBatchLogger Log = new AsyncBatchLogger(Gtr2MemOpsTool.Log.LogLevel.Debug);
