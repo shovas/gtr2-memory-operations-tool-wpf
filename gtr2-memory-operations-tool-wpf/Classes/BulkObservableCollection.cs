@@ -10,7 +10,10 @@ namespace Gtr2MemOpsTool
     {
         public void AddRange(IEnumerable<T> items)
         {
-            foreach (var item in items) Items.Add(item); // no events
+            foreach (var item in items)
+            {
+                Items.Add(item); // no events
+            }
             OnCollectionChanged(new NotifyCollectionChangedEventArgs(
                 NotifyCollectionChangedAction.Reset) // one event for the whole batch
             ); 

@@ -45,6 +45,16 @@ namespace Gtr2MemOpsTool.Views
             item.Index = index;
             SharedMemoryItems.Add(item);
         }
+        public void AddSharedMemoryItems(SharedMemoryItem[] items)
+        {
+            int index = SharedMemoryItems.Count;
+            foreach ( var item in items )
+            {
+                item.Index = index;
+                index++;
+            }
+            SharedMemoryItems.AddRange(items);
+        }
         public void TestGtr2SharedMemory()
         {
             App.Log.AddInfo("Testing GTR2 Shared Memory");
@@ -590,7 +600,8 @@ namespace Gtr2MemOpsTool.Views
             RefreshButton.IsEnabled = false;
             SharedMemoryItems.Clear();
             var progress = new Progress<List<SharedMemoryItem>>(items => {
-                SharedMemoryItems.AddRange(items); // New custom BulkObservableCollection method to add a range of items with a single CollectionChanged event
+                AddSharedMemoryItems(items.ToArray());
+                //SharedMemoryItems.AddRange(items); // New custom BulkObservableCollection method to add a range of items with a single CollectionChanged event
             }); // runs on UI thread
             await Task.Run(() => LoadItems(progress));
             RefreshButton.IsEnabled = true;
