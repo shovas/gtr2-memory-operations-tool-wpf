@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection.Emit;
 using System.Security.Cryptography.Pkcs;
@@ -97,10 +98,12 @@ namespace Gtr2MemOpsTool.Views
 
         private async Task StartLogConsumerAsync()
         {
-            Int32 taskDelay = 1000;
+            Int32 taskDelay = 100;
             ChannelReader<LogItem> reader = App.Log.Reader;
             CancellationToken ct = _cts.Token;
             var buffer = new List<LogItem>();
+            var bufferBatchMax = 1800;
+            StringBuilder messagesString = new StringBuilder();
 
             while (!ct.IsCancellationRequested)
             {
@@ -108,27 +111,40 @@ namespace Gtr2MemOpsTool.Views
                 await reader.WaitToReadAsync(ct);
 
                 // Drain everything available right now (the batch)
+                //while (reader.TryRead(out var logItem))
+                //    buffer.Add(logItem);
+
                 while (reader.TryRead(out var logItem))
+                {
                     buffer.Add(logItem);
+                    if(buffer.Count>=bufferBatchMax)
+                    {
+                        break;
+                    }
+                }
+
+                foreach (var logItem in buffer)
+                {
+                    if (logItem.LogLevel >= App.Log.LoggingLevel)
+                    {
+                        var logMessage = logItem.Message;
+                        var logLevelLabel = App.Log.GetLogLevelLabel(logItem.LogLevel);
+                        string logItemTsStr = logItem.Timestamp.ToString("yyyy-MM-dd HH:mm:ss.fff");
+                        string message = $"[{logItemTsStr}] [{logLevelLabel}] {logMessage}\n";
+                        messagesString.Append(message);
+                    }
+                }
 
                 // Marshal batch to UI thread
                 await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
-                    foreach (var logItem in buffer)
-                    {
-                        if (logItem.LogLevel >= App.Log.LoggingLevel)
-                        {
-                            var logMessage = logItem.Message;
-                            var logLevelLabel = App.Log.GetLogLevelLabel(logItem.LogLevel);
-                            string logItemTsStr = logItem.Timestamp.ToString("yyyy-MM-dd HH:mm:ss.fff");
-                            string message = $"[{logItemTsStr}] [{logLevelLabel}] {logMessage}\n";
-                            LogBox.AppendText(message);
-                        }
-                    }
+                    LogBox.AppendText(messagesString.ToString());
+                    //LogBox.ScrollToEnd();
                 });
 
-                //buffer.Clear();
-                buffer = new List<LogItem>();
+                buffer.Clear();
+                //buffer = new List<LogItem>();
+                messagesString.Clear();
                 await Task.Delay(taskDelay, ct);
             }
         }
