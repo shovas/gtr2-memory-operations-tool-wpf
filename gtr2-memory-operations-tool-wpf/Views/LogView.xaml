@@ -31,7 +31,22 @@
             </StackPanel>
         </Grid>
         <Grid Grid.Row="1" Grid.Column="0">
-            <TextBox x:Name="LogBox" TextWrapping="Wrap" Text="" VerticalAlignment="Stretch" VerticalScrollBarVisibility="Visible" IsReadOnly="True" IsUndoEnabled="False" AcceptsReturn="True" SpellCheck.IsEnabled="False" AcceptsTab="False"/>
+            <!--<TextBox x:Name="LogBox" TextWrapping="Wrap" Text="" VerticalAlignment="Stretch" VerticalScrollBarVisibility="Visible" IsReadOnly="True" IsUndoEnabled="False" AcceptsReturn="True" SpellCheck.IsEnabled="False" AcceptsTab="False"/>-->
+            <ListView x:Name="LogListView" ItemsSource="{Binding LogItems}" VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling">
+                <ListView.View>
+                    <GridView>
+                        <GridViewColumn Header="Timestamp" Width="150">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Timestamp, StringFormat={}{0:yyyy-MM-dd HH:mm:ss.fff}}" />
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                        <GridViewColumn Header="Level" Width="75" DisplayMemberBinding="{Binding LogLevel}"/>
+                        <GridViewColumn Header="Message" Width="300" DisplayMemberBinding="{Binding Message}"/>
+                    </GridView>
+                </ListView.View>
+            </ListView>
         </Grid>
     </Grid>
 </UserControl>

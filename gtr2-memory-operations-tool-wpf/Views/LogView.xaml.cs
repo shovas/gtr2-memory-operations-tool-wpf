@@ -26,7 +26,9 @@ namespace Gtr2MemOpsTool.Views
     /// </summary>
     public partial class LogView : UserControl
     {
-        private StringBuilder _logBuffer = new();
+        public BulkObservableCollection<LogItem> LogItems { get; set; } = new BulkObservableCollection<LogItem>();
+
+        //private StringBuilder _logBuffer = new();
         //private DispatcherTimer? _logTimer;
 
         // CancellationTokenSource to signal the log consumer task to stop when the application is closing
@@ -36,10 +38,10 @@ namespace Gtr2MemOpsTool.Views
         {
             InitializeComponent();
 
+            DataContext = this;
+
             _ = StartLogConsumerAsync(); // Fire and forget the log consumer task, it will run until the application is closed and the cancellation token is triggered.
             App.Log.AddDebug("AsyncBatchLogger: Application started");
-
-
 
             //InitializeLog();
 
@@ -101,9 +103,9 @@ namespace Gtr2MemOpsTool.Views
             Int32 taskDelay = 100;
             ChannelReader<LogItem> reader = App.Log.Reader;
             CancellationToken ct = _cts.Token;
-            var buffer = new List<LogItem>();
-            var bufferBatchMax = 1800;
-            StringBuilder messagesString = new StringBuilder();
+            var logItems = new List<LogItem>();
+            var logItemsBatchMax = 1800;
+            //StringBuilder messagesString = new StringBuilder();
 
             while (!ct.IsCancellationRequested)
             {
@@ -116,53 +118,72 @@ namespace Gtr2MemOpsTool.Views
 
                 while (reader.TryRead(out var logItem))
                 {
-                    buffer.Add(logItem);
-                    if(buffer.Count>=bufferBatchMax)
+                    logItems.Add(logItem);
+                    if(logItems.Count>=logItemsBatchMax)
                     {
                         break;
                     }
                 }
 
-                foreach (var logItem in buffer)
-                {
-                    if (logItem.LogLevel >= App.Log.LoggingLevel)
-                    {
-                        var logMessage = logItem.Message;
-                        var logLevelLabel = App.Log.GetLogLevelLabel(logItem.LogLevel);
-                        string logItemTsStr = logItem.Timestamp.ToString("yyyy-MM-dd HH:mm:ss.fff");
-                        string message = $"[{logItemTsStr}] [{logLevelLabel}] {logMessage}\n";
-                        messagesString.Append(message);
-                    }
-                }
+                //foreach (var logItem in logItems)
+                //{
+                //    if (logItem.LogLevel >= App.Log.LoggingLevel)
+                //    {
+                //        //var logMessage = logItem.Message;
+                //        //var logLevelLabel = App.Log.GetLogLevelLabel(logItem.LogLevel);
+                //        //string logItemTsStr = logItem.Timestamp.ToString("yyyy-MM-dd HH:mm:ss.fff");
+                //        //string message = $"[{logItemTsStr}] [{logLevelLabel}] {logMessage}\n";
+                //        //messagesString.Append(message);
+                //    }
+                //}
 
                 // Marshal batch to UI thread
                 await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
-                    LogBox.AppendText(messagesString.ToString());
+                    //LogBox.AppendText(messagesString.ToString());
                     //LogBox.ScrollToEnd();
+                    LogItems.AddRange(logItems);
                 });
 
-                buffer.Clear();
+                logItems.Clear();
                 //buffer = new List<LogItem>();
-                messagesString.Clear();
+                //messagesString.Clear();
                 await Task.Delay(taskDelay, ct);
             }
+
         }
 
         private void ClearLogButton_Click(object sender, RoutedEventArgs e)
         {
-            LogBox.Clear();
+            //LogBox.Clear();
+            LogItems.Clear();
         }
 
         private void CopyLogButton_Click(object sender, RoutedEventArgs e)
         {
-            LogBox.SelectAll();
-            LogBox.Copy();
-            //LogBox.Select(0, 0);
+            //LogBox.SelectAll();
+            //LogBox.Copy();
+            StringBuilder clipboardString = new StringBuilder();
+            foreach ( var logItem in LogItems) {
+                var logLevelLabel = App.Log.GetLogLevelLabel(logItem.LogLevel);
+                string logItemTsStr = logItem.Timestamp.ToString("yyyy-MM-dd HH:mm:ss.fff");
+                string message = $"[{logItemTsStr}] [{logLevelLabel}] {logItem.Message}";
+                clipboardString.AppendLine(message);
+            }
+            Clipboard.SetText(clipboardString.ToString());
         }
 
         private void SaveLogButton_Click(object sender, RoutedEventArgs e)
         {
+            StringBuilder clipboardString = new StringBuilder();
+            foreach (var logItem in LogItems)
+            {
+                var logLevelLabel = App.Log.GetLogLevelLabel(logItem.LogLevel);
+                string logItemTsStr = logItem.Timestamp.ToString("yyyy-MM-dd HH:mm:ss.fff");
+                string message = $"[{logItemTsStr}] [{logLevelLabel}] {logItem.Message}";
+                clipboardString.AppendLine(message);
+            }
+
             var saveFileDialog = new Microsoft.Win32.SaveFileDialog
             {
                 Filter = "Text file (*.txt)|*.txt|All files (*.*)|*.*",
@@ -171,7 +192,7 @@ namespace Gtr2MemOpsTool.Views
             };
             if (saveFileDialog.ShowDialog() == true)
             {
-                System.IO.File.WriteAllText(saveFileDialog.FileName, LogBox.Text);
+                System.IO.File.WriteAllText(saveFileDialog.FileName, clipboardString.ToString());
             }
         }
 
