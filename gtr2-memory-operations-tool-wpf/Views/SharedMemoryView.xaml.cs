@@ -238,7 +238,7 @@ namespace Gtr2MemOpsTool.Views
             App.Log.AddDebug($"Processing field: {structItemField.Name}, Type: {structItemField.FieldType.Name}, Value: {structItemFieldValue}");
 
             List<SharedMemoryItem> items = [];
-            if (structItemFieldValue is IGtr2Struct)
+            if (structItemFieldValue is IGtr2Struct fieldValueStruct)
             {
                 // IGtr2Struct instances
                 App.Log.AddDebug($"Field {structItemField.Name} is a IGtr2Struct: {structItemField}");
@@ -248,11 +248,11 @@ namespace Gtr2MemOpsTool.Views
                 items.Add(memoryItem);
 
                 List <SharedMemoryItem> nestedItems =
-                    GetMemoryStruct((IGtr2Struct)structItemFieldValue); // Recursively process nested struct fields
+                    GetMemoryStruct(fieldValueStruct); // Recursively process nested struct fields
 
                 items.AddRange(nestedItems);
             }
-            else if (structItemFieldValue is IGtr2Struct[]) // Checks don't work this way for structs in C#. Fix is to catch FieldType.IsArray(), loop over the items, and check each item.
+            else if (structItemFieldValue is IGtr2Struct[] fieldValueStructs) // Checks don't work this way for structs in C#. Fix is to catch FieldType.IsArray(), loop over the items, and check each item.
             //else if ( structItemField.FieldType == typeof(IGtr2Struct[]) )
             {
                 // IGtr2Struct arrays
@@ -262,7 +262,7 @@ namespace Gtr2MemOpsTool.Views
                 SharedMemoryItem memoryItem = new(parentStructName, structItemField.Name, fieldValueString, structItemField.FieldType.Name);
                 items.Add(memoryItem);
 
-                IGtr2Struct[] iGtr2Structs = (IGtr2Struct[])structItemFieldValue;
+                IGtr2Struct[] iGtr2Structs = fieldValueStructs;
                 foreach (IGtr2Struct iGtr2Struct in iGtr2Structs)
                 {
                     FieldInfo[] fields = structItemField.FieldType.GetFields(BindingFlags.Public | BindingFlags.Instance);
@@ -309,13 +309,13 @@ namespace Gtr2MemOpsTool.Views
                 Array fieldItemValues = (Array)structItemFieldValue;
                 foreach (object fieldItemValue in fieldItemValues)
                 {
-                    if (fieldItemValue is IGtr2Struct)
+                    if (fieldItemValue is IGtr2Struct itemValueStruct)
                     {
                         string fieldItemValueString = $"IGtr2Struct: {fieldItemValue}";
                         SharedMemoryItem newMemoryItem = new(parentStructName, structItemField.Name, fieldItemValueString, structItemField.FieldType.Name);
                         items.Add(newMemoryItem);
 
-                        IGtr2Struct fieldItemValueStruct = (IGtr2Struct)fieldItemValue;
+                        IGtr2Struct fieldItemValueStruct = itemValueStruct;
                         //FieldInfo[] fieldItemValueStructFields = fieldItemValueStruct.GetType().GetFields(BindingFlags.Public | BindingFlags.Instance);
 
                         ////////////////////////////////////////////////////////
@@ -386,7 +386,7 @@ namespace Gtr2MemOpsTool.Views
 
             App.Log.AddDebug($"Processing field: {structItemField.Name}, Type: {structItemField.FieldType.Name}, Value: {structItemFieldValue}");
 
-            if (structItemFieldValue is IGtr2Struct)
+            if (structItemFieldValue is IGtr2Struct fieldValueStruct)
             {
                 // IGtr2Struct instances
                 App.Log.AddDebug($"Field {structItemField.Name} is a IGtr2Struct: {structItemField}");
@@ -395,9 +395,9 @@ namespace Gtr2MemOpsTool.Views
                 SharedMemoryItem memoryItem = new(parentStructName, structItemField.Name, displayValue, structItemField.FieldType.Name);
                 AddSharedMemoryItem(memoryItem);
 
-                DisplayMemoryStruct((IGtr2Struct)structItemFieldValue); // Recursively display nested struct fields
+                DisplayMemoryStruct(fieldValueStruct); // Recursively display nested struct fields
             }
-            else if (structItemFieldValue is IGtr2Struct[]) // Checks don't work this way for structs in C#. Fix is to catch FieldType.IsArray(), loop over the items, and check each item.
+            else if (structItemFieldValue is IGtr2Struct[] fieldValueStructs) // Checks don't work this way for structs in C#. Fix is to catch FieldType.IsArray(), loop over the items, and check each item.
             //else if ( structItemField.FieldType == typeof(IGtr2Struct[]) )
             {
                 // IGtr2Struct arrays
@@ -407,7 +407,7 @@ namespace Gtr2MemOpsTool.Views
                 SharedMemoryItem memoryItem = new(parentStructName, structItemField.Name, displayValue, structItemField.FieldType.Name);
                 AddSharedMemoryItem(memoryItem);
 
-                IGtr2Struct[] iGtr2Structs = (IGtr2Struct[])structItemFieldValue;
+                IGtr2Struct[] iGtr2Structs = fieldValueStructs;
                 foreach (IGtr2Struct iGtr2Struct in iGtr2Structs)
                 {
                     FieldInfo[] fields = structItemField.FieldType.GetFields(BindingFlags.Public | BindingFlags.Instance);
