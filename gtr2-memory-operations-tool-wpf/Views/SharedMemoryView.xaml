@@ -17,8 +17,6 @@
         <Grid Grid.Row="0" Grid.Column="0">
             <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" Background="White">
                 <Button x:Name="RefreshButton" Content="Refresh" Click="RefreshButton_Click" Height="20" Margin="5,5,5,5" Padding="5,0,5,0"/>
-                <TextBlock Text="Filter:" VerticalAlignment="center" Margin="5,5,5,5" FontSize="14"/>
-                <TextBox x:Name="KeyFilterBox" Width="150" VerticalAlignment="center" VerticalContentAlignment="center" HorizontalAlignment="center" HorizontalContentAlignment="Left" Height="20" Margin="5,5,5,5" Padding="0,0,0,0" TextChanged="KeyFilterBox_TextChanged"/>
                 <TextBlock Text="Data:" VerticalAlignment="center" Margin="5,5,5,5" FontSize="14"/>
                 <ComboBox x:Name="DataFilterSelector" Width="150" SelectionChanged="DataFilterSelector_SelectionChanged" VerticalAlignment="center" VerticalContentAlignment="center" HorizontalAlignment="center" HorizontalContentAlignment="Left" Height="20" Margin="5,5,5,5" Padding="5,0,5,0">
                     <ComboBoxItem Content="All" Tag="All" IsSelected="true"/>
@@ -26,6 +24,8 @@
                     <ComboBoxItem Content="Scoring" Tag="Gtr2Scoring"/>
                     <ComboBoxItem Content="Telemetry" Tag="Gtr2Telemetry"/>
                 </ComboBox>
+                <TextBlock Text="Search:" VerticalAlignment="center" Margin="5,5,5,5" FontSize="14"/>
+                <TextBox x:Name="KeyFilterBox" Width="150" VerticalAlignment="center" VerticalContentAlignment="center" HorizontalAlignment="center" HorizontalContentAlignment="Left" Height="20" Margin="5,5,5,5" Padding="0,0,0,0" TextChanged="KeyFilterBox_TextChanged"/>
             </StackPanel>
         </Grid>
         <Grid Grid.Row="1" Grid.Column="0">

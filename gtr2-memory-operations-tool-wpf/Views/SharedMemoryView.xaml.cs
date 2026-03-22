@@ -548,14 +548,13 @@ namespace Gtr2MemOpsTool.Views
             view.Filter = item =>
             {
                 var sharedMemoryItem = (SharedMemoryItem)item;
-                return sharedMemoryItem.Key.Contains(KeyFilterBox.Text, StringComparison.OrdinalIgnoreCase);
+                return 
+                    sharedMemoryItem.Key.Contains(KeyFilterBox.Text, StringComparison.OrdinalIgnoreCase) ||
+                    sharedMemoryItem.StructName.Contains(KeyFilterBox.Text, StringComparison.OrdinalIgnoreCase) ||
+                    sharedMemoryItem.Type.Contains(KeyFilterBox.Text, StringComparison.OrdinalIgnoreCase) ||
+                    sharedMemoryItem.Value.Contains(KeyFilterBox.Text, StringComparison.OrdinalIgnoreCase)
+                ;
             };
-            //    = obj => {
-            //    var p = (Person)obj;
-            //    return p.Name
-            //      .Contains(searchBox.Text,
-            //        StringComparison.OrdinalIgnoreCase);
-            //};
         }
 
         private void DataFilterSelector_SelectionChanged(object sender, SelectionChangedEventArgs e)
