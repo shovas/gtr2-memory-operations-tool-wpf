@@ -28,6 +28,8 @@
                     <ComboBoxItem Content="Info and above" Tag="Info"/>
                     <ComboBoxItem Content="Debug and above" Tag="Debug"/>
                 </ComboBox>
+                <TextBlock Text="Search:" VerticalAlignment="center" Margin="5,5,5,5" FontSize="14"/>
+                <TextBox x:Name="SearchBox" Width="150" VerticalAlignment="center" VerticalContentAlignment="center" HorizontalAlignment="center" HorizontalContentAlignment="Left" Height="20" Margin="5,5,5,5" Padding="0,0,0,0" TextChanged="SearchBox_TextChanged"/>
             </StackPanel>
         </Grid>
         <Grid Grid.Row="1" Grid.Column="0">

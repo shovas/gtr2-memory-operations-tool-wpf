@@ -154,5 +154,15 @@ namespace Gtr2MemOpsTool.Views
             };
             view.Refresh();
         }
+
+        private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            ICollectionView view = CollectionViewSource.GetDefaultView(LogItems);
+            view.Filter = item =>
+            {
+                var logItem = (LogItem)item;
+                return logItem.Message.Contains(SearchBox.Text, StringComparison.OrdinalIgnoreCase);
+            };
+        }
     }
 }
