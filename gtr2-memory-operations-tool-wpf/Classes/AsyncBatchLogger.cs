@@ -21,6 +21,9 @@ namespace Gtr2MemOpsTool
             Error,
             Exception
         }
+        /// <summary>
+        ///  The effective logging level. Log entries with a level below this will be ignored. For example, if set to Warning, Debug and Info entries will be ignored, but Warning, Error and Exception entries will be logged.
+        /// </summary>
         public LogLevel LoggingLevel { get; set; } = LogLevel.Debug;
         //public event Action<string, LogLevel>? EntryAdded;
         public AsyncBatchLogger(LogLevel loggingLevel)
