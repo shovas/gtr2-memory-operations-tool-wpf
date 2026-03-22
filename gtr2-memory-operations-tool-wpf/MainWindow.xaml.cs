@@ -77,7 +77,7 @@ namespace Gtr2MemOpsTool
             //timer.Start();
         }
 
-        private async void CheckGtr2Process()
+        private static async void CheckGtr2Process()
         {
             bool isRunning = false;
             await Task.Run(() => isRunning = Gtr2MemOps.IsGtr2ProcessRunning());
