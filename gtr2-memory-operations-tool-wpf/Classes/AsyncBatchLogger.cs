@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using System.Threading.Channels;
-using static Gtr2MemOpsTool.Log;
 
 namespace Gtr2MemOpsTool
 {
@@ -26,6 +25,7 @@ namespace Gtr2MemOpsTool
         /// </summary>
         public LogLevel LoggingLevel { get; set; } = LogLevel.Debug;
         //public event Action<string, LogLevel>? EntryAdded;
+
         public AsyncBatchLogger(LogLevel loggingLevel)
         {
             LoggingLevel = loggingLevel;
@@ -84,8 +84,8 @@ namespace Gtr2MemOpsTool
                     return LogLevel.Warning;
                 case "Error":
                     return LogLevel.Error;
-                //case "Exception":
-                //    return LogLevel.Exception;
+                case "Exception":
+                    return LogLevel.Exception;
                 default:
                     App.Log.AddError($"Unknown log level label: {logLevelLabel}");
                     return LogLevel.Debug; // Safe default
@@ -104,8 +104,8 @@ namespace Gtr2MemOpsTool
                     return "Warning";
                 case LogLevel.Error:
                     return "Error";
-                //case LogLevel.Exception:
-                //    return "Exception";
+                case LogLevel.Exception:
+                    return "Exception";
                 default:
                     App.Log.AddError($"Unknown log level: {logLevel}");
                     return "Unspecified";

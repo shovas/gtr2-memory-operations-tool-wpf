@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Configuration;
 using System.Diagnostics;
 using System.Linq;
@@ -83,6 +84,7 @@ namespace Gtr2MemOpsTool.Views
                 await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
                     LogItems.AddRange(logItems);
+                    LogListView.ScrollIntoView(LogItems.Last()); // Known issue: This won't have any effect if the user is on a different tab
                 });
 
                 logItems.Clear();
@@ -133,14 +135,24 @@ namespace Gtr2MemOpsTool.Views
 
         private void LogFilterSelector_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            // Update the logging level in the App.Log based on the selected filter
             var selectedItem = LogFilterSelector.SelectedItem as ComboBoxItem;
             var selectedTag = selectedItem?.Tag as string;
             if ( selectedTag == null)
             {
-                App.Log.AddError("Unexpected condition: Log filter selected but not content");
+                App.Log.AddError("Unexpected condition: Log filter selection changed but selection has null value");
                 return;
             }
             App.Log.LoggingLevel = App.Log.GetLogLevel(selectedTag);
+
+            // Refresh the CollectionView filter to apply the new logging level filter
+            ICollectionView view = CollectionViewSource.GetDefaultView(LogItems);
+            view.Filter = item =>
+            {
+                var logItem = (LogItem)item;
+                return logItem.LogLevel >= App.Log.LoggingLevel;
+            };
+            view.Refresh();
         }
     }
 }
