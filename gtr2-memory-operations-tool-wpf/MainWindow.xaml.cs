@@ -30,9 +30,6 @@ namespace Gtr2MemOpsTool
         // Gtr2MemOps instance to handle all memory operations related to GTR2, ensuring a single point of access and consistent state management across the application.
         private Gtr2MemOps Gtr2MemOps { get; set; } = new Gtr2MemOps();
 
-        
-        
-
         public MainWindow()
         {
             InitializeComponent();
@@ -59,8 +56,6 @@ namespace Gtr2MemOpsTool
         //    _cts!.Cancel();
         //}
 
-        
-
         private void InitializeGtr2MemoryOperationsTool()
         {
             App.Log.AddInfo("GTR2 Memory Operations Tool Initialized");
@@ -70,16 +65,16 @@ namespace Gtr2MemOpsTool
 
         private void ShowStatusWelcome()
         {
-            // Show a Welcome message on the StatusBar
-            StatusBarItemText.Text = "GTR2 Memory Operations Tool Loaded";
-            int timerTime = 1;
-            var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(timerTime) };
-            timer.Tick += (s, e) =>
-            {
-                StatusBarItemText.Text = "Ready";
-                timer.Stop();
-            };
-            timer.Start();
+            StatusBarItemText.Text = "Ready";
+            //StatusBarItemText.Text = "GTR2 Memory Operations Tool Loaded";
+            //int timerTime = 1;
+            //var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(timerTime) };
+            //timer.Tick += (s, e) =>
+            //{
+            //    StatusBarItemText.Text = "Ready";
+            //    timer.Stop();
+            //};
+            //timer.Start();
         }
 
         private async void CheckGtr2Process()
@@ -89,7 +84,6 @@ namespace Gtr2MemOpsTool
             if (isRunning)
             {
                 App.Log.AddInfo("GTR2 Process Detected");
-                StatusBarItemText.Text = "GTR2 Detected";
             }
             else
             {
@@ -122,11 +116,11 @@ namespace Gtr2MemOpsTool
             bool success = Gtr2MemOps.TestGtr2GetProcess();
             if (success)
             {
-                App.Log.AddInfo("Test Pass: Test GTR2 Open Process");
+                App.Log.AddInfo("Test Pass: Test GTR2 Get Process");
             }
             else
             {
-                App.Log.AddError("Test Failed: Test GTR2 Open Process");
+                App.Log.AddError("Test Failed: Test GTR2 Get Process");
             }
         }
 
@@ -167,11 +161,6 @@ namespace Gtr2MemOpsTool
         private async void MenuItem_Help_SupportMyWork_Click(object sender, RoutedEventArgs e)
         {
             Process.Start(new ProcessStartInfo("https://www.simwiki.net/wiki/Help_Support_Simwiki") { UseShellExecute = true });
-        }
-
-        private async void MenuItem_Process_Connect_Click(object sender, RoutedEventArgs e)
-        {
-            await Task.Run(() => CheckGtr2Process());
         }
 
         private async void MenuItem_Process_Check_Click(object sender, RoutedEventArgs e)
