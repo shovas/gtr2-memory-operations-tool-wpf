@@ -7,7 +7,7 @@ using System.Text;
 
 namespace Gtr2MemOpsTool.Models
 {
-    public class Gtr2MemOps
+    public partial class Gtr2MemOps
     {
         public const string GTR2_PROCESS_NAME = "gtr2";
 
@@ -64,23 +64,26 @@ namespace Gtr2MemOpsTool.Models
             public uint Type;
         }
 
-        [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern nint OpenProcess(uint dwDesiredAccess, bool bInheritHandle, int dwProcessId);
+        [LibraryImport("kernel32.dll", SetLastError = true)]
+        private static partial nint OpenProcess(uint dwDesiredAccess, [MarshalAs(UnmanagedType.Bool)] bool bInheritHandle, int dwProcessId);
 
-        [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern bool ReadProcessMemory(nint hProcess, nint lpBaseAddress,
-            byte[] lpBuffer, int dwSize, out int lpNumberOfBytesRead);
+        [LibraryImport("kernel32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static partial bool ReadProcessMemory(nint hProcess, nint lpBaseAddress,
+            [Out] byte[] lpBuffer, int dwSize, out int lpNumberOfBytesRead);
 
-        [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern bool WriteProcessMemory(nint hProcess, nint lpBaseAddress,
-            byte[] lpBuffer, int nSize, out int lpNumberOfBytesWritten);
+        [LibraryImport("kernel32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static partial bool WriteProcessMemory(nint hProcess, nint lpBaseAddress,
+            [Out] byte[] lpBuffer, int nSize, out int lpNumberOfBytesWritten);
 
-        [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern int VirtualQueryEx(nint hProcess, nint lpAddress,
+        [LibraryImport("kernel32.dll", SetLastError = true)]
+        private static partial int VirtualQueryEx(nint hProcess, nint lpAddress,
             out MEMORY_BASIC_INFORMATION lpBuffer, int dwLength);
 
-        [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern bool CloseHandle(nint hObject);
+        [LibraryImport("kernel32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static partial bool CloseHandle(nint hObject);
 
         public Gtr2MemOps()
         {
