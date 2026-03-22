@@ -4,10 +4,6 @@ DEVELOPMENT
 
 Todo
 
-- Convert Log tab to ListView so that I can dynamically filter without losing existing rows
-  - ListView should be able to handle thousands of log lines
-  - Copy Log button will have to first build a string out of all rows to copy
-
 - Map out all grid data fields in a way that I can dynamically go find them in memory
   - For example, a list of field names and their offsets in memory so that I can loop over the list and grab them all and put them in a list I can then use, update, etc.
   - I think the existing structs already allow for this.
@@ -16,22 +12,23 @@ Todo
 
 - Add Copy ability for Log tab ListView cells
 
+Doing
+
 - Deal with non-error/non-warning VS messages. Good learning experience.
 
-
-
-Doing
+Done
 
 - Fix Log view filtering to handle new ListView implementation
   - See ChatGPT about binding a view instead of an items list and then you filter the view instead of the items. 
 
-Done
-
 - Moved Log tab TextBox to ListView for performance
+  
   - Problem: Log tab is freezing after Refreshing on Shared Memory tab
     - 17000 memory fields, 21000 log lines generated
     - Was able to optimize it with a few techniques but pretty much confirmed TextBox is doing too much to handle the text as a single thing.
       ^ Solution: Move to ListView.
+        - ListView is able to handle thousands of log lines because of its narrow view window technique
+  - Copy Log button will have to first build a string out of all rows to copy
 
 - Shared Memory tab Index is always -1 now
 
