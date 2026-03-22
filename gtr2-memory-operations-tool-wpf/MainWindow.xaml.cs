@@ -98,6 +98,11 @@ namespace Gtr2MemOpsTool
             Application.Current.Shutdown();
         }
 
+        private async void MenuItem_Process_Check_Click(object sender, RoutedEventArgs e)
+        {
+            await Task.Run(() => CheckGtr2Process());
+        }
+
         private async void MenuItem_Tests_TestGTR2Process(object sender, RoutedEventArgs e)
         {
             bool success = Gtr2MemOps.TestGtr2Process();
@@ -137,15 +142,7 @@ namespace Gtr2MemOpsTool
             }
         }
 
-        private async void MenuItem_Help_About_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show("GTR2 Memory Operations Tool\nVersion 1.0 (WIP)", "About");
-        }
-
-        private async void MenuItem_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
+        
 
         private async void MenuItem_Tests_TestSharedMemory(object sender, RoutedEventArgs e)
         {
@@ -158,14 +155,16 @@ namespace Gtr2MemOpsTool
 
         }
 
+        private async void MenuItem_Help_About_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("GTR2 Memory Operations Tool\nVersion 1.0 (WIP)", "About");
+        }
+
         private async void MenuItem_Help_SupportMyWork_Click(object sender, RoutedEventArgs e)
         {
             Process.Start(new ProcessStartInfo("https://www.simwiki.net/wiki/Help_Support_Simwiki") { UseShellExecute = true });
         }
 
-        private async void MenuItem_Process_Check_Click(object sender, RoutedEventArgs e)
-        {
-            await Task.Run(() => CheckGtr2Process());
-        }
+        
     }
 }

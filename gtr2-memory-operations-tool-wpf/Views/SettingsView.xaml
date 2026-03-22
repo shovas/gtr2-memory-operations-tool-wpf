@@ -16,19 +16,17 @@
         </Grid.ColumnDefinitions>
         <Grid Grid.Row="0" Grid.Column="0">
             <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" Background="White">
-                <Button Content="Reload" Click="ReloadButton_Click" Height="20" Margin="5,5,5,5" Padding="5,0,5,0"/>
-                <TextBlock Text="Filter:" VerticalAlignment="center" Margin="5,5,5,5" FontSize="14"/>
-                <TextBox x:Name="KeyFilterBox" Width="150" VerticalAlignment="center" VerticalContentAlignment="center" HorizontalAlignment="center" HorizontalContentAlignment="Left" Height="20" Margin="5,5,5,5" Padding="0,0,0,0" TextChanged="KeyFilterBox_TextChanged"/>
+                <TextBlock Text="Search:" VerticalAlignment="center" Margin="5,5,5,5" FontSize="14"/>
+                <TextBox x:Name="SearchFilterBox" Width="150" VerticalAlignment="center" VerticalContentAlignment="center" HorizontalAlignment="center" HorizontalContentAlignment="Left" Height="20" Margin="5,5,5,5" Padding="0,0,0,0" TextChanged="SearchFilterBox_TextChanged"/>
             </StackPanel>
         </Grid>
         <Grid Grid.Row="1" Grid.Column="0">
-            <TextBlock Text="Shared Memory View" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-            <ListView ItemsSource="{Binding SharedMemoryItems}">
+            <ListView ItemsSource="{Binding SettingItems}">
                 <ListView.View>
                     <GridView>
                         <GridViewColumn Header="Key" Width="200" DisplayMemberBinding="{Binding Key}"/>
                         <GridViewColumn Header="Value" Width="200" DisplayMemberBinding="{Binding Value}"/>
-                        <GridViewColumn Header="Description" Width="200" DisplayMemberBinding="{Binding Type}"/>
+                        <GridViewColumn Header="Description" Width="200" DisplayMemberBinding="{Binding Description}"/>
                     </GridView>
                 </ListView.View>
             </ListView>

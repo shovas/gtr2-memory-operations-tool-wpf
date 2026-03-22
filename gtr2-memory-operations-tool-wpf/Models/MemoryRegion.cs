@@ -7,17 +7,17 @@ using System.Threading.Tasks;
 
 namespace Gtr2MemOpsTool.Models
 {
-    public class MemoryRegion(MemoryField[] fields)
+    public class MemoryRegion(MemoryItem[] fields)
     {
-        public MemoryField[] Fields { get; set; } = fields;
+        public MemoryItem[] Fields { get; set; } = fields;
 
-        public void AddField(MemoryField field)
+        public void AddField(MemoryItem field)
         {
             Type heldType = field.HeldType;
             int fieldSize = Marshal.SizeOf(heldType) * field.Length;
-            int lastFieldOffset = ( Fields.Length > 0 ) ? Fields[^1].OffsetStatic : 0;
+            int lastFieldOffset = ( Fields.Length > 0 ) ? Fields[^1].Offset : 0;
             int fieldOffset = lastFieldOffset + fieldSize;
-            field.OffsetStatic = fieldOffset;
+            field.Offset = fieldOffset;
             _ = Fields.Append(field);
         }
     }

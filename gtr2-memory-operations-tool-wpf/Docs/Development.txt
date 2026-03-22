@@ -4,25 +4,33 @@ DEVELOPMENT
 
 Todo
 
-- Map out all grid data fields in a way that I can dynamically go find them in memory
-  - For example, a list of field names and their offsets in memory so that I can loop over the list and grab them all and put them in a list I can then use, update, etc.
-  - I think the existing structs already allow for this.
+- Implement Automatic AI tab
+  - Add buttons to read/write AI adjustment values to memory
+  - Add ListView to show current values and allow editing them and writing them back to memory
+  - Add logic to automatically adjust the values based on player performance (lap times, etc.) and maybe even some machine learning down the line
 
-- mPlayerName shows up with corrupted bytes on the end in Log tab
+- Implement Program Memory tab memory reading
+  - Add Buttons row like Shared Memory tab
+  - Add ListView like Shared Memory tab
+  - Add memory reading logic: I already have a lot of this in Gtr2MemOps
+  - Allow editing ListView values and writing them back to memory
+    - This will be a proof of concept protoype bit of logic for the Dynamic AI Adjustment Algorithm that I want to implement later. I want to be able to edit values in memory and see the effect in game before I start building out the algorithm.
 
-- Add Copy ability for Log tab ListView cells
+
 
 Doing
 
-- Deal with non-error/non-warning VS messages. Good learning experience.
+- Add settings ini logic, use object to hold settings in memory, add a settings tab to the UI to edit them, and save them back to the ini file
+  - Log Level setting
 
 Done
+
+- Deal with non-error/non-warning VS messages. Good learning experience.
 
 - Fix Log view filtering to handle new ListView implementation
   - See ChatGPT about binding a view instead of an items list and then you filter the view instead of the items. 
 
 - Moved Log tab TextBox to ListView for performance
-  
   - Problem: Log tab is freezing after Refreshing on Shared Memory tab
     - 17000 memory fields, 21000 log lines generated
     - Was able to optimize it with a few techniques but pretty much confirmed TextBox is doing too much to handle the text as a single thing.
