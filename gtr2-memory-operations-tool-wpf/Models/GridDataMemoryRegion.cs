@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Gtr2MemOpsTool
+namespace Gtr2MemOpsTool.Models
 {
     public class GridDataMemoryRegion
     {
@@ -15,8 +15,8 @@ namespace Gtr2MemOpsTool
         {
             Region = region;
             OffsetStatic = offsetStatic;
-            MemoryField[] Fields = new MemoryField[]
-            {
+            MemoryField[] Fields =
+            [
                 new MemoryField("MemAddrRef_A", typeof(Int32), 1, 0x00), // -20692 rcd_Script
                 new MemoryField("slot_id", typeof(Int32), 1, 0x00),
                 new MemoryField("pitgroup_id", typeof(Int32), 1, 0x00),
@@ -472,7 +472,7 @@ namespace Gtr2MemOpsTool
                 new MemoryField("x_Unkn_EndC", typeof(byte), 12, 0x00), // 22576-22588
                 new MemoryField("x_UnknVar_EndF", typeof(Int32), 1, 0x00), // 22588
                 new MemoryField("x_Unkn_EndD", typeof(byte), 32, 0x00) // 22592-22624
-            };
+            ];
             foreach (MemoryField field in Fields)
             {
                 Region.AddField(field);

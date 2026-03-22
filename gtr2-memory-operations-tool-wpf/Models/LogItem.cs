@@ -1,19 +1,14 @@
-﻿using System;
+﻿using Gtr2MemOpsTool.Services;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Gtr2MemOpsTool
+namespace Gtr2MemOpsTool.Models
 {
-    public class LogItem
+    public class LogItem(DateTime timestamp, string message, AsyncBatchLogger.LogLevel logLevel)
     {
-        public DateTime Timestamp { get; } = DateTime.Now;
-        public string Message { get; set; }
-        public AsyncBatchLogger.LogLevel LogLevel { get; set; }
-        public LogItem(DateTime timestamp, string message, AsyncBatchLogger.LogLevel logLevel)
-        {
-            Timestamp = timestamp;
-            Message = message;
-            LogLevel = logLevel;
-        }
+        public DateTime Timestamp { get; } = timestamp;
+        public string Message { get; set; } = message;
+        public AsyncBatchLogger.LogLevel LogLevel { get; set; } = logLevel;
     }
 }

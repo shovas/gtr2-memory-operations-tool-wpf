@@ -1,10 +1,11 @@
-﻿using System;
+﻿using Gtr2MemOpsTool.Models;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace Gtr2MemOpsTool
+namespace Gtr2MemOpsTool.Models
 {
     public class Gtr2MemOps
     {
@@ -129,12 +130,7 @@ namespace Gtr2MemOpsTool
                 // ---------------------------------------------------------
                 // 1. Find gtr2.exe
                 // ---------------------------------------------------------
-                Process? gtr2Process = GetProcessByName(GTR2_PROCESS_NAME);
-                if (gtr2Process is null)
-                {
-                    throw new Exception("Failed finding GTR2 process.");
-                    //App.Log.AddDebug("Failed finding GTR2 process.");
-                }
+                Process? gtr2Process = GetProcessByName(GTR2_PROCESS_NAME) ?? throw new Exception("Failed finding GTR2 process.");
                 App.Log.AddDebug($"Found gtr2.exe (PID {gtr2Process.Id})");
 
                 // ---------------------------------------------------------
@@ -191,7 +187,7 @@ namespace Gtr2MemOpsTool
         {
 
             // Follow the linked list of slots and populate gridData.Slots with the data you want to read from each slot (e.g. driver name, weight penalty, etc.)
-            GridData gridData = new GridData();
+            GridData gridData = new();
 
             const int slotStep = GTR2_MEMORY_SLOT_SIZE;
             nint curSlotAddr = gridAddr;
@@ -221,7 +217,7 @@ namespace Gtr2MemOpsTool
                     App.Log.AddDebug($"pitGroupId={pitGroupId}");
 
                     // Read data from the slot and add to gridData.Slots
-                    SlotData slotData = new SlotData();
+                    SlotData slotData = new();
                     try
                     {
                         slotData.SlotId = FindSlotId(hProc, curSlotAddr);
@@ -308,11 +304,7 @@ namespace Gtr2MemOpsTool
                 // ---------------------------------------------------------
                 // 1. Find gtr2.exe
                 // ---------------------------------------------------------
-                Process? gtr2Process = GetProcessByName(GTR2_PROCESS_NAME);
-                if (gtr2Process is null)
-                {
-                    throw new Exception("Failed finding GTR2 process.");
-                }
+                Process? gtr2Process = GetProcessByName(GTR2_PROCESS_NAME) ?? throw new Exception("Failed finding GTR2 process.");
                 App.Log.AddDebug($"Found gtr2.exe (PID {gtr2Process.Id})");
 
                 // ---------------------------------------------------------
@@ -349,11 +341,7 @@ namespace Gtr2MemOpsTool
                 // ---------------------------------------------------------
                 // 5. Read current value to verify we can read and for later comparison after new write
                 // ---------------------------------------------------------
-                float? tempWeightPenaltyFloatData = ReadMemoryFloat((nint)gtr2ProcessPointer, weightPenaltyAddr);
-                if (tempWeightPenaltyFloatData is null)
-                {
-                    throw new Exception("Failed reading current WeightPenalty value.");
-                }
+                float? tempWeightPenaltyFloatData = ReadMemoryFloat((nint)gtr2ProcessPointer, weightPenaltyAddr) ?? throw new Exception("Failed reading current WeightPenalty value.");
                 float weightPenaltyFloatData = tempWeightPenaltyFloatData.Value;
                 App.Log.AddDebug($"Current WeightPenalty read: {weightPenaltyFloatData}");
 
@@ -371,11 +359,7 @@ namespace Gtr2MemOpsTool
                 // ---------------------------------------------------------
                 // 7. Read new value back to confirm the write worked
                 // ---------------------------------------------------------
-                float? newWeightPenaltyFloatData = ReadMemoryFloat((nint)gtr2ProcessPointer, weightPenaltyAddr);
-                if (newWeightPenaltyFloatData == null)
-                {
-                    throw new Exception("Failed reading new WeightPenalty value.");
-                }
+                float? newWeightPenaltyFloatData = ReadMemoryFloat((nint)gtr2ProcessPointer, weightPenaltyAddr) ?? throw new Exception("Failed reading new WeightPenalty value.");
                 float newWeightPenaltyFloatValue = newWeightPenaltyFloatData.Value;
                 App.Log.AddDebug($"New WeightPenalty read: {newWeightPenaltyFloatValue}");
 
@@ -399,15 +383,11 @@ namespace Gtr2MemOpsTool
             return success;
         }
 
-        public bool TestGtr2GetProcess ()
+        public static bool TestGtr2GetProcess ()
         {
             try
             {
-                Process? gtr2Process = GetProcessByName(GTR2_PROCESS_NAME);
-                if (gtr2Process is null)
-                {
-                    throw new Exception("Failed finding GTR2 process.");
-                }
+                Process? gtr2Process = GetProcessByName(GTR2_PROCESS_NAME) ?? throw new Exception("Failed finding GTR2 process.");
                 App.Log.AddDebug($"Found gtr2.exe (PID {gtr2Process.Id})");
             } catch (Exception ex)
             {
@@ -418,16 +398,12 @@ namespace Gtr2MemOpsTool
             return true;
         }
 
-        public bool TestGtr2OpenProcess ()
+        public static bool TestGtr2OpenProcess ()
         {
             try
             {
                 // 1. Get Process
-                Process? gtr2Process = GetProcessByName(GTR2_PROCESS_NAME);
-                if (gtr2Process is null)
-                {
-                    throw new Exception("Failed finding GTR2 process.");
-                }
+                Process? gtr2Process = GetProcessByName(GTR2_PROCESS_NAME) ?? throw new Exception("Failed finding GTR2 process.");
                 App.Log.AddDebug($"Found gtr2.exe (PID {gtr2Process.Id})");
 
                 // 2. Open process
@@ -448,7 +424,7 @@ namespace Gtr2MemOpsTool
             return true;
         }
 
-        public bool IsGtr2ProcessRunning()
+        public static bool IsGtr2ProcessRunning()
         {
             Process? gtr2Process;
             try
@@ -683,39 +659,23 @@ namespace Gtr2MemOpsTool
         }
         private static Int32 FindSlotId(nint hProc, nint slotAddr)
         {
-            Int32? slotId = FindSlotInt32Value(hProc, slotAddr, GTR2_MEMORY_SLOT_OFFSET_SLOT_ID, "SlotId");
-            if (slotId is null)
-            {
-                throw new Exception("Failed finding Slot Id.");
-            }
+            Int32? slotId = FindSlotInt32Value(hProc, slotAddr, GTR2_MEMORY_SLOT_OFFSET_SLOT_ID, "SlotId") ?? throw new Exception("Failed finding Slot Id.");
             return slotId.Value;
         }
         private static string FindSlotDriverName(nint hProc, nint slotAddr)
         {
-            string? driverName = FindSlotStringValue(hProc, slotAddr, GTR2_MEMORY_SLOT_OFFSET_DRIVER_NAME, GTR2_MEMORY_DRIVER_NAME_LENGTH, "DriverName");
-            if (driverName is null)
-            {
-                throw new Exception("Failed finding DriverName.");
-            }
+            string? driverName = FindSlotStringValue(hProc, slotAddr, GTR2_MEMORY_SLOT_OFFSET_DRIVER_NAME, GTR2_MEMORY_DRIVER_NAME_LENGTH, "DriverName") ?? throw new Exception("Failed finding DriverName.");
             return driverName!;
         }
         // - Note: I'm pretty confident GTR2 is defaulting to 0.1 for Weight Penalties on all cars. Not sure why. But I confirmed by printing the actual bytes read from memory.
         private static float FindSlotWeightPenalty(nint hProc, nint headerAddr)
         {
-            float? weightPenalty = FindSlotFloatValue(hProc, headerAddr, GTR2_MEMORY_SLOT_OFFSET_WEIGHT_PENALTY, "WeightPenalty");
-            if (weightPenalty is null)
-            {
-                throw new Exception("Failed finding WeightPenalty.");
-            }
+            float? weightPenalty = FindSlotFloatValue(hProc, headerAddr, GTR2_MEMORY_SLOT_OFFSET_WEIGHT_PENALTY, "WeightPenalty") ?? throw new Exception("Failed finding WeightPenalty.");
             return weightPenalty!.Value;
         }
         private static string FindSlotCarFilePath(nint hProc, nint slotAddr)
         {
-            string? carFilePath = FindSlotStringValue(hProc, slotAddr, GTR2_MEMORY_SLOT_OFFSET_CAR_FILEPATH, GTR2_MEMORY_CAR_FILEPATH_LENGTH, "CarFilePath");
-            if (carFilePath is null)
-            {
-                throw new Exception("Failed finding CarFilePath.");
-            }
+            string? carFilePath = FindSlotStringValue(hProc, slotAddr, GTR2_MEMORY_SLOT_OFFSET_CAR_FILEPATH, GTR2_MEMORY_CAR_FILEPATH_LENGTH, "CarFilePath") ?? throw new Exception("Failed finding CarFilePath.");
             return carFilePath!;
         }
         private static string? FindSlotStringValue(nint hProc, nint slotAddr, int findStringOffset, int findStringLength, string findName)
@@ -728,11 +688,7 @@ namespace Gtr2MemOpsTool
             nint stringAddr = nint.Add(cur, findStringOffset);
             if (IsAddressValid(hProc, stringAddr))
             {
-                string? tempStringData = ReadMemoryString(hProc, stringAddr, findStringLength, Encoding.GetEncoding(GTR2_ENCODING_CODEPAGE));
-                if (tempStringData is null)
-                {
-                    throw new Exception($"Failed reading string value at offset {findStringOffset}.");
-                }
+                string? tempStringData = ReadMemoryString(hProc, stringAddr, findStringLength, Encoding.GetEncoding(GTR2_ENCODING_CODEPAGE)) ?? throw new Exception($"Failed reading string value at offset {findStringOffset}.");
                 string stringData = tempStringData.ToString();
                 App.Log.AddDebug($"Found {findName} string: {stringData}");
                 return stringData;
@@ -750,11 +706,7 @@ namespace Gtr2MemOpsTool
             nint findAddr = nint.Add(cur, findOffset);
             if (IsAddressValid(hProc, findAddr))
             {
-                Int32? tempInt32Data = ReadMemoryInt32(hProc, findAddr);
-                if (tempInt32Data is null)
-                {
-                    throw new Exception($"Failed reading current Int32 value at offset {findOffset}.");
-                }
+                Int32? tempInt32Data = ReadMemoryInt32(hProc, findAddr) ?? throw new Exception($"Failed reading current Int32 value at offset {findOffset}.");
                 Int32 int32Data = tempInt32Data.Value;
                 App.Log.AddDebug($"Found {findName} Int32: {int32Data}");
                 return int32Data;
@@ -772,11 +724,7 @@ namespace Gtr2MemOpsTool
             nint floatAddr = nint.Add(cur, findFloatOffset);
             if (IsAddressValid(hProc, floatAddr))
             {
-                float? tempFloatData = ReadMemoryFloat(hProc, floatAddr);
-                if (tempFloatData is null)
-                {
-                    throw new Exception($"Failed reading current float value at offset {findFloatOffset}.");
-                }
+                float? tempFloatData = ReadMemoryFloat(hProc, floatAddr) ?? throw new Exception($"Failed reading current float value at offset {findFloatOffset}.");
                 float floatData = tempFloatData.Value;
                 App.Log.AddDebug($"Found {findName} float: {floatData}");
                 return floatData;

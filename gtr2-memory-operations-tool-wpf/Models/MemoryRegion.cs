@@ -5,23 +5,20 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Gtr2MemOpsTool
+namespace Gtr2MemOpsTool.Models
 {
-    public class MemoryRegion
+    public class MemoryRegion(MemoryField[] fields)
     {
-        public MemoryField[] Fields { get; set; }
-        public MemoryRegion(MemoryField[] fields)
-        {
-            Fields = fields;
-        }
+        public MemoryField[] Fields { get; set; } = fields;
+
         public void AddField(MemoryField field)
         {
             Type heldType = field.HeldType;
             int fieldSize = Marshal.SizeOf(heldType) * field.Length;
-            int lastFieldOffset = ( Fields.Length > 0 ) ? Fields[Fields.Length - 1].OffsetStatic : 0;
+            int lastFieldOffset = ( Fields.Length > 0 ) ? Fields[^1].OffsetStatic : 0;
             int fieldOffset = lastFieldOffset + fieldSize;
             field.OffsetStatic = fieldOffset;
-            Fields.Append(field);
+            _ = Fields.Append(field);
         }
     }
 }

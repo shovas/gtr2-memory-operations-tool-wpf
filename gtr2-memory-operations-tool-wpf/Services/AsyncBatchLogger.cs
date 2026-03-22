@@ -1,12 +1,13 @@
-﻿using System;
+﻿using Gtr2MemOpsTool.Models;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using System.Threading.Channels;
 
-namespace Gtr2MemOpsTool
+namespace Gtr2MemOpsTool.Services
 {
-    public class AsyncBatchLogger
+    public class AsyncBatchLogger(AsyncBatchLogger.LogLevel loggingLevel)
     {
         // Using a Channel to implement an async logging system that batches log entries and updates the UI at regular intervals without blocking the main thread.
         private readonly Channel<LogItem> _channel = Channel.CreateUnbounded<LogItem>();
@@ -23,13 +24,7 @@ namespace Gtr2MemOpsTool
         /// <summary>
         ///  The effective logging level. Log entries with a level below this will be ignored. For example, if set to Warning, Debug and Info entries will be ignored, but Warning, Error and Exception entries will be logged.
         /// </summary>
-        public LogLevel LoggingLevel { get; set; } = LogLevel.Debug;
-        //public event Action<string, LogLevel>? EntryAdded;
-
-        public AsyncBatchLogger(LogLevel loggingLevel)
-        {
-            LoggingLevel = loggingLevel;
-        }
+        public LogLevel LoggingLevel { get; set; } = loggingLevel;
 
         public void Log(LogItem logItem)
         {
@@ -43,7 +38,7 @@ namespace Gtr2MemOpsTool
             //Debug.WriteLine(message); // Argh. Debug.WriteLine is a synchronous blocking call and ridiculously slow. It freezes the UI. Don't use it.
             DateTime logItemTs = DateTime.Now;
             //string logItemTsStr = logItemTs.ToString("yyyy-MM-dd HH:mm:ss");
-            LogItem logItem = new LogItem(logItemTs, message, loggingLevel);
+            LogItem logItem = new(logItemTs, message, loggingLevel);
             _channel.Writer.TryWrite(logItem);
             //EntryAdded?.Invoke(message, loggingLevel);
         }
@@ -73,7 +68,7 @@ namespace Gtr2MemOpsTool
         //    Add($"Exception: {ex.Message}\nStack Trace: {ex.StackTrace}", LogLevel.Exception);
         //}
 
-        public LogLevel GetLogLevel( string logLevelLabel ) {
+        public static LogLevel GetLogLevel( string logLevelLabel ) {
             switch (logLevelLabel)
             {
                 case "Debug":
@@ -92,7 +87,7 @@ namespace Gtr2MemOpsTool
             }
         }
 
-        public string GetLogLevelLabel(LogLevel logLevel)
+        public static string GetLogLevelLabel(LogLevel logLevel)
         {
             switch (logLevel)
             {

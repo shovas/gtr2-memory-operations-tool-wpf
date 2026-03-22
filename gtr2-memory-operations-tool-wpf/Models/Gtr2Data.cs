@@ -18,7 +18,7 @@ using System.Xml.Serialization;
 
 
 
-  namespace Gtr2MemOpsTool
+  namespace Gtr2MemOpsTool.Models
 {
     public interface IGtr2Struct { }
 
@@ -76,7 +76,7 @@ using System.Xml.Serialization;
       public byte mDetached;             // whether wheel is detached
 
       [MarshalAsAttribute(UnmanagedType.ByValArray, SizeConst = 32)]
-      [JsonIgnore] byte[] mExpansion;                                           // for future use
+      [JsonIgnore] public byte[] mExpansion;                                           // for future use
     };
 
     //////////////////////////////////////////////////////////////////////////////////////////

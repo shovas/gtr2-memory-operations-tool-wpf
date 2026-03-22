@@ -2,23 +2,14 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Gtr2MemOpsTool
+namespace Gtr2MemOpsTool.Models
 {
-    public class SharedMemoryItem
+    public class SharedMemoryItem(string structName, string key, string value, string type)
     {
         public int Index { get; set; } = -1;
-        public string StructName { get; set; } = "";
-        public string Key { get; set; } = "";
-        public string Value { get; set; } = "";
-        public string Type { get; set; } = "";
-
-        public SharedMemoryItem(string structName, string key, string value, string type)
-        {
-            StructName = structName;
-            Key = key;
-            Value = value;
-            Type = type;
-        }
-
+        public string StructName { get; set; } = structName;
+        public string Key { get; set; } = key;
+        public string Value { get; set; } = value;
+        public string Type { get; set; } = type;
     }
 }

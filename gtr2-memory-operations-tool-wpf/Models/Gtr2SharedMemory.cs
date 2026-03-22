@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Gtr2MemOpsTool
+namespace Gtr2MemOpsTool.Models
 {
 
     // Marshalled types:

@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Gtr2MemOpsTool.Helpers;
+using Gtr2MemOpsTool.Models;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Configuration;
@@ -27,10 +29,10 @@ namespace Gtr2MemOpsTool.Views
     /// </summary>
     public partial class LogView : UserControl
     {
-        public BulkObservableCollection<LogItem> LogItems { get; set; } = new BulkObservableCollection<LogItem>();
+        public BulkObservableCollection<LogItem> LogItems { get; set; } = [];
 
         // CancellationTokenSource to signal the log consumer task to stop when the application is closing
-        private CancellationTokenSource _cts = new CancellationTokenSource();
+        private readonly CancellationTokenSource _cts = new();
 
         public LogView()
         {
@@ -44,7 +46,7 @@ namespace Gtr2MemOpsTool.Views
             _ = StartLogConsumerAsync(); // Fire and forget the log consumer task, it will run until the application is closed and the cancellation token is triggered.
 
             // Select the right log filter for display
-            string loggingLevelLabel = App.Log.GetLogLevelLabel(App.Log.LoggingLevel);
+            string loggingLevelLabel = Services.AsyncBatchLogger.GetLogLevelLabel(App.Log.LoggingLevel);
             LogFilterSelector.SelectedItem = LogFilterSelector.Items
                 .OfType<ComboBoxItem>()
                 .FirstOrDefault(i => i.Tag?.ToString() == loggingLevelLabel);
@@ -100,9 +102,9 @@ namespace Gtr2MemOpsTool.Views
 
         private void CopyLogButton_Click(object sender, RoutedEventArgs e)
         {
-            StringBuilder clipboardString = new StringBuilder();
+            StringBuilder clipboardString = new();
             foreach ( var logItem in LogItems) {
-                var logLevelLabel = App.Log.GetLogLevelLabel(logItem.LogLevel);
+                var logLevelLabel = Services.AsyncBatchLogger.GetLogLevelLabel(logItem.LogLevel);
                 string logItemTsStr = logItem.Timestamp.ToString("yyyy-MM-dd HH:mm:ss.fff");
                 string message = $"[{logItemTsStr}] [{logLevelLabel}] {logItem.Message}";
                 clipboardString.AppendLine(message);
@@ -112,10 +114,10 @@ namespace Gtr2MemOpsTool.Views
 
         private void SaveLogButton_Click(object sender, RoutedEventArgs e)
         {
-            StringBuilder clipboardString = new StringBuilder();
+            StringBuilder clipboardString = new();
             foreach (var logItem in LogItems)
             {
-                var logLevelLabel = App.Log.GetLogLevelLabel(logItem.LogLevel);
+                var logLevelLabel = Services.AsyncBatchLogger.GetLogLevelLabel(logItem.LogLevel);
                 string logItemTsStr = logItem.Timestamp.ToString("yyyy-MM-dd HH:mm:ss.fff");
                 string message = $"[{logItemTsStr}] [{logLevelLabel}] {logItem.Message}";
                 clipboardString.AppendLine(message);
@@ -137,13 +139,12 @@ namespace Gtr2MemOpsTool.Views
         {
             // Update the logging level in the App.Log based on the selected filter
             var selectedItem = LogFilterSelector.SelectedItem as ComboBoxItem;
-            var selectedTag = selectedItem?.Tag as string;
-            if ( selectedTag == null)
+            if (selectedItem?.Tag is not string selectedTag)
             {
                 App.Log.AddError("Unexpected condition: Log filter selection changed but selection has null value");
                 return;
             }
-            App.Log.LoggingLevel = App.Log.GetLogLevel(selectedTag);
+            App.Log.LoggingLevel = Services.AsyncBatchLogger.GetLogLevel(selectedTag);
 
             // Refresh the CollectionView filter to apply the new logging level filter
             ICollectionView view = CollectionViewSource.GetDefaultView(LogItems);

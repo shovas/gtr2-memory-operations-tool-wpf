@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿using Gtr2MemOpsTool.Helpers;
+using Gtr2MemOpsTool.Models;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -24,13 +26,13 @@ namespace Gtr2MemOpsTool.Views
     /// </summary>
     public partial class SharedMemoryView : UserControl
     {
-        private MappedBuffer<Gtr2Telemetry> TelemetryBuffer;
-        private MappedBuffer<Gtr2Scoring> ScoringBuffer;
-        private MappedBuffer<Gtr2Extended> ExtendedBuffer;
+        private readonly MappedBuffer<Gtr2Telemetry> TelemetryBuffer;
+        private readonly MappedBuffer<Gtr2Scoring> ScoringBuffer;
+        private readonly MappedBuffer<Gtr2Extended> ExtendedBuffer;
         private Gtr2Telemetry Gtr2Telemetry;
         private Gtr2Scoring Gtr2Scoring;
         private Gtr2Extended Gtr2Extended;
-        public BulkObservableCollection<SharedMemoryItem> SharedMemoryItems { get; set; } = new BulkObservableCollection<SharedMemoryItem>();
+        public BulkObservableCollection<SharedMemoryItem> SharedMemoryItems { get; set; } = [];
         public SharedMemoryView()
         {
             InitializeComponent();
@@ -211,7 +213,7 @@ namespace Gtr2MemOpsTool.Views
         private List<SharedMemoryItem> GetMemoryStructFields(FieldInfo[] structItemFields, IGtr2Struct structItem)
         {
             App.Log.AddDebug($"Getting fields for struct: {structItem}");
-            List <SharedMemoryItem> items = new List<SharedMemoryItem>();
+            List <SharedMemoryItem> items = [];
             foreach (FieldInfo structItemField in structItemFields)
             {
                 // Skip JsonIgnore fields
@@ -230,19 +232,19 @@ namespace Gtr2MemOpsTool.Views
         {
             App.Log.AddDebug($"Getting field {structItemField} for struct {parentStructItem}");
             object? structItemFieldValue = structItemField.GetValue(parentStructItem);
-            if (structItemFieldValue == null) return new List<SharedMemoryItem>();
+            if (structItemFieldValue == null) return [];
             string parentStructName = parentStructItem.GetType().Name;
 
             App.Log.AddDebug($"Processing field: {structItemField.Name}, Type: {structItemField.FieldType.Name}, Value: {structItemFieldValue}");
 
-            List<SharedMemoryItem> items = new List<SharedMemoryItem>();
+            List<SharedMemoryItem> items = [];
             if (structItemFieldValue is IGtr2Struct)
             {
                 // IGtr2Struct instances
                 App.Log.AddDebug($"Field {structItemField.Name} is a IGtr2Struct: {structItemField}");
 
-                string fieldValueString = $"IGtr2Struct: {structItemFieldValue.ToString()}";
-                SharedMemoryItem memoryItem = new SharedMemoryItem(parentStructName, structItemField.Name, fieldValueString, structItemField.FieldType.Name);
+                string fieldValueString = $"IGtr2Struct: {structItemFieldValue}";
+                SharedMemoryItem memoryItem = new(parentStructName, structItemField.Name, fieldValueString, structItemField.FieldType.Name);
                 items.Add(memoryItem);
 
                 List <SharedMemoryItem> nestedItems =
@@ -256,8 +258,8 @@ namespace Gtr2MemOpsTool.Views
                 // IGtr2Struct arrays
                 App.Log.AddDebug($"Field {structItemField.Name} is an IGtr2Struct[]: {structItemField}");
 
-                string fieldValueString = $"IGtr2Struct[]: {structItemFieldValue.ToString()}";
-                SharedMemoryItem memoryItem = new SharedMemoryItem(parentStructName, structItemField.Name, fieldValueString, structItemField.FieldType.Name);
+                string fieldValueString = $"IGtr2Struct[]: {structItemFieldValue}";
+                SharedMemoryItem memoryItem = new(parentStructName, structItemField.Name, fieldValueString, structItemField.FieldType.Name);
                 items.Add(memoryItem);
 
                 IGtr2Struct[] iGtr2Structs = (IGtr2Struct[])structItemFieldValue;
@@ -279,7 +281,7 @@ namespace Gtr2MemOpsTool.Views
                 App.Log.AddDebug($"Field {structItemField.Name} is an unexpected struct with sequential layout: {structItemField}");
 
                 string fieldString = $"[Unexpected struct: {structItemField.FieldType.Name}]";
-                SharedMemoryItem memoryItem = new SharedMemoryItem(parentStructName, structItemField.Name, fieldString, structItemField.FieldType.Name);
+                SharedMemoryItem memoryItem = new(parentStructName, structItemField.Name, fieldString, structItemField.FieldType.Name);
                 items.Add(memoryItem);
             }
             else if (structItemField.FieldType == typeof(byte[]))
@@ -292,7 +294,7 @@ namespace Gtr2MemOpsTool.Views
                 string fieldValue = encoding.GetString(fieldValueBytes).TrimEnd('\0');
                 string fieldValueString = $"byte[]: {fieldValue}";
 
-                SharedMemoryItem memoryItem = new SharedMemoryItem(parentStructName, structItemField.Name, fieldValueString, structItemField.FieldType.Name);
+                SharedMemoryItem memoryItem = new(parentStructName, structItemField.Name, fieldValueString, structItemField.FieldType.Name);
                 items.Add(memoryItem);
             }
             else if (structItemField.FieldType.IsArray) // Caution: This matches byte[] too so if-else order becomes important
@@ -300,8 +302,8 @@ namespace Gtr2MemOpsTool.Views
                 // Arrays
                 App.Log.AddDebug($"Field {structItemField.Name} is an array: {structItemField}");
 
-                string fieldValueString = $"Array: {structItemFieldValue.ToString()}";
-                SharedMemoryItem memoryItem = new SharedMemoryItem(parentStructName, structItemField.Name, fieldValueString, structItemField.FieldType.Name);
+                string fieldValueString = $"Array: {structItemFieldValue}";
+                SharedMemoryItem memoryItem = new(parentStructName, structItemField.Name, fieldValueString, structItemField.FieldType.Name);
                 items.Add(memoryItem);
 
                 Array fieldItemValues = (Array)structItemFieldValue;
@@ -309,12 +311,12 @@ namespace Gtr2MemOpsTool.Views
                 {
                     if (fieldItemValue is IGtr2Struct)
                     {
-                        string fieldItemValueString = $"IGtr2Struct: {fieldItemValue.ToString()}";
-                        SharedMemoryItem newMemoryItem = new SharedMemoryItem(parentStructName, structItemField.Name, fieldItemValueString, structItemField.FieldType.Name);
+                        string fieldItemValueString = $"IGtr2Struct: {fieldItemValue}";
+                        SharedMemoryItem newMemoryItem = new(parentStructName, structItemField.Name, fieldItemValueString, structItemField.FieldType.Name);
                         items.Add(newMemoryItem);
 
                         IGtr2Struct fieldItemValueStruct = (IGtr2Struct)fieldItemValue;
-                        FieldInfo[] fieldItemValueStructFields = fieldItemValueStruct.GetType().GetFields(BindingFlags.Public | BindingFlags.Instance);
+                        //FieldInfo[] fieldItemValueStructFields = fieldItemValueStruct.GetType().GetFields(BindingFlags.Public | BindingFlags.Instance);
 
                         ////////////////////////////////////////////////////////
                         // fixme? We are processing the fields of the struct here, but we are not adding the struct itself as a SharedMemoryItem to the list. This means the struct will not be displayed in the UI, only its fields will be. We may want to add a SharedMemoryItem for the struct itself before processing its fields, similar to how we do it in DisplayMemoryStructField.
@@ -326,8 +328,8 @@ namespace Gtr2MemOpsTool.Views
                     }
                     else
                     {
-                        string fieldItemValueString = $"Unexpected type in array: {fieldItemValue.ToString()}";
-                        SharedMemoryItem newMemoryItem = new SharedMemoryItem(parentStructName, structItemField.Name, fieldItemValueString, structItemField.FieldType.Name);
+                        string fieldItemValueString = $"Unexpected type in array: {fieldItemValue}";
+                        SharedMemoryItem newMemoryItem = new(parentStructName, structItemField.Name, fieldItemValueString, structItemField.FieldType.Name);
                         items.Add(newMemoryItem);
                     }
                 }
@@ -337,16 +339,16 @@ namespace Gtr2MemOpsTool.Views
                 // Primitives: Byte, SByte, Int16, UInt16, Int32, UInt32, Int64, UInt64, Single, Double, Decimal, Char, Boolean
                 App.Log.AddDebug($"Field {structItemField.Name} is a primitive: {structItemField}");
 
-                string fieldValueString = $"Primitive: {structItemFieldValue.ToString()}";
-                SharedMemoryItem memoryItem = new SharedMemoryItem(parentStructName, structItemField.Name, fieldValueString, structItemField.FieldType.Name);
+                string fieldValueString = $"Primitive: {structItemFieldValue}";
+                SharedMemoryItem memoryItem = new(parentStructName, structItemField.Name, fieldValueString, structItemField.FieldType.Name);
                 items.Add(memoryItem);
             }
             else
             {
                 App.Log.AddDebug($"Field {structItemField.Name} is an unexpected type: {structItemField}");
                 // Primitives: Byte, SByte, Int16, UInt16, Int32, UInt32, Int64, UInt64, Single, Double, Decimal, Char, Boolean
-                string fieldValueString = $"Unexpected type: {structItemFieldValue.ToString()}";
-                SharedMemoryItem memoryItem = new SharedMemoryItem(parentStructName, structItemField.Name, fieldValueString, structItemField.FieldType.Name);
+                string fieldValueString = $"Unexpected type: {structItemFieldValue}";
+                SharedMemoryItem memoryItem = new(parentStructName, structItemField.Name, fieldValueString, structItemField.FieldType.Name);
                 items.Add(memoryItem);
             }
             return items;
@@ -389,8 +391,8 @@ namespace Gtr2MemOpsTool.Views
                 // IGtr2Struct instances
                 App.Log.AddDebug($"Field {structItemField.Name} is a IGtr2Struct: {structItemField}");
 
-                string displayValue = $"IGtr2Struct: {structItemFieldValue.ToString()}";
-                SharedMemoryItem memoryItem = new SharedMemoryItem(parentStructName, structItemField.Name, displayValue, structItemField.FieldType.Name);
+                string displayValue = $"IGtr2Struct: {structItemFieldValue}";
+                SharedMemoryItem memoryItem = new(parentStructName, structItemField.Name, displayValue, structItemField.FieldType.Name);
                 AddSharedMemoryItem(memoryItem);
 
                 DisplayMemoryStruct((IGtr2Struct)structItemFieldValue); // Recursively display nested struct fields
@@ -401,8 +403,8 @@ namespace Gtr2MemOpsTool.Views
                 // IGtr2Struct arrays
                 App.Log.AddDebug($"Field {structItemField.Name} is an IGtr2Struct[]: {structItemField}");
 
-                string displayValue = $"IGtr2Struct[]: {structItemFieldValue.ToString()}";
-                SharedMemoryItem memoryItem = new SharedMemoryItem(parentStructName, structItemField.Name, displayValue, structItemField.FieldType.Name);
+                string displayValue = $"IGtr2Struct[]: {structItemFieldValue}";
+                SharedMemoryItem memoryItem = new(parentStructName, structItemField.Name, displayValue, structItemField.FieldType.Name);
                 AddSharedMemoryItem(memoryItem);
 
                 IGtr2Struct[] iGtr2Structs = (IGtr2Struct[])structItemFieldValue;
@@ -422,7 +424,7 @@ namespace Gtr2MemOpsTool.Views
                 App.Log.AddDebug($"Field {structItemField.Name} is an unexpected struct with sequential layout: {structItemField}");
 
                 string displayValue = $"[Unexpected struct: {structItemField.FieldType.Name}]";
-                SharedMemoryItem memoryItem = new SharedMemoryItem(parentStructName, structItemField.Name, displayValue, structItemField.FieldType.Name);
+                SharedMemoryItem memoryItem = new(parentStructName, structItemField.Name, displayValue, structItemField.FieldType.Name);
                 AddSharedMemoryItem(memoryItem);
             }
             else if (structItemField.FieldType == typeof(byte[]))
@@ -438,7 +440,7 @@ namespace Gtr2MemOpsTool.Views
                 //displayValue = GetByteArrayString((byte[])structItemFieldValue);
                 //DisplayMemoryStructFieldByteArray(structItem, field, (byte[])obj);
 
-                SharedMemoryItem memoryItem = new SharedMemoryItem(parentStructName, structItemField.Name, displayValue, structItemField.FieldType.Name);
+                SharedMemoryItem memoryItem = new(parentStructName, structItemField.Name, displayValue, structItemField.FieldType.Name);
                 AddSharedMemoryItem(memoryItem);
             }
             else if (structItemField.FieldType.IsArray) // Caution: This matches byte[] too so if-else order becomes important
@@ -446,8 +448,8 @@ namespace Gtr2MemOpsTool.Views
                 // Arrays
                 App.Log.AddDebug($"Field {structItemField.Name} is an array: {structItemField}");
 
-                string displayValue = $"Array: {structItemFieldValue.ToString()}";
-                SharedMemoryItem memoryItem = new SharedMemoryItem(parentStructName, structItemField.Name, displayValue, structItemField.FieldType.Name);
+                string displayValue = $"Array: {structItemFieldValue}";
+                SharedMemoryItem memoryItem = new(parentStructName, structItemField.Name, displayValue, structItemField.FieldType.Name);
                 AddSharedMemoryItem(memoryItem);
 
                 Array fieldItemValues = (Array)structItemFieldValue;
@@ -455,12 +457,12 @@ namespace Gtr2MemOpsTool.Views
                 {
                     if (fieldItemValue is IGtr2Struct)
                     {
-                        string fieldItemValueDisplayValue = $"IGtr2Struct: {fieldItemValue.ToString()}";
-                        SharedMemoryItem newMemoryItem = new SharedMemoryItem(parentStructName, structItemField.Name, fieldItemValueDisplayValue, structItemField.FieldType.Name);
+                        string fieldItemValueDisplayValue = $"IGtr2Struct: {fieldItemValue}";
+                        SharedMemoryItem newMemoryItem = new(parentStructName, structItemField.Name, fieldItemValueDisplayValue, structItemField.FieldType.Name);
                         AddSharedMemoryItem(newMemoryItem);
 
-                        IGtr2Struct fieldItemValueStruct = (IGtr2Struct)fieldItemValue;
-                        FieldInfo[] fieldItemValueStructFields = fieldItemValueStruct.GetType().GetFields(BindingFlags.Public | BindingFlags.Instance);
+                        //IGtr2Struct fieldItemValueStruct = (IGtr2Struct)fieldItemValue;
+                        //FieldInfo[] fieldItemValueStructFields = fieldItemValueStruct.GetType().GetFields(BindingFlags.Public | BindingFlags.Instance);
                         //DisplayMemoryStructFields(fieldItemValueStructFields, fieldItemValueStruct);
 
                         ////////////////////////////////////////////////////////
@@ -471,8 +473,8 @@ namespace Gtr2MemOpsTool.Views
                     }
                     else
                     {
-                        string fieldItemValueDisplayValue = $"Unexpected type in array: {fieldItemValue.ToString()}";
-                        SharedMemoryItem newMemoryItem = new SharedMemoryItem(parentStructName, structItemField.Name, fieldItemValueDisplayValue, structItemField.FieldType.Name);
+                        string fieldItemValueDisplayValue = $"Unexpected type in array: {fieldItemValue}";
+                        SharedMemoryItem newMemoryItem = new(parentStructName, structItemField.Name, fieldItemValueDisplayValue, structItemField.FieldType.Name);
                         AddSharedMemoryItem(newMemoryItem);
                     }
 
@@ -490,8 +492,8 @@ namespace Gtr2MemOpsTool.Views
                 App.Log.AddDebug($"Field {structItemField.Name} is a primitive: {structItemField}");
 
                 //displayValue = $"[Unexpected: {structItemField.FieldType.Name}]";
-                string displayValue = $"Primitive: {structItemFieldValue.ToString()}";
-                SharedMemoryItem memoryItem = new SharedMemoryItem(parentStructName, structItemField.Name, displayValue, structItemField.FieldType.Name);
+                string displayValue = $"Primitive: {structItemFieldValue}";
+                SharedMemoryItem memoryItem = new(parentStructName, structItemField.Name, displayValue, structItemField.FieldType.Name);
                 AddSharedMemoryItem(memoryItem);
             }
             else
@@ -499,8 +501,8 @@ namespace Gtr2MemOpsTool.Views
                 App.Log.AddDebug($"Field {structItemField.Name} is an unexpected type: {structItemField}");
                 // Primitives: Byte, SByte, Int16, UInt16, Int32, UInt32, Int64, UInt64, Single, Double, Decimal, Char, Boolean
                 //displayValue = $"[Unexpected: {structItemField.FieldType.Name}]";
-                string displayValue = $"Unexpected type: {structItemFieldValue.ToString()}";
-                SharedMemoryItem memoryItem = new SharedMemoryItem(parentStructName, structItemField.Name, displayValue, structItemField.FieldType.Name);
+                string displayValue = $"Unexpected type: {structItemFieldValue}";
+                SharedMemoryItem memoryItem = new(parentStructName, structItemField.Name, displayValue, structItemField.FieldType.Name);
                 AddSharedMemoryItem(memoryItem);
             }
 
@@ -522,15 +524,15 @@ namespace Gtr2MemOpsTool.Views
         //    AddSharedMemoryItem(new SharedMemoryItem(structName, field.Name, displayValue, field.FieldType.Name));
         //}
 
-        private string GetByteArrayString(byte[] byteArray)
+        private static string GetByteArrayString(byte[] byteArray)
         {
             return Encoding.UTF8.GetString(byteArray).TrimEnd('\0');
         }
 
-        private string GetArrayString(Array array)
+        private static string GetArrayString(Array array)
         {
-            StringBuilder sb = new StringBuilder();
-            sb.Append("[");
+            StringBuilder sb = new();
+            sb.Append('[');
             foreach (var item in array)
             {
                 sb.Append(item?.ToString() ?? "null");
@@ -538,7 +540,7 @@ namespace Gtr2MemOpsTool.Views
             }
             if (array.Length > 0)
                 sb.Length -= 2; // Remove last comma and space
-            sb.Append("]");
+            sb.Append(']');
             return sb.ToString();
         }
 
@@ -599,7 +601,7 @@ namespace Gtr2MemOpsTool.Views
             RefreshButton.IsEnabled = false;
             SharedMemoryItems.Clear();
             var progress = new Progress<List<SharedMemoryItem>>(items => {
-                AddSharedMemoryItems(items.ToArray());
+                AddSharedMemoryItems([.. items]);
                 //SharedMemoryItems.AddRange(items); // New custom BulkObservableCollection method to add a range of items with a single CollectionChanged event
             }); // runs on UI thread
             await Task.Run(() => LoadItems(progress));
@@ -621,7 +623,7 @@ namespace Gtr2MemOpsTool.Views
                 }
                 // do heavy work per item...
                 progress.Report(batch); // marshals back to UI thread safely
-                batch = new List<SharedMemoryItem>(); // Using batch.Clear() clears batch before progress.Report() finishes updating the UI
+                batch = []; // Using batch.Clear() clears batch before progress.Report() finishes updating the UI
             }
             progress.Report(batch);
         }

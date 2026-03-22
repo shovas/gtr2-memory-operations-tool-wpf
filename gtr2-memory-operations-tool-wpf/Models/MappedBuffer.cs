@@ -15,7 +15,7 @@ using System.IO.MemoryMappedFiles;
 using System.Runtime.InteropServices;
 using System.Threading;
 
-namespace Gtr2MemOpsTool
+namespace Gtr2MemOpsTool.Models
 {
     public class MappedBuffer<MappedBufferT>
     {
@@ -32,14 +32,14 @@ namespace Gtr2MemOpsTool
         private byte[]? fullSizeBuffer = null;
         MemoryMappedFile? memoryMappedFile = null;
 
-        bool partial = false;
-        bool skipUnchanged = false;
+        bool Partial { get; set; } = false;
+        bool SkipUnchanged { get; set; } = false;
         public MappedBuffer(string buffName, bool partial, bool skipUnchanged)
         {
             this.BUFFER_SIZE_BYTES = Marshal.SizeOf(typeof(MappedBufferT));
             this.BUFFER_NAME = buffName;
-            this.partial = partial;
-            this.skipUnchanged = skipUnchanged;
+            this.Partial = partial;
+            this.SkipUnchanged = skipUnchanged;
         }
 
         // Write buffer ctor.
@@ -59,8 +59,7 @@ namespace Gtr2MemOpsTool
 
         public void Disconnect()
         {
-            if (this.memoryMappedFile != null)
-                this.memoryMappedFile.Dispose();
+            this.memoryMappedFile?.Dispose();
 
             this.memoryMappedFile = null;
             this.fullSizeBuffer = [];
@@ -104,23 +103,21 @@ namespace Gtr2MemOpsTool
             if (this.memoryMappedFile == null)
                 throw new InvalidOperationException("Buffer not connected. Call Connect() first.");
 
-            using (var sharedMemoryStreamView = this.memoryMappedFile.CreateViewStream())
-            {
-                var sharedMemoryStream = new BinaryReader(sharedMemoryStreamView);
-                var sharedMemoryReadBuffer = sharedMemoryStream.ReadBytes(this.BUFFER_SIZE_BYTES);
+            using var sharedMemoryStreamView = this.memoryMappedFile.CreateViewStream();
+            var sharedMemoryStream = new BinaryReader(sharedMemoryStreamView);
+            var sharedMemoryReadBuffer = sharedMemoryStream.ReadBytes(this.BUFFER_SIZE_BYTES);
 
-                var handleBuffer = GCHandle.Alloc(sharedMemoryReadBuffer, GCHandleType.Pinned);
-                //mappedData = (MappedBufferT)Marshal.PtrToStructure(handleBuffer.AddrOfPinnedObject(), typeof(MappedBufferT));
-                mappedData = Marshal.PtrToStructure<MappedBufferT>(handleBuffer.AddrOfPinnedObject())
-                    ?? throw new InvalidOperationException("Failed to marshal shared memory to structure.");
-                //mappedData = (MappedBufferT)(Marshal.PtrToStructure(handleBuffer.AddrOfPinnedObject(), typeof(MappedBufferT))
-                //?? throw new InvalidOperationException("Failed to marshal shared memory to structure."));
+            var handleBuffer = GCHandle.Alloc(sharedMemoryReadBuffer, GCHandleType.Pinned);
+            //mappedData = (MappedBufferT)Marshal.PtrToStructure(handleBuffer.AddrOfPinnedObject(), typeof(MappedBufferT));
+            mappedData = Marshal.PtrToStructure<MappedBufferT>(handleBuffer.AddrOfPinnedObject())
+                ?? throw new InvalidOperationException("Failed to marshal shared memory to structure.");
+            //mappedData = (MappedBufferT)(Marshal.PtrToStructure(handleBuffer.AddrOfPinnedObject(), typeof(MappedBufferT))
+            //?? throw new InvalidOperationException("Failed to marshal shared memory to structure."));
 
-                handleBuffer.Free();
-            }
+            handleBuffer.Free();
         }
 
-        private void GetHeaderBlock<HeaderBlockT>(BinaryReader sharedMemoryStream, int headerBlockBytes, ref HeaderBlockT headerBlock)
+        private static void GetHeaderBlock<HeaderBlockT>(BinaryReader sharedMemoryStream, int headerBlockBytes, ref HeaderBlockT headerBlock)
         {
             sharedMemoryStream.BaseStream.Position = 0;
             var sharedMemoryReadBufferHeader = sharedMemoryStream.ReadBytes(headerBlockBytes);
@@ -155,129 +152,127 @@ namespace Gtr2MemOpsTool
             // there are other options too.  Bearing in mind that minimum sleep on windows is ~16ms, which is around 66FPS, I doubt delay added matters much for Crew Chief at least.
             if (this.memoryMappedFile == null)
                 throw new InvalidOperationException("Buffer not connected. Call Connect() first.");
-            using (var sharedMemoryStreamView = this.memoryMappedFile.CreateViewStream())
+            using var sharedMemoryStreamView = this.memoryMappedFile.CreateViewStream();
+            uint currVersionBegin = 0;
+            uint currVersionEnd = 0;
+
+            var retry = 0;
+            var sharedMemoryStream = new BinaryReader(sharedMemoryStreamView);
+            byte[]? sharedMemoryReadBuffer = null;
+            var versionHeaderWithSize = new Gtr2MappedBufferVersionBlockWithSize();
+            var versionHeader = new Gtr2MappedBufferVersionBlock();
+
+            for (retry = 0; retry < MappedBuffer<MappedBufferT>.NUM_MAX_RETRIEES; ++retry)
             {
-                uint currVersionBegin = 0;
-                uint currVersionEnd = 0;
-
-                var retry = 0;
-                var sharedMemoryStream = new BinaryReader(sharedMemoryStreamView);
-                byte[]? sharedMemoryReadBuffer = null;
-                var versionHeaderWithSize = new Gtr2MappedBufferVersionBlockWithSize();
-                var versionHeader = new Gtr2MappedBufferVersionBlock();
-
-                for (retry = 0; retry < MappedBuffer<MappedBufferT>.NUM_MAX_RETRIEES; ++retry)
+                var bufferSizeBytes = this.BUFFER_SIZE_BYTES;
+                // Read current buffer versions.
+                if (this.Partial)
                 {
-                    var bufferSizeBytes = this.BUFFER_SIZE_BYTES;
-                    // Read current buffer versions.
-                    if (this.partial)
-                    {
-                        this.GetHeaderBlock<Gtr2MappedBufferVersionBlockWithSize>(sharedMemoryStream, this.GTR2_BUFFER_VERSION_BLOCK_WITH_SIZE_SIZE_BYTES, ref versionHeaderWithSize);
-                        currVersionBegin = versionHeaderWithSize.mVersionUpdateBegin;
-                        currVersionEnd = versionHeaderWithSize.mVersionUpdateEnd;
+                    GetHeaderBlock(sharedMemoryStream, this.GTR2_BUFFER_VERSION_BLOCK_WITH_SIZE_SIZE_BYTES, ref versionHeaderWithSize);
+                    currVersionBegin = versionHeaderWithSize.mVersionUpdateBegin;
+                    currVersionEnd = versionHeaderWithSize.mVersionUpdateEnd;
 
-                        bufferSizeBytes = versionHeaderWithSize.mBytesUpdatedHint != 0 ? versionHeaderWithSize.mBytesUpdatedHint : bufferSizeBytes;
-                    }
-                    else
-                    {
-                        this.GetHeaderBlock<Gtr2MappedBufferVersionBlock>(sharedMemoryStream, this.GTR2_BUFFER_VERSION_BLOCK_SIZE_BYTES, ref versionHeader);
-                        currVersionBegin = versionHeader.mVersionUpdateBegin;
-                        currVersionEnd = versionHeader.mVersionUpdateEnd;
-                    }
-
-                    // If this is stale "out of sync" situation, that is, we're stuck in, no point in retrying here.
-                    // Could be a bug in a game, plugin or a game crash.
-                    if (currVersionBegin == this.stuckVersionBegin
-                      && currVersionEnd == this.stuckVersionEnd)
-                    {
-                        ++this.numStuckFrames;
-                        return;  // Failed.
-                    }
-
-                    // If version is the same as previously successfully read, do nothing.
-                    if (this.skipUnchanged
-                      && currVersionBegin == this.lastSuccessVersionBegin
-                      && currVersionEnd == this.lastSuccessVersionEnd)
-                    {
-                        ++this.numSkippedNoChange;
-                        return;
-                    }
-
-                    // Buffer version pre-check.  Verify if Begin/End versions match.
-                    if (currVersionBegin != currVersionEnd)
-                    {
-                        Thread.Sleep(1);
-                        ++numReadRetriesPreCheck;
-                        continue;
-                    }
-
-                    // Read the mapped data.
-                    sharedMemoryStream.BaseStream.Position = 0;
-                    sharedMemoryReadBuffer = sharedMemoryStream.ReadBytes(bufferSizeBytes);
-
-                    // Marshal version block.
-                    var handleVersionBlock = GCHandle.Alloc(sharedMemoryReadBuffer, GCHandleType.Pinned);
-                    //versionHeader = (GTR2MappedBufferVersionBlock)Marshal.PtrToStructure(handleVersionBlock.AddrOfPinnedObject(), typeof(GTR2MappedBufferVersionBlock));
-                    versionHeader = Marshal.PtrToStructure<Gtr2MappedBufferVersionBlock>(handleVersionBlock.AddrOfPinnedObject());
-                    handleVersionBlock.Free();
-
+                    bufferSizeBytes = versionHeaderWithSize.mBytesUpdatedHint != 0 ? versionHeaderWithSize.mBytesUpdatedHint : bufferSizeBytes;
+                }
+                else
+                {
+                    GetHeaderBlock(sharedMemoryStream, this.GTR2_BUFFER_VERSION_BLOCK_SIZE_BYTES, ref versionHeader);
                     currVersionBegin = versionHeader.mVersionUpdateBegin;
                     currVersionEnd = versionHeader.mVersionUpdateEnd;
+                }
 
-                    // Verify if Begin/End versions match:
-                    if (versionHeader.mVersionUpdateBegin != versionHeader.mVersionUpdateEnd)
-                    {
-                        Thread.Sleep(1);
-                        ++numReadRetries;
-                        continue;
-                    }
+                // If this is stale "out of sync" situation, that is, we're stuck in, no point in retrying here.
+                // Could be a bug in a game, plugin or a game crash.
+                if (currVersionBegin == this.stuckVersionBegin
+                  && currVersionEnd == this.stuckVersionEnd)
+                {
+                    ++this.numStuckFrames;
+                    return;  // Failed.
+                }
 
-                    // Read the version header one last time.  This is for the case, that might not be even possible in reality,
-                    // but it is possible in my head.  Since it is cheap, no harm reading again really, aside from retry that
-                    // sometimes will be required if buffer is updated between checks.
-                    //
-                    // Anyway, the case is
-                    // * Reader thread reads updateBegin version and continues to read buffer.
-                    // * Simultaneously, Writer thread begins overwriting the buffer.
-                    // * If Reader thread reads updateEnd before Writer thread finishes, it will look
-                    //   like updateBegin == updateEnd.But we actually just read a partially overwritten buffer.
-                    //
-                    // Hence, this second check is needed here.  Even if writer thread still hasn't finished writing,
-                    // we still will be able to detect this case because now updateBegin version changed, so we
-                    // know Writer is updating the buffer.
-
-                    this.GetHeaderBlock<Gtr2MappedBufferVersionBlock>(sharedMemoryStream, this.GTR2_BUFFER_VERSION_BLOCK_SIZE_BYTES, ref versionHeader);
-
-                    if (currVersionBegin != versionHeader.mVersionUpdateBegin
-                      || currVersionEnd != versionHeader.mVersionUpdateEnd)
-                    {
-                        Thread.Sleep(1);
-                        ++this.numReadRetriesOnCheck;
-                        continue;
-                    }
-
-                    // Marshal GTR2 State buffer
-                    this.MarshalDataBuffer(this.partial, sharedMemoryReadBuffer, ref mappedData);
-
-                    // Success.
-                    this.maxRetries = Math.Max(this.maxRetries, retry);
-                    ++this.numReadsSucceeded;
-                    this.stuckVersionBegin = this.stuckVersionEnd = 0;
-
-                    // Save succeessfully read version to avoid re-reading.
-                    this.lastSuccessVersionBegin = currVersionBegin;
-                    this.lastSuccessVersionEnd = currVersionEnd;
-
+                // If version is the same as previously successfully read, do nothing.
+                if (this.SkipUnchanged
+                  && currVersionBegin == this.lastSuccessVersionBegin
+                  && currVersionEnd == this.lastSuccessVersionEnd)
+                {
+                    ++this.numSkippedNoChange;
                     return;
                 }
 
-                // Failure.  Save the frame version.
-                this.stuckVersionBegin = currVersionBegin;
-                this.stuckVersionEnd = currVersionEnd;
+                // Buffer version pre-check.  Verify if Begin/End versions match.
+                if (currVersionBegin != currVersionEnd)
+                {
+                    Thread.Sleep(1);
+                    ++numReadRetriesPreCheck;
+                    continue;
+                }
 
+                // Read the mapped data.
+                sharedMemoryStream.BaseStream.Position = 0;
+                sharedMemoryReadBuffer = sharedMemoryStream.ReadBytes(bufferSizeBytes);
+
+                // Marshal version block.
+                var handleVersionBlock = GCHandle.Alloc(sharedMemoryReadBuffer, GCHandleType.Pinned);
+                //versionHeader = (GTR2MappedBufferVersionBlock)Marshal.PtrToStructure(handleVersionBlock.AddrOfPinnedObject(), typeof(GTR2MappedBufferVersionBlock));
+                versionHeader = Marshal.PtrToStructure<Gtr2MappedBufferVersionBlock>(handleVersionBlock.AddrOfPinnedObject());
+                handleVersionBlock.Free();
+
+                currVersionBegin = versionHeader.mVersionUpdateBegin;
+                currVersionEnd = versionHeader.mVersionUpdateEnd;
+
+                // Verify if Begin/End versions match:
+                if (versionHeader.mVersionUpdateBegin != versionHeader.mVersionUpdateEnd)
+                {
+                    Thread.Sleep(1);
+                    ++numReadRetries;
+                    continue;
+                }
+
+                // Read the version header one last time.  This is for the case, that might not be even possible in reality,
+                // but it is possible in my head.  Since it is cheap, no harm reading again really, aside from retry that
+                // sometimes will be required if buffer is updated between checks.
+                //
+                // Anyway, the case is
+                // * Reader thread reads updateBegin version and continues to read buffer.
+                // * Simultaneously, Writer thread begins overwriting the buffer.
+                // * If Reader thread reads updateEnd before Writer thread finishes, it will look
+                //   like updateBegin == updateEnd.But we actually just read a partially overwritten buffer.
+                //
+                // Hence, this second check is needed here.  Even if writer thread still hasn't finished writing,
+                // we still will be able to detect this case because now updateBegin version changed, so we
+                // know Writer is updating the buffer.
+
+                GetHeaderBlock(sharedMemoryStream, this.GTR2_BUFFER_VERSION_BLOCK_SIZE_BYTES, ref versionHeader);
+
+                if (currVersionBegin != versionHeader.mVersionUpdateBegin
+                  || currVersionEnd != versionHeader.mVersionUpdateEnd)
+                {
+                    Thread.Sleep(1);
+                    ++this.numReadRetriesOnCheck;
+                    continue;
+                }
+
+                // Marshal GTR2 State buffer
+                this.MarshalDataBuffer(this.Partial, sharedMemoryReadBuffer, ref mappedData);
+
+                // Success.
                 this.maxRetries = Math.Max(this.maxRetries, retry);
-                ++this.numReadFailures;
+                ++this.numReadsSucceeded;
+                this.stuckVersionBegin = this.stuckVersionEnd = 0;
+
+                // Save succeessfully read version to avoid re-reading.
+                this.lastSuccessVersionBegin = currVersionBegin;
+                this.lastSuccessVersionEnd = currVersionEnd;
+
+                return;
             }
+
+            // Failure.  Save the frame version.
+            this.stuckVersionBegin = currVersionBegin;
+            this.stuckVersionEnd = currVersionEnd;
+
+            this.maxRetries = Math.Max(this.maxRetries, retry);
+            ++this.numReadFailures;
         }
 
         private void MarshalDataBuffer(bool partial, byte[] sharedMemoryReadBuffer, ref MappedBufferT mappedData)
@@ -311,24 +306,23 @@ namespace Gtr2MemOpsTool
         {
             if ( this.memoryMappedFile == null )
                 throw new InvalidOperationException("Buffer not connected. Call Connect() first.");
-            using (var sharedMemoryStreamView = this.memoryMappedFile.CreateViewStream())
+            using var sharedMemoryStreamView = this.memoryMappedFile.CreateViewStream();
+            var sharedMemoryStream = new BinaryWriter(sharedMemoryStreamView);
+
+            var size = Marshal.SizeOf(mappedData);
+            var byteArray = new byte[size];
+
+            var ptr = Marshal.AllocHGlobal(size);
+            if (mappedData == null)
             {
-                var sharedMemoryStream = new BinaryWriter(sharedMemoryStreamView);
-
-                var size = Marshal.SizeOf(mappedData);
-                var byteArray = new byte[size];
-
-                var ptr = Marshal.AllocHGlobal(size);
-                if ( mappedData == null) {
-                    throw new InvalidOperationException("Mapped data is null. Cannot marshal null structure.");
-                }
-                Marshal.StructureToPtr(mappedData, ptr, true);
-                Marshal.Copy(ptr, byteArray, 0, size);
-
-                sharedMemoryStream.Write(byteArray);
-
-                Marshal.FreeHGlobal(ptr);
+                throw new InvalidOperationException("Mapped data is null. Cannot marshal null structure.");
             }
+            Marshal.StructureToPtr(mappedData, ptr, true);
+            Marshal.Copy(ptr, byteArray, 0, size);
+
+            sharedMemoryStream.Write(byteArray);
+
+            Marshal.FreeHGlobal(ptr);
         }
     }
 }

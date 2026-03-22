@@ -4,7 +4,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Text;
 
-namespace Gtr2MemOpsTool
+namespace Gtr2MemOpsTool.Helpers
 {
     public class BulkObservableCollection<T> : ObservableCollection<T>
     {
