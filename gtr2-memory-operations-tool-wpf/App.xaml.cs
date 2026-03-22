@@ -16,8 +16,8 @@ namespace Gtr2MemOpsTool
     public partial class App : Application
     {
 
-        public static AsyncBatchLogger.LogLevel DefaultLogLevel = AsyncBatchLogger.LogLevel.Info;
-        public static AsyncBatchLogger Log = new AsyncBatchLogger(DefaultLogLevel);
+        public static readonly AsyncBatchLogger.LogLevel DefaultLogLevel = AsyncBatchLogger.LogLevel.Info;
+        public static AsyncBatchLogger Log { get; set; } = new AsyncBatchLogger(DefaultLogLevel);
 
     }
 }
