@@ -15,7 +15,7 @@ namespace Gtr2MemOpsTool.Models
         {
             Region = region;
             OffsetStatic = offsetStatic;
-            MemoryItem[] Fields =
+            List<MemoryItem> memoryItems =
             [
                 new MemoryItem("MemAddrRef_A", typeof(Int32), 1, 0x00), // -20692 rcd_Script
                 new MemoryItem("slot_id", typeof(Int32), 1, 0x00),
@@ -473,12 +473,7 @@ namespace Gtr2MemOpsTool.Models
                 new MemoryItem("x_UnknVar_EndF", typeof(Int32), 1, 0x00), // 22588
                 new MemoryItem("x_Unkn_EndD", typeof(byte), 32, 0x00) // 22592-22624
             ];
-            foreach (MemoryItem field in Fields)
-            {
-                Region.AddField(field);
-            }
-
-           
+            Region.AddMemoryItems(memoryItems);
         }
     }
 }
