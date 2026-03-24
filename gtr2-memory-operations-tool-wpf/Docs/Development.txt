@@ -16,8 +16,6 @@ Todo
   - Allow editing ListView values and writing them back to memory
     - This will be a proof of concept protoype bit of logic for the Dynamic AI Adjustment Algorithm that I want to implement later. I want to be able to edit values in memory and see the effect in game before I start building out the algorithm.
 
-
-
 Doing
 
 - Add settings ini logic, use object to hold settings in memory, add a settings tab to the UI to edit them, and save them back to the ini file
