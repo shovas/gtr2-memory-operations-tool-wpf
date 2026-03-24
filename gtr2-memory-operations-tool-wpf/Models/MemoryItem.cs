@@ -15,7 +15,7 @@ namespace Gtr2MemOpsTool.Models
         public byte[] Data { get; set; } = data ?? new byte[length]; // Raw byte data read from memory, which can be converted to the appropriate type based on HeldType when needed.
         public MemoryItem(string name, Type heldType, int offset, int length) : this(name, heldType, offset, length, new byte[length])
         {
-            // This constructor allows creating a MemoryItem without providing initial data, and it initializes the Data array to the correct length.
+            // Convenience constructor auto-creates byte[] Data
         }
         public string? ValueAsString
         {
