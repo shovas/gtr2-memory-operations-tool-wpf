@@ -2,8 +2,10 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Text;
 using System.Threading.Channels;
+using System.Windows.Shapes;
 
 namespace Gtr2MemOpsTool.Services
 {
@@ -12,7 +14,9 @@ namespace Gtr2MemOpsTool.Services
         // Using a Channel to implement an async logging system that batches log entries and updates the UI at regular intervals without blocking the main thread.
         private readonly Channel<LogItem> _channel = Channel.CreateUnbounded<LogItem>();
         public ChannelReader<LogItem> Reader => _channel.Reader; // Expose the reader to allow the MainWindow to consume log items without exposing the writer, ensuring encapsulation and thread safety.
-
+        private static readonly Channel<LogItem> _logFileChannel =
+    Channel.CreateUnbounded<LogItem>();
+        private static readonly object _writeLogFileLock = new();
         public enum LogLevel
         {
             Debug,
@@ -25,6 +29,11 @@ namespace Gtr2MemOpsTool.Services
         ///  The effective logging level. Log entries with a level below this will be ignored. For example, if set to Warning, Debug and Info entries will be ignored, but Warning, Error and Exception entries will be logged.
         /// </summary>
         public LogLevel LoggingLevel { get; set; } = LogLevel.Info; // Will be updated once config is loaded
+
+        public Logger ()
+        {
+            StartLogWriter();
+        }
 
         public void Log(LogItem logItem)
         {
@@ -49,7 +58,45 @@ namespace Gtr2MemOpsTool.Services
             LogItem logItem = new(logItemTs, message, loggingLevel);
             _channel.Writer.TryWrite(logItem);
             //EntryAdded?.Invoke(message, loggingLevel);
+            //_ = WriteToFile(logItem);
+            _logFileChannel.Writer.TryWrite(logItem);  // non-blocking, UI-safe
         }
+
+        public static void StartLogWriter()
+        {
+            Task.Run(async () =>
+            {
+                var logFileName = App.Config.IniData.Global["LogFileName"];
+                var logFile = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, logFileName);
+                await foreach (var logItem in _logFileChannel.Reader.ReadAllAsync())
+                {
+                    if ( logItem.LogLevel < App.Log.LoggingLevel ) { 
+                        continue; // Skip log entries below the configured logging level
+                    }
+                    var logLevelLabel = Services.Logger.GetLogLevelLabel(logItem.LogLevel);
+                    string ts = logItem.Timestamp.ToString("yyyy-MM-dd HH:mm:ss.fff");
+                    string logLine = $"[{ts}] [{logLevelLabel}] {logItem.Message}\n";
+                    File.AppendAllText(logFile, logLine);
+                }
+            });
+        }
+
+        //private static Task WriteToFile(LogItem logItem)
+        //{
+        //    return Task.Run(() =>
+        //    {
+        //        lock (_writeLogFileLock)
+        //        {
+                    
+        //            var logFileName = App.Config.IniData.Global["LogFileName"];
+        //            var logFile = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, logFileName);
+        //            var logLevelLabel = Services.Logger.GetLogLevelLabel(logItem.LogLevel);
+        //            string logItemTsStr = logItem.Timestamp.ToString("yyyy-MM-dd HH:mm:ss.fff");
+        //            string logLine = $"[{logItemTsStr}] [{logLevelLabel}] {logItem.Message}\n";
+        //            File.AppendAllText(logFile, logLine);
+        //        }
+        //    });
+        //}
 
         public void AddDebug(string message)
         {

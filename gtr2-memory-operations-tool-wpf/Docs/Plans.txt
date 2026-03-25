@@ -2,6 +2,8 @@
 
 PLANS
 
+- Allow writing log file to a custom path not just to a custom file name in the exe directory
+
 - Map out all grid data fields in a way that I can dynamically go find them in memory
   - For example, a list of field names and their offsets in memory so that I can loop over the list and grab them all and put them in a list I can then use, update, etc.
   - I think the existing structs already allow for this.

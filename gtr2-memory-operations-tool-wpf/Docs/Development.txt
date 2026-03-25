@@ -18,9 +18,11 @@ Todo
 
 Doing
 
-- Log should simulaneously write to a log file
+
 
 Done
+
+- Log should simulaneously write to a log file
 
 - Add settings ini logic, use object to hold settings in memory, add a settings tab to the UI to edit them, and save them back to the ini file
   - Log Level setting
