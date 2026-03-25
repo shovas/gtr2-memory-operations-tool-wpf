@@ -21,6 +21,8 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
+using static Gtr2MemOpsTool.Services.AsyncBatchLogger;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Gtr2MemOpsTool.Views
 {
@@ -46,11 +48,9 @@ namespace Gtr2MemOpsTool.Views
             _ = StartLogConsumerAsync(); // Fire and forget the log consumer task, it will run until the application is closed and the cancellation token is triggered.
 
             // Select the right log filter for display
-            string loggingLevelLabel = Services.AsyncBatchLogger.GetLogLevelLabel(App.Log.LoggingLevel);
-            LogFilterSelector.SelectedItem = LogFilterSelector.Items
-                .OfType<ComboBoxItem>()
-                .FirstOrDefault(i => i.Tag?.ToString() == loggingLevelLabel);
-
+            SelectStartupLogFilter();
+            
+            //App.Config.ConfigLoaded += OnConfigLoaded;
         }
 
         //protected override void OnClos(EventArgs e)
@@ -58,6 +58,32 @@ namespace Gtr2MemOpsTool.Views
         //    base.OnClosed(e);
         //    _cts!.Cancel();
         //}
+
+        //private void OnConfigLoaded(object? sender, EventArgs e)
+        //{
+        //    //App.Log.AddDebug("LogView: OnConfigLoaded()");
+        //    //string startupLoggingLevelLabel = App.Config.IniData.Global["StartupLoggingLevel"];
+        //    ////LogLevel logLevel = Services.AsyncBatchLogger.GetLogLevel(startupLoggingLevelLabel);
+        //    ////string logLevelLabel = Services.AsyncBatchLogger.GetLogLevelLabel(logLevel);
+        //    //SelectLogFilterByLogLevelLabel(logLevelLabel);
+        //}
+
+        private void SelectStartupLogFilter()
+        {
+            App.Log.AddDebug("LogView: SelectStartupLogFilter()");
+            string startupLoggingLevel = App.Config.IniData.Global["StartupLoggingLevel"];
+            SelectLogFilterByLogLevelLabel(startupLoggingLevel);
+            //LogFilterSelector.SelectedItem = LogFilterSelector.Items
+            //    .OfType<ComboBoxItem>()
+            //        .FirstOrDefault(i => i.Tag?.ToString() == startupLoggingLevel);
+        }
+
+        private void SelectLogFilterByLogLevelLabel(string logLevelLabel)
+        {
+            LogFilterSelector.SelectedItem = LogFilterSelector.Items
+                .OfType<ComboBoxItem>()
+                    .FirstOrDefault(i => i.Tag?.ToString() == logLevelLabel);
+        }
 
         private async Task StartLogConsumerAsync()
         {

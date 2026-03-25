@@ -7,7 +7,7 @@ using System.Threading.Channels;
 
 namespace Gtr2MemOpsTool.Services
 {
-    public class AsyncBatchLogger(AsyncBatchLogger.LogLevel loggingLevel)
+    public class AsyncBatchLogger
     {
         // Using a Channel to implement an async logging system that batches log entries and updates the UI at regular intervals without blocking the main thread.
         private readonly Channel<LogItem> _channel = Channel.CreateUnbounded<LogItem>();
@@ -24,12 +24,20 @@ namespace Gtr2MemOpsTool.Services
         /// <summary>
         ///  The effective logging level. Log entries with a level below this will be ignored. For example, if set to Warning, Debug and Info entries will be ignored, but Warning, Error and Exception entries will be logged.
         /// </summary>
-        public LogLevel LoggingLevel { get; set; } = loggingLevel;
+        public LogLevel LoggingLevel { get; set; } = LogLevel.Info; // Will be updated once config is loaded
 
         public void Log(LogItem logItem)
         {
-
+            LoggingLevel = GetLogLevel(App.Config.IniData.Global["StartupLoggingLevel"]);
+            App.Config.ConfigLoaded += OnConfigLoaded;
             _channel.Writer.TryWrite(logItem);
+        }
+
+        private void OnConfigLoaded(object? sender, EventArgs e)
+        {
+            string loggingLevel = App.Config.IniData.Global["StartupLoggingLevel"];
+            LogLevel logLevel = GetLogLevel(loggingLevel);
+            LoggingLevel = logLevel;
         }
 
         public void Add(string message, LogLevel loggingLevel)

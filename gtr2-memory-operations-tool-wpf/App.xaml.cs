@@ -1,4 +1,5 @@
 ﻿using Gtr2MemOpsTool.Services;
+using IniParser.Model;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -16,9 +17,9 @@ namespace Gtr2MemOpsTool
     /// </summary>
     public partial class App : Application
     {
-
-        public static readonly AsyncBatchLogger.LogLevel DefaultLogLevel = AsyncBatchLogger.LogLevel.Info;
-        public static AsyncBatchLogger Log { get; set; } = new AsyncBatchLogger(DefaultLogLevel);
-
+        //public static readonly AsyncBatchLogger.LogLevel DefaultLogLevel = AsyncBatchLogger.LogLevel.Info;
+        public static Config Config { get; private set; } = new();
+        public static AsyncBatchLogger Log { get; set; } = new AsyncBatchLogger();
+        
     }
 }
