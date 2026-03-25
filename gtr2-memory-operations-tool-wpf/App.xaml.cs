@@ -19,7 +19,7 @@ namespace Gtr2MemOpsTool
     {
         //public static readonly AsyncBatchLogger.LogLevel DefaultLogLevel = AsyncBatchLogger.LogLevel.Info;
         public static Config Config { get; private set; } = new();
-        public static AsyncBatchLogger Log { get; set; } = new AsyncBatchLogger();
+        public static Logger Log { get; set; } = new Logger();
         
     }
 }

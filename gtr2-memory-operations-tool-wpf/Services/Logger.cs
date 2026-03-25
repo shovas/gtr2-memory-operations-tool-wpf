@@ -7,7 +7,7 @@ using System.Threading.Channels;
 
 namespace Gtr2MemOpsTool.Services
 {
-    public class AsyncBatchLogger
+    public class Logger
     {
         // Using a Channel to implement an async logging system that batches log entries and updates the UI at regular intervals without blocking the main thread.
         private readonly Channel<LogItem> _channel = Channel.CreateUnbounded<LogItem>();

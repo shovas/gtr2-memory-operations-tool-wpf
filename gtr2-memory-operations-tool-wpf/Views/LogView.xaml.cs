@@ -21,7 +21,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
-using static Gtr2MemOpsTool.Services.AsyncBatchLogger;
+using static Gtr2MemOpsTool.Services.Logger;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Gtr2MemOpsTool.Views
@@ -130,7 +130,7 @@ namespace Gtr2MemOpsTool.Views
         {
             StringBuilder clipboardString = new();
             foreach ( var logItem in LogItems) {
-                var logLevelLabel = Services.AsyncBatchLogger.GetLogLevelLabel(logItem.LogLevel);
+                var logLevelLabel = Services.Logger.GetLogLevelLabel(logItem.LogLevel);
                 string logItemTsStr = logItem.Timestamp.ToString("yyyy-MM-dd HH:mm:ss.fff");
                 string message = $"[{logItemTsStr}] [{logLevelLabel}] {logItem.Message}";
                 clipboardString.AppendLine(message);
@@ -143,7 +143,7 @@ namespace Gtr2MemOpsTool.Views
             StringBuilder clipboardString = new();
             foreach (var logItem in LogItems)
             {
-                var logLevelLabel = Services.AsyncBatchLogger.GetLogLevelLabel(logItem.LogLevel);
+                var logLevelLabel = Services.Logger.GetLogLevelLabel(logItem.LogLevel);
                 string logItemTsStr = logItem.Timestamp.ToString("yyyy-MM-dd HH:mm:ss.fff");
                 string message = $"[{logItemTsStr}] [{logLevelLabel}] {logItem.Message}";
                 clipboardString.AppendLine(message);
@@ -170,7 +170,7 @@ namespace Gtr2MemOpsTool.Views
                 App.Log.AddError("Unexpected condition: Log filter selection changed but selection has null value");
                 return;
             }
-            App.Log.LoggingLevel = Services.AsyncBatchLogger.GetLogLevel(selectedTag);
+            App.Log.LoggingLevel = Services.Logger.GetLogLevel(selectedTag);
 
             // Refresh the CollectionView filter to apply the new logging level filter
             ICollectionView view = CollectionViewSource.GetDefaultView(LogItems);
