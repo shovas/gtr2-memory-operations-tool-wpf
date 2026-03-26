@@ -114,6 +114,73 @@ namespace Gtr2MemOpsTool.Models
 
         }
 
+        public IEnumerable<MemoryItem> GetGtr2ProgramMemoryItems()
+        {
+            App.Log.AddInfo("Getting GTR2 Program Memory Items");
+
+            var memoryItems = ReadProgramMemoryItems();
+            foreach (var memoryItem in memoryItems)
+            {
+                App.Log.AddDebug($"Yielding memory item: {memoryItem.Offset}, {memoryItem.Name}, {memoryItem.HeldType}, {memoryItem.Length}");
+                yield return memoryItem;
+            }
+
+            App.Log.AddInfo("Finished Getting GTR2 Program Memory Items");
+        }
+
+        private static bool ReadGtr2Grid()
+        {
+            bool success = false;
+            nint? gtr2ProcessPointer = null;
+            try
+            {
+
+                // 1. Find gtr2.exe
+                Process? gtr2Process = GetProcessByName(GTR2_PROCESS_NAME) ?? throw new Exception("Failed finding GTR2 process.");
+                App.Log.AddDebug($"Found gtr2.exe (PID {gtr2Process.Id})");
+
+                // 2. Open process
+                gtr2ProcessPointer = OpenProcessForReadWrite(gtr2Process);
+                if (gtr2ProcessPointer == null || gtr2ProcessPointer == nint.Zero)
+                {
+                    throw new Exception("Failed opening GTR2 process.");
+                }
+                //gtr2ProcessPointer = gtr2TempProcessPointer.Value;
+                App.Log.AddDebug("Opened process");
+
+                // 3. Scan memory for the slot list header
+                nint gridAddr = FindGridAddress((nint)gtr2ProcessPointer);
+                if (gridAddr == nint.Zero)
+                {
+                    throw new Exception("Failed to locate slot list header.");
+                }
+                App.Log.AddDebug($"Found slot list header at 0x{gridAddr:X}");
+
+                // 4. Walk the linked list and locate the first WeightPenalty
+                GridData gridData = FindTestGridData((nint)gtr2ProcessPointer, gridAddr);
+                if (gridData.NumVeh == 0)
+                {
+                    throw new Exception("Failed finding grid data in slot list.");
+                }
+                App.Log.AddDebug($"Found GridData for {gridData.NumVeh} vehicles");
+
+                success = true;
+            }
+            catch (Exception ex)
+            {
+                App.Log.AddDebug(ex.ToString());
+            }
+            finally
+            {
+                // Close process
+                if (gtr2ProcessPointer != null && gtr2ProcessPointer != nint.Zero)
+                {
+                    CloseHandle((nint)gtr2ProcessPointer);
+                }
+            }
+            return success;
+        }
+
         private static bool ReadGtr2Grid()
         {
             // Overview:
@@ -160,7 +227,7 @@ namespace Gtr2MemOpsTool.Models
                 // ---------------------------------------------------------
                 // 4. Walk the linked list and locate the first WeightPenalty
                 // ---------------------------------------------------------
-                GridData gridData = FindGridData((nint)gtr2ProcessPointer, gridAddr);
+                GridData gridData = FindTestGridData((nint)gtr2ProcessPointer, gridAddr);
                 if (gridData.NumVeh == 0)
                 {
                     throw new Exception("Failed finding grid data in slot list.");
@@ -186,7 +253,115 @@ namespace Gtr2MemOpsTool.Models
 
         // GridData is the name for the memory data structure containing slots for each vehicle in the grid. Each slot contains various data fields for the vehicle including DriverName, WeightPenalty, etc. This function walks the linked list of slots starting from the header and populates a GridData object with the data read from each slot.
         // - Note: All sessions will always have at least 20 slots, even if driver count is lower, and if driver count is >= 20 then slot count will match driver count.
-        private static GridData FindGridData(nint hProc, nint gridAddr)
+        private static GridData ReadGridData(nint hProc, nint gridAddr)
+        {
+
+            // Follow the linked list of slots and populate gridData.Slots with the data you want to read from each slot (e.g. driver name, weight penalty, etc.)
+            GridData gridData = new();
+
+            const int slotStep = GTR2_MEMORY_SLOT_SIZE;
+            nint curSlotAddr = gridAddr;
+
+            try
+            {
+                // TODO: Instead of a loop, I'd like to just straight up 
+                while (true)
+                {
+                    // Validate grid slot
+                    if (!ValidateGridSlot(hProc, curSlotAddr))
+                        throw new Exception("Invalid slot header detected");
+
+                    // Check final slot: pitGroupId will be -1
+                    // - Read pitgroup_id (3rd int32, offset +8) to detect last slot
+                    nint pitGroupIdAddr = nint.Add(curSlotAddr, GTR2_MEMORY_SLOT_OFFSET_PITGROUPID); // Offset of pitGroupId within each slot (int32 at offset 8 from slot base)
+                    int? pitGroupId = ReadMemoryInt32(hProc, pitGroupIdAddr)!;
+                    if (pitGroupId == null)
+                    {
+                        throw new Exception("Failed reading pitGroupId or reached end of slot list.");
+                    }
+                    else if (pitGroupId == -1)
+                    {
+                        // End of grid slots
+                        App.Log.AddDebug("Reached end of slot list.");
+                        break;
+                    }
+                    App.Log.AddDebug($"pitGroupId={pitGroupId}");
+
+                    // Read data from the slot and add to gridData.Slots
+                    SlotData slotData = new();
+
+                    /////////////////////////////////////////////////////
+                    // We are reading each grid slot. 
+
+
+                    //try
+                    //{
+                    //    slotData.SlotId = FindSlotId(hProc, curSlotAddr);
+                    //}
+                    //catch (Exception ex)
+                    //{
+                    //    throw new Exception(ex.Message);
+                    //}
+                    //try
+                    //{
+                    //    slotData.DriverName = FindSlotDriverName(hProc, curSlotAddr);
+                    //    if (slotData.DriverName.Length == 0)
+                    //    {
+                    //        slotData.DriverName = "[MEMORY READ BLANK]";
+                    //    }
+                    //}
+                    //catch (Exception ex)
+                    //{
+                    //    throw new Exception(ex.Message);
+                    //}
+                    //try
+                    //{
+                    //    slotData.WeightPenalty = FindSlotWeightPenalty(hProc, curSlotAddr);
+                    //}
+                    //catch (Exception ex)
+                    //{
+                    //    throw new Exception(ex.Message);
+                    //}
+                    //try
+                    //{
+                    //    slotData.CarFilePath = FindSlotCarFilePath(hProc, curSlotAddr);
+                    //}
+                    //catch (Exception ex)
+                    //{
+                    //    throw new Exception(ex.Message);
+                    //}
+
+                    gridData.Slots.Add(slotData);
+
+                    // Check for end of grid
+                    nint nextSlotAddr = nint.Add(curSlotAddr, slotStep);
+                    if (ValidateEndOfGrid(hProc, nextSlotAddr))
+                    {
+                        App.Log.AddDebug("Next slot is end of list marker. Ending read.");
+                        break;
+                    }
+                    //nint slotAddr = nint.Add(curSlotAddr, slotStep);
+                    //if (!IsAddressValid(hProc, slotAddr))
+                    //    throw new Exception("Invalid slot address detected");
+
+                    // Increment slot address
+                    curSlotAddr = nint.Add(curSlotAddr, slotStep);
+                }
+            }
+            catch (Exception ex)
+            {
+                App.Log.AddError($"Exception while reading grid data: {ex.Message}");
+                //App.Log.AddException(ex);
+            }
+
+            // Record number of vehicles found based on how many valid slots we can read before hitting the end of the linked list (indicated by a header that fails validation)
+            gridData.NumVeh = gridData.Slots.Count;
+            App.Log.AddDebug($"Total valid slots read: {gridData.NumVeh}");
+
+            return gridData;
+        }
+
+        private static GridData FindTestGridData(nint hProc, nint gridAddr)
         {
 
             // Follow the linked list of slots and populate gridData.Slots with the data you want to read from each slot (e.g. driver name, weight penalty, etc.)

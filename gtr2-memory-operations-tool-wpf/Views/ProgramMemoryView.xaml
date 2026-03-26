@@ -22,11 +22,14 @@
             </StackPanel>
         </Grid>
         <Grid Grid.Row="1" Grid.Column="0">
-            <ListView ItemsSource="{Binding MemoryItems}">
+            <ListView x:Name="ItemsListView" ItemsSource="{Binding MemoryItems}" VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling">
                 <ListView.View>
                     <GridView>
-                        <GridViewColumn Header="Key" Width="200" DisplayMemberBinding="{Binding Key}"/>
-                        <GridViewColumn Header="Value" Width="200" DisplayMemberBinding="{Binding Value}"/>
+                        <GridViewColumn Header="Offset" Width="60" DisplayMemberBinding="{Binding Offset}"/>
+                        <GridViewColumn Header="Name" Width="150" DisplayMemberBinding="{Binding Key}"/>
+                        <GridViewColumn Header="Type" Width="150" DisplayMemberBinding="{Binding Type}"/>
+                        <GridViewColumn Header="Length" Width="150" DisplayMemberBinding="{Binding Length}"/>
+                        <GridViewColumn Header="Value" Width="300" DisplayMemberBinding="{Binding Value}"/>
                     </GridView>
                 </ListView.View>
             </ListView>

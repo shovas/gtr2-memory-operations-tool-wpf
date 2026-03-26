@@ -17,6 +17,8 @@ namespace Gtr2MemOpsTool.Models
             OffsetStatic = offsetStatic;
             List<MemoryItem> memoryItems =
             [
+                // This is specifically the GTR2MemVehSlot class from TShirt's memops.py. His GridData class only contains GTR2MemVehSlots, though, so it's okay. This is all we're looking for. And we already have code reading it.
+                // I should be able to read through this sequentially and build a full list of memory items from this.
                 new MemoryItem("MemAddrRef_A", typeof(Int32), 1, 0x00), // -20692 rcd_Script
                 new MemoryItem("slot_id", typeof(Int32), 1, 0x00),
                 new MemoryItem("pitgroup_id", typeof(Int32), 1, 0x00),

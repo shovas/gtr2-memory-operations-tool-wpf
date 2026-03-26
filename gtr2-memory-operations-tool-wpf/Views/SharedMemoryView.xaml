@@ -29,7 +29,6 @@
             </StackPanel>
         </Grid>
         <Grid Grid.Row="1" Grid.Column="0">
-            <TextBlock Text="Shared Memory View" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
             <ListView x:Name="ItemsListView" ItemsSource="{Binding SharedMemoryItems}" VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling">
                 <ListView.View>
                     <GridView>
