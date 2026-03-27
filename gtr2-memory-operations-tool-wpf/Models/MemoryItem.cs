@@ -31,17 +31,20 @@ namespace Gtr2MemOpsTool.Models
                     {
                         return BitConverter.ToSingle(Data, 0).ToString();
                     }
-                    else if (HeldType == typeof(double))
-                    {
-                        return BitConverter.ToDouble(Data, 0).ToString();
-                    }
+                    // No doubles used yet
+                    //else if (HeldType == typeof(double))
+                    //{
+                    //    return BitConverter.ToDouble(Data, 0).ToString();
+                    //}
                     else if (HeldType == typeof(bool))
                     {
                         return BitConverter.ToBoolean(Data, 0).ToString();
                     }
                     else if (HeldType == typeof(string))
                     {
-                        return Encoding.UTF8.GetString(Data).TrimEnd('\0'); // Assuming null-terminated strings
+                        var encoding = Encoding.GetEncoding(Gtr2MemOps.GTR2_ENCODING_CODEPAGE);
+                        return encoding.GetString(Data, 0, Length);
+                        //return Encoding.UTF8.GetString(Data).TrimEnd('\0'); // Assuming null-terminated strings
                     }
                     else
                     {

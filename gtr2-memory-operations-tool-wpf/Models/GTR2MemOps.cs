@@ -204,7 +204,7 @@ namespace Gtr2MemOpsTool.Models
 
             try
             {
-                // TODO: Instead of a loop, I'd like to just straight up read all the memory fields into a memory structure
+                // TODO: Instead of a loop, could I just straight up read all the memory right through and put it into a struct? 
                 while (true)
                 {
                     // Validate grid slot
@@ -229,15 +229,19 @@ namespace Gtr2MemOpsTool.Models
 
                     // Read data from the slot and add to gridData.Slots
                     nint slotOffset = curSlotAddr - gridAddr;
-                    Gtr2GridVehicleSlot slotData = new(slotOffset);
-
-                    
-                    // We are reading each grid slot. 
+                    Gtr2GridVehicleSlot vehicleSlot = new(slotOffset);
 
 
+                    // We can read each Gtr2GridVehicleSlot field individually by reading the specific memory address for that field based on the slot base address + the known offset for that field, or we could read the entire slot's worth of memory into a byte array and then parse out each field from that byte array based on the known offsets within the slot. The latter would be more efficient as it would involve fewer calls to ReadProcessMemory, but it would also be more complex to implement. For simplicity and clarity, I'll read each field individually for now.
+                    foreach( var memoryItem in vehicleSlot.MemoryItems)
+                    {
+                        memoryItem.Data = ReadMemoryByteArray(hProc, curSlotAddr + memoryItem.Offset, memoryItem.Length);
 
+                        // TODO: We have the memory data, the MemoryItem class can return the right type based on HeldType. I can return vehicleSlot poulated with these memoryItems and the caller then has the values to work with.
 
-                    gridData.VehicleSlots.Add(slotData);
+                    }
+
+                    gridData.VehicleSlots.Add(vehicleSlot);
 
                     // Check for end of grid
                     nint nextSlotAddr = curSlotAddr + slotStep;
@@ -957,6 +961,18 @@ namespace Gtr2MemOpsTool.Models
             //App.Log.Add($"Raw bytes in ReadMemoryFloat: {BitConverter.ToString(buf)} = 0x{BitConverter.ToUInt32(buf, 0):X8}");
             return BitConverter.ToSingle(buf, 0);
         }
+
+        private static byte[] ReadMemoryByteArray(nint hProc, nint addr, int length)
+        {
+            byte[] buf = new byte[length];
+            var result = ReadProcessMemory(hProc, addr, buf, length, out _);
+            if (!result)
+            {
+                throw new Exception($"Failed reading byte array from memory at address 0x{addr:X} with length {length}.");
+            }
+            return buf;
+        }
+
         private static bool WriteFloat(nint hProc, nint addr, float value)
         {
             byte[] buf = BitConverter.GetBytes(value);
