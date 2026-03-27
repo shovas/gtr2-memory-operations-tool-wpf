@@ -95,18 +95,6 @@ namespace Gtr2MemOpsTool.Views
             progress.Report(batch);
         }
 
-        public IEnumerable<MemoryItem> GetGtr2ProgramMemoryItems()
-        {
-            App.Log.AddInfo("Getting GTR2 Program Memory Items");
-
-            var memoryItems = Gtr2MemOps.GetGtr2ProgramMemoryItems();
-            foreach (var memoryItem in memoryItems)
-            {
-                App.Log.AddDebug($"Yielding memory item: {memoryItem.Offset}, {memoryItem.Name}, {memoryItem.HeldType}, {memoryItem.Length}");
-                yield return memoryItem;
-            }
-
-            App.Log.AddInfo("Finished Getting GTR2 Program Memory Items");
-        }
+        
     }
 }

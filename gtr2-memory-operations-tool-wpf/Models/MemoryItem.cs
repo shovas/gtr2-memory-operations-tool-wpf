@@ -6,14 +6,14 @@ using System.Threading.Tasks;
 
 namespace Gtr2MemOpsTool.Models
 {
-    public class MemoryItem(string name, Type heldType, int offset, int length, byte[] data)
+    public class MemoryItem(string name, Type heldType, nint offset, int length, byte[] data)
     {
         public string Name { get; set; } = name;
         public Type HeldType { get; set; } = heldType; // Can be determined with typeof(Type) eg. typeof(int) for int, typeof(List<string>) for List<string>, etc.
         public int Length { get; set; } = length;
-        public int Offset { get; set; } = offset;
+        public nint Offset { get; set; } = offset;
         public byte[] Data { get; set; } = data ?? new byte[length]; // Raw byte data read from memory, which can be converted to the appropriate type based on HeldType when needed.
-        public MemoryItem(string name, Type heldType, int offset, int length) : this(name, heldType, offset, length, new byte[length])
+        public MemoryItem(string name, Type heldType, nint offset, int length) : this(name, heldType, offset, length, new byte[length])
         {
             // Convenience constructor auto-creates byte[] Data
         }

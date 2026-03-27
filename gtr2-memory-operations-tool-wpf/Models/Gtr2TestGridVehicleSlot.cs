@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Gtr2MemOpsTool.Models
 {
-    public class SlotData
+    public class Gtr2TestGridVehicleSlot
     {
         public int SlotId { get; set; }
         public string DriverName { get; set; }
@@ -14,7 +14,7 @@ namespace Gtr2MemOpsTool.Models
         public string CarFilePath { get; set; }
         public List<string> CarParts { get; set; } = [];
 
-        public SlotData()
+        public Gtr2TestGridVehicleSlot()
         {
             SlotId = 0;
             DriverName = string.Empty;
