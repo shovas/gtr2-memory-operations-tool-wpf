@@ -45,7 +45,7 @@
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
                         <GridViewColumn Header="Level" Width="75" DisplayMemberBinding="{Binding LogLevel}"/>
-                        <GridViewColumn Header="Message" Width="300" DisplayMemberBinding="{Binding Message}"/>
+                        <GridViewColumn Header="Message" Width="550" DisplayMemberBinding="{Binding Message}"/>
                     </GridView>
                 </ListView.View>
             </ListView>
