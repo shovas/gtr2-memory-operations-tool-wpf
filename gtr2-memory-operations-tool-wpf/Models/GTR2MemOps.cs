@@ -122,17 +122,24 @@ namespace Gtr2MemOpsTool.Models
         {
             App.Log.AddInfo("Getting GTR2 Program Memory Items");
 
-            var memoryItems = ReadProgramMemoryItems();
-            foreach (var memoryItem in memoryItems)
+            Gtr2Grid? gtr2Grid = ReadGtr2Grid();
+            if (gtr2Grid is null)
             {
-                App.Log.AddDebug($"Yielding memory item: {memoryItem.Offset}, {memoryItem.Name}, {memoryItem.HeldType}, {memoryItem.Length}");
-                yield return memoryItem;
+                yield break;
+            }
+            foreach (var vehicleSlot in gtr2Grid.VehicleSlots)
+            {
+                foreach (var memoryItem in  vehicleSlot.MemoryItems)
+                {
+                    App.Log.AddDebug($"Yielding memory item: {memoryItem.Offset}, {memoryItem.Name}, {memoryItem.HeldType}, {memoryItem.Length}");
+                    yield return memoryItem;
+                }
             }
 
             App.Log.AddInfo("Finished Getting GTR2 Program Memory Items");
         }
 
-        private static bool ReadGtr2Grid()
+        private static Gtr2Grid? ReadGtr2Grid()
         {
             // Overview:
             // 1. Find GTR2.EXE process
@@ -140,7 +147,7 @@ namespace Gtr2MemOpsTool.Models
             // 3. Scan memory for the slot list header using multi-signature validation
             // 4. Walk the Grid linked list of Gtr2MemVehSlots and load in list of GridData
 
-            bool success = false;
+            Gtr2Grid? gridData = null;
             nint? gtr2ProcessPointer = null;
             try
             {
@@ -167,14 +174,13 @@ namespace Gtr2MemOpsTool.Models
                 App.Log.AddDebug($"Found slot list header at 0x{gridAddr:X}");
 
                 // 4. Walk the linked list and locate the first WeightPenalty
-                Gtr2Grid gridData = ReadGridData((nint)gtr2ProcessPointer, gridAddr);
+                gridData = ReadGtr2GridData((nint)gtr2ProcessPointer, gridAddr);
                 if (gridData.VehicleSlots.Count == 0)
                 {
                     throw new Exception("Failed finding grid data in slot list.");
                 }
                 App.Log.AddDebug($"Found GridData for {gridData.VehicleSlots.Count} vehicles");
 
-                success = true;
             }
             catch (Exception ex)
             {
@@ -188,12 +194,12 @@ namespace Gtr2MemOpsTool.Models
                     CloseHandle((nint)gtr2ProcessPointer);
                 }
             }
-            return success;
+            return gridData;
         }
 
         // GridData is the name for the memory data structure containing slots for each vehicle in the grid. Each slot contains various data fields for the vehicle including DriverName, WeightPenalty, etc. This function walks the linked list of slots starting from the header and populates a GridData object with the data read from each slot.
         // - Note: All sessions will always have at least 20 slots, even if driver count is lower, and if driver count is >= 20 then slot count will match driver count.
-        private static Gtr2Grid ReadGridData(nint hProc, nint gridAddr)
+        private static Gtr2Grid ReadGtr2GridData(nint hProc, nint gridAddr)
         {
 
             // Follow the linked list of slots and populate gridData.Slots with the data you want to read from each slot (e.g. driver name, weight penalty, etc.)
@@ -231,11 +237,12 @@ namespace Gtr2MemOpsTool.Models
                     nint slotOffset = curSlotAddr - gridAddr;
                     Gtr2GridVehicleSlot vehicleSlot = new(slotOffset);
 
-
                     // We can read each Gtr2GridVehicleSlot field individually by reading the specific memory address for that field based on the slot base address + the known offset for that field, or we could read the entire slot's worth of memory into a byte array and then parse out each field from that byte array based on the known offsets within the slot. The latter would be more efficient as it would involve fewer calls to ReadProcessMemory, but it would also be more complex to implement. For simplicity and clarity, I'll read each field individually for now.
                     foreach( var memoryItem in vehicleSlot.MemoryItems)
                     {
-                        memoryItem.Data = ReadMemoryByteArray(hProc, curSlotAddr + memoryItem.Offset, memoryItem.Length);
+                        var heldTypeSize = Marshal.SizeOf(memoryItem.HeldType);
+                        var readLength = heldTypeSize * memoryItem.Length;
+                        memoryItem.Data = ReadMemoryByteArray(hProc, curSlotAddr + memoryItem.Offset, readLength);
 
                         // TODO: We have the memory data, the MemoryItem class can return the right type based on HeldType. I can return vehicleSlot poulated with these memoryItems and the caller then has the values to work with.
 

@@ -21,7 +21,7 @@ namespace Gtr2MemOpsTool.Views
     /// </summary>
     public partial class ProgramMemoryView : UserControl
     {
-        public IEnumerable<MemoryItem> MemoryItems { get; set; } = [];
+        //public IEnumerable<MemoryItem> MemoryItems { get; set; } = [];
         public BulkObservableCollection<MemoryItem> ProgramMemoryItems { get; set; } = [];
 
         public ProgramMemoryView()
@@ -31,7 +31,7 @@ namespace Gtr2MemOpsTool.Views
 
         private void SearchFilterBox_TextChanged(object sender, TextChangedEventArgs e)
         {
-            ICollectionView view = CollectionViewSource.GetDefaultView(MemoryItems);
+            ICollectionView view = CollectionViewSource.GetDefaultView(ProgramMemoryItems);
             view.Filter = item =>
             {
                 var memoryItem = (MemoryItem)item;
@@ -60,6 +60,7 @@ namespace Gtr2MemOpsTool.Views
             ProgramMemoryItems.Clear();
             var progress = new Progress<List<MemoryItem>>(items =>
             {
+                //App.Log.AddDebug("Loading items");
                 AddProgramMemoryItems([.. items]);
             }); // runs on UI thread
             await Task.Run(() => LoadItems(progress));
@@ -68,21 +69,24 @@ namespace Gtr2MemOpsTool.Views
 
         public void AddProgramMemoryItem(MemoryItem item)
         {
+            //App.Log.AddDebug("AddProgramMemoryItem()");
             ProgramMemoryItems.Add(item);
         }
         public void AddProgramMemoryItems(MemoryItem[] items)
         {
+            //App.Log.AddDebug("AddProgramMemoryItems()");
             ProgramMemoryItems.AddRange(items);
         }
 
-        private void LoadItems(IProgress<List<MemoryItem>> progress)
+        private static void LoadItems(IProgress<List<MemoryItem>> progress)
         {
             int batchLimit = 50; // TODO: Make this a setting
             var batch = new List<MemoryItem>();
             //List<SharedMemoryItem> items = GetGtr2SharedMemoryItems();
             //foreach (var item in items) // your slow data source
-            foreach (var item in GetGtr2ProgramMemoryItems()) // your slow data source
+            foreach (var item in Gtr2MemOps.GetGtr2ProgramMemoryItems()) // your slow data source
             {
+                //App.Log.AddDebug($"Loaded item: {item.Name} at offset {item.Offset} with length {item.Length}");
                 batch.Add(item);
                 if (batch.Count < batchLimit)
                 {
