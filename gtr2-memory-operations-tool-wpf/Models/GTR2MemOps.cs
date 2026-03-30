@@ -31,19 +31,19 @@ namespace Gtr2MemOpsTool.Models
         // ^ Warning: This almost certainly does not exist in the same base memory region as reported by VirtualQueryEx
 
         // Offsets 
-        private const nint GTR2_MEMORY_GRID_HEADER_OFFSET = 30368; // Offset from dynamically located Grid memory region base address
-        private const nint GTR2_MEMORY_SLOT_OFFSET_SLOT_ID = 4; // Offset from slot address
-        private const nint GTR2_MEMORY_SLOT_OFFSET_PITGROUPID = 8; // Offset from slot address
-        private const nint GTR2_MEMORY_SLOT_OFFSET_DRIVER_NAME = 21576; // Offset from slot address
-        private const nint GTR2_MEMORY_SLOT_OFFSET_WEIGHT_PENALTY = 16084; // Offset from slot address
-        private const nint GTR2_MEMORY_SLOT_OFFSET_CAR_FILEPATH = 22092; // Offset from slot address
+        private const Int32 GTR2_MEMORY_GRID_HEADER_OFFSET = 30368; // Offset from dynamically located Grid memory region base address
+        private const Int32 GTR2_MEMORY_SLOT_OFFSET_SLOT_ID = 4; // Offset from slot address
+        private const Int32 GTR2_MEMORY_SLOT_OFFSET_PITGROUPID = 8; // Offset from slot address
+        private const Int32 GTR2_MEMORY_SLOT_OFFSET_DRIVER_NAME = 21576; // Offset from slot address
+        private const Int32 GTR2_MEMORY_SLOT_OFFSET_WEIGHT_PENALTY = 16084; // Offset from slot address
+        private const Int32 GTR2_MEMORY_SLOT_OFFSET_CAR_FILEPATH = 22092; // Offset from slot address
 
         // Offsets from AIW address - based on original python code
         // - The base memory region is located by 
-        private const nint GTR2_MEMORY_BASE_OFFSET_AIW = 11876; // AIW data found at offset from dynamically located base memory region address
-        private const nint GTR2_MEMORY_AIW_OFFSET_GRID = 30368 - GTR2_MEMORY_BASE_OFFSET_AIW; // =18492 Grid data found at offset from base
-        private const nint GTR2_MEMORY_AIW_OFFSET_GDB = 2440065 - GTR2_MEMORY_BASE_OFFSET_AIW; // =2428189 GDB data found at offset from base
-        private const nint GTR2_MEMORY_AIW_OFFSET_PLR = 2463284 - GTR2_MEMORY_BASE_OFFSET_AIW; // =2451408 Offset from AIW address
+        private const Int32 GTR2_MEMORY_BASE_OFFSET_AIW = 11876; // AIW data found at offset from dynamically located base memory region address
+        private const Int32 GTR2_MEMORY_AIW_OFFSET_GRID = 30368 - GTR2_MEMORY_BASE_OFFSET_AIW; // =18492 Grid data found at offset from base
+        private const Int32 GTR2_MEMORY_AIW_OFFSET_GDB = 2440065 - GTR2_MEMORY_BASE_OFFSET_AIW; // =2428189 GDB data found at offset from base
+        private const Int32 GTR2_MEMORY_AIW_OFFSET_PLR = 2463284 - GTR2_MEMORY_BASE_OFFSET_AIW; // =2451408 Offset from AIW address
 
         // Lengths
         private const int GTR2_MEMORY_DRIVER_NAME_LENGTH = 64; // Byte length of DriverName string in memory
@@ -242,7 +242,8 @@ namespace Gtr2MemOpsTool.Models
                     {
                         var heldTypeSize = Marshal.SizeOf(memoryItem.HeldType);
                         var readLength = heldTypeSize * memoryItem.Length;
-                        memoryItem.Data = ReadMemoryByteArray(hProc, curSlotAddr + memoryItem.Offset, readLength);
+                        var memoryItemAddress = curSlotAddr + memoryItem.Offset;
+                        memoryItem.Data = ReadMemoryByteArray(hProc, memoryItemAddress, readLength);
 
                         // TODO: We have the memory data, the MemoryItem class can return the right type based on HeldType. I can return vehicleSlot poulated with these memoryItems and the caller then has the values to work with.
 
@@ -350,7 +351,7 @@ namespace Gtr2MemOpsTool.Models
             // Follow the linked list of slots and populate gridData.Slots with the data you want to read from each slot (e.g. driver name, weight penalty, etc.)
             Gtr2TestGrid gridData = new();
 
-            const nint slotStep = GTR2_MEMORY_SLOT_SIZE;
+            const Int32 slotStep = GTR2_MEMORY_SLOT_SIZE;
             nint curSlotAddr = gridAddr;
 
             try
@@ -680,9 +681,9 @@ namespace Gtr2MemOpsTool.Models
 
             // Relative offsets from dynamically located GTR2 memory region containing these nested memory regions
             //const nint aiwBaseOffset = GTR2_MEMORY_AIW_BASE_OFFSET;
-            const nint gridOffsetFromAiw = GTR2_MEMORY_AIW_OFFSET_GRID;
-            const nint gdbOffsetFromAiw = GTR2_MEMORY_AIW_OFFSET_GDB;
-            const nint plrOffsetFromAiw = GTR2_MEMORY_AIW_OFFSET_PLR;
+            const Int32 gridOffsetFromAiw = GTR2_MEMORY_AIW_OFFSET_GRID;
+            const Int32 gdbOffsetFromAiw = GTR2_MEMORY_AIW_OFFSET_GDB;
+            const Int32 plrOffsetFromAiw = GTR2_MEMORY_AIW_OFFSET_PLR;
 
             App.Log.AddInfo("Scanning memory with multi-signature validation...");
 
@@ -718,12 +719,12 @@ namespace Gtr2MemOpsTool.Models
                  *  1. Validate AIW Signature at any offset within the region. This is the anchor signature we look for first. Then every other signature is an offset from this.
                  * ---------------------------------------------------------- */
                 nint aiwAddr = -1;
-                for (nint i = 0; i <= regionSize - sigAiw.Length; i++)
+                for (Int32 aiwOffset = 0; aiwOffset <= regionSize - sigAiw.Length; aiwOffset++)
                 {
-                    if (MemorySignatureMatches(region, i, sigAiw))
+                    if (MemorySignatureMatches(region, aiwOffset, sigAiw))
                     {
-                        App.Log.AddInfo($"Found AIW signature at 0x{(regionStart + i):X}");
-                        aiwAddr = regionStart + i;
+                        App.Log.AddInfo($"Found AIW signature at 0x{(regionStart + aiwOffset):X}");
+                        aiwAddr = regionStart + aiwOffset;
                         break;
                     }
                 }
@@ -732,9 +733,10 @@ namespace Gtr2MemOpsTool.Models
                 /* ----------------------------------------------------------
                  *  2. Validate PLR signature at expected offset
                  * ---------------------------------------------------------- */
-                long plrAddr = aiwAddr + plrOffsetFromAiw;
+                nint plrAddr = aiwAddr + plrOffsetFromAiw;
+                Int32 plrOffsetFromRegionStart = (Int32)(plrAddr - regionStart);
                 if (plrAddr < regionStart || plrAddr + sigPlr.Length > regionEnd ||
-                    !MemorySignatureMatches(region, plrAddr - regionStart, sigPlr))
+                    !MemorySignatureMatches(region, plrOffsetFromRegionStart, sigPlr))
                 {
                     App.Log.AddError($"PLR signature mismatch at expected offset. Expected at 0x{plrAddr:X}");
                     curAddr = regionEnd;
@@ -748,9 +750,10 @@ namespace Gtr2MemOpsTool.Models
                 /* ----------------------------------------------------------
                  *  3. Validate GDB Horizon at expected offset
                  * ---------------------------------------------------------- */
-                long gdbAddr = aiwAddr + gdbOffsetFromAiw;
+                nint gdbAddr = aiwAddr + gdbOffsetFromAiw;
+                Int32 gdbOffsetFromRegionStart = (Int32)(gdbAddr - regionStart);
                 if (gdbAddr < regionStart || gdbAddr + sigGdb.Length > regionEnd ||
-                    !MemorySignatureMatches(region, gdbAddr - regionStart, sigGdb))
+                    !MemorySignatureMatches(region, gdbOffsetFromRegionStart, sigGdb))
                 {
                     App.Log.AddError($"GDB Horizon signature mismatch at expected offset. Expected at 0x{gdbAddr:X}");
                     curAddr = regionEnd;
@@ -783,7 +786,7 @@ namespace Gtr2MemOpsTool.Models
             return nint.Zero;
         }
 
-        private static bool MemorySignatureMatches(byte[] data, long offset, byte[] pattern)
+        private static bool MemorySignatureMatches(byte[] data, Int32 offset, byte[] pattern)
         {
             for (int i = 0; i < pattern.Length; i++)
                 if (data[offset + i] != pattern[i])
@@ -836,7 +839,7 @@ namespace Gtr2MemOpsTool.Models
             string? carFilePath = FindSlotStringValue(hProc, slotAddr, GTR2_MEMORY_SLOT_OFFSET_CAR_FILEPATH, GTR2_MEMORY_CAR_FILEPATH_LENGTH, "CarFilePath") ?? throw new Exception("Failed finding CarFilePath.");
             return carFilePath!;
         }
-        private static string? FindSlotStringValue(nint hProc, nint slotAddr, nint findStringOffset, int findStringLength, string findName)
+        private static string? FindSlotStringValue(nint hProc, nint slotAddr, Int32 findStringOffset, int findStringLength, string findName)
         {
             nint cur = slotAddr;
 
@@ -854,7 +857,7 @@ namespace Gtr2MemOpsTool.Models
 
             return null;
         }
-        private static Int32? FindSlotInt32Value(nint hProc, nint slotAddr, nint findOffset, string findName)
+        private static Int32? FindSlotInt32Value(nint hProc, nint slotAddr, Int32 findOffset, string findName)
         {
             nint cur = slotAddr;
 
@@ -872,7 +875,7 @@ namespace Gtr2MemOpsTool.Models
 
             return null;
         }
-        private static float? FindSlotFloatValue(nint hProc, nint slotAddr, nint findFloatOffset, string findName)
+        private static float? FindSlotFloatValue(nint hProc, nint slotAddr, Int32 findFloatOffset, string findName)
         {
             nint cur = slotAddr;
 
