@@ -9,7 +9,7 @@ namespace Gtr2MemOpsTool.Models
 {
     public class Gtr2GridVehicleSlot
     {
-        public nint Gtr2GridSlotOffset { get; set; } // Offset from Gtr2Grid memory region
+        public Int32 Gtr2GridSlotOffset { get; set; } // Offset from Gtr2Grid memory region
         public List<MemoryItem> MemoryItems { get; set; } = [
             // This is specifically the GTR2MemVehSlot class from TShirt's memops.py. His GridData class only contains GTR2MemVehSlots, though, so it's okay. This is all we're looking for. And we already have code reading it.
             // I should be able to read through this sequentially and build a full list of memory items from this.
@@ -184,8 +184,8 @@ namespace Gtr2MemOpsTool.Models
             new MemoryItem("UndertrayFour_Unkn", typeof(byte), 16, 0x00), // 6292
             //new MemoryField("hdc_UndertrayFive", typeof(float), 3, 0x00),
             new MemoryItem("hdc_UndertrayFive_1", typeof(float), 1, 0x00),
-            new MemoryItem("hdc_UndertrayFive_2", typeof(float), 2, 0x00),
-            new MemoryItem("hdc_UndertrayFive_3", typeof(float), 3, 0x00),
+            new MemoryItem("hdc_UndertrayFive_2", typeof(float), 1, 0x00),
+            new MemoryItem("hdc_UndertrayFive_3", typeof(float), 1, 0x00),
             new MemoryItem("UndertrayFive_Unkn", typeof(byte), 16, 0x00), // 6320
             //new MemoryField("hdc_UndertraySix", typeof(float), 3, 0x00),
             new MemoryItem("hdc_UndertraySix_1", typeof(float), 1, 0x00),
@@ -220,7 +220,7 @@ namespace Gtr2MemOpsTool.Models
             new MemoryItem("x_Unkn_e", typeof(byte), 68, 0x00), // 6504-6572
             new MemoryItem("Damage_PartCount", typeof(Int32), 1, 0x00),
             new MemoryItem("Damage_PartCount_Unkn", typeof(byte), 4, 0x00),
-            new MemoryItem("Damage_PartInfo", typeof(byte), 11, 0x00), // 6580-14808 perlen:748, length=8228
+            new MemoryItem("Damage_PartInfo", typeof(byte), 8228, 0x00), // 6580-14808 perlen:748, length=(GTR2MemDmgPartInfo)748 * 11 = 8228, TODO: Read as a real struct
             new MemoryItem("x_Unkn_f", typeof(byte), 808, 0x00), // 14808-15616
             new MemoryItem("Unkn_Timing_A", typeof(float), 1, 0x00),
             new MemoryItem("x_Unkn_g", typeof(byte), 264, 0x00), // 15620-15884
@@ -254,24 +254,24 @@ namespace Gtr2MemOpsTool.Models
             new MemoryItem("InputBrake_A", typeof(float), 1, 0x00),
             new MemoryItem("x_UnknVar_I", typeof(float), 1, 0x00), // 16160
             new MemoryItem("x_Unkn_D_Wheels", typeof(byte), 1008, 0x00), // 16164-17172, length=1008
-            new MemoryItem("tyr_FL_AISens_FinalLoad", typeof(float), 1, 0x00), // 16336
-            new MemoryItem("TyreWear_FL", typeof(float), 1, 0x00),
-            new MemoryItem("tyr_FL_AIWear", typeof(float), 1, 0x00), // 16344
-            new MemoryItem("TyreWear_FR", typeof(float), 1, 0x00),
-            new MemoryItem("tyr_FR_AIWear", typeof(float), 1, 0x00), // 16596
-            new MemoryItem("TyreWear_RL", typeof(float), 1, 0x00),
-            new MemoryItem("tyr_RL_AIWear", typeof(float), 1, 0x00), // 16848
-            new MemoryItem("TyreWear_RR", typeof(float), 1, 0x00),
-            new MemoryItem("tyr_RR_AIWear", typeof(float), 1, 0x00), // 17100
+            //new MemoryItem("tyr_FL_AISens_FinalLoad", typeof(float), 1, 0x00), // 16336
+            //new MemoryItem("TyreWear_FL", typeof(float), 1, 0x00),
+            //new MemoryItem("tyr_FL_AIWear", typeof(float), 1, 0x00), // 16344
+            //new MemoryItem("TyreWear_FR", typeof(float), 1, 0x00),
+            //new MemoryItem("tyr_FR_AIWear", typeof(float), 1, 0x00), // 16596
+            //new MemoryItem("TyreWear_RL", typeof(float), 1, 0x00),
+            //new MemoryItem("tyr_RL_AIWear", typeof(float), 1, 0x00), // 16848
+            //new MemoryItem("TyreWear_RR", typeof(float), 1, 0x00),
+            //new MemoryItem("tyr_RR_AIWear", typeof(float), 1, 0x00), // 17100
             new MemoryItem("x_Unkn_D_Engine", typeof(byte), 348, 0x00), // 17172-17520, length=348
-            new MemoryItem("CurrentFuelLevel", typeof(float), 1, 0x00), // 17196
-            new MemoryItem("hdc_FuelRange_Max", typeof(float), 1, 0x00), // 17200
-            new MemoryItem("eng_FuelConsumption", typeof(float), 1, 0x00), // 17208
-            new MemoryItem("eng_FuelEstimate", typeof(float), 1, 0x00), // 17212
+            //new MemoryItem("CurrentFuelLevel", typeof(float), 1, 0x00), // 17196
+            //new MemoryItem("hdc_FuelRange_Max", typeof(float), 1, 0x00), // 17200
+            //new MemoryItem("eng_FuelConsumption", typeof(float), 1, 0x00), // 17208
+            //new MemoryItem("eng_FuelEstimate", typeof(float), 1, 0x00), // 17212
             //new MemoryField("eng_StarterTiming", typeof(float), 3, 0x00), // 17268 ---TO_VERIFY
-            new MemoryItem("eng_StarterTiming_1", typeof(float), 1, 0x00),
-            new MemoryItem("eng_StarterTiming_2", typeof(float), 1, 0x00),
-            new MemoryItem("eng_StarterTiming_3", typeof(float), 1, 0x00),
+            //new MemoryItem("eng_StarterTiming_1", typeof(float), 1, 0x00),
+            //new MemoryItem("eng_StarterTiming_2", typeof(float), 1, 0x00),
+            //new MemoryItem("eng_StarterTiming_3", typeof(float), 1, 0x00),
             //new MemoryField("hdc_FeelerFrontLeftTwo", typeof(float), 3, 0x00),
             new MemoryItem("hdc_FeelerFrontLeftTwo_1", typeof(float), 1, 0x00),
             new MemoryItem("hdc_FeelerFrontLeftTwo_2", typeof(float), 1, 0x00),
@@ -418,7 +418,7 @@ namespace Gtr2MemOpsTool.Models
             new MemoryItem("rcd_Composure", typeof(float), 1, 0x00),
             new MemoryItem("x_UnknVar_RCD_G", typeof(float), 1, 0x00), // 20684
             new MemoryItem("rcd_CompletedLaps", typeof(float), 1, 0x00),
-            new MemoryItem("rcd_Script", typeof(char), 20, 0x00),
+            new MemoryItem("rcd_Script", typeof(byte), 20, 0x00, true),
             new MemoryItem("x_UnknVar_RCD_H", typeof(float), 1, 0x00), // 20712
             new MemoryItem("rcd_TrackAggression", typeof(float), 1, 0x00),
             new MemoryItem("x_UnknVar_RCD_I", typeof(Int32), 1, 0x00), // 20720
@@ -438,24 +438,24 @@ namespace Gtr2MemOpsTool.Models
             new MemoryItem("x_Unkn_I", typeof(byte), 740, 0x00), // 20828-21568
             new MemoryItem("x_UnknVar_J", typeof(float), 1, 0x00), // 21568
             new MemoryItem("x_Unkn_J", typeof(byte), 4, 0x00),
-            new MemoryItem("NameFull_One", typeof(char), 64, 0x00),
-            new MemoryItem("CountryFull_One", typeof(char), 24, 0x00),
-            new MemoryItem("NameAbbrev_One", typeof(char), 16, 0x00),
+            new MemoryItem("NameFull_One", typeof(byte), 64, 0x00, true),
+            new MemoryItem("CountryFull_One", typeof(byte), 24, 0x00, true),
+            new MemoryItem("NameAbbrev_One", typeof(byte), 16, 0x00, true),
             new MemoryItem("x_UnknVar_K", typeof(float), 1, 0x00), // 21680 = 32.25
-            new MemoryItem("NameFull_Two", typeof(char), 64, 0x00),
-            new MemoryItem("CountryFull_Two", typeof(char), 24, 0x00),
-            new MemoryItem("NameAbbrev_Two", typeof(char), 16, 0x00),
+            new MemoryItem("NameFull_Two", typeof(byte), 64, 0x00, true),
+            new MemoryItem("CountryFull_Two", typeof(byte), 24, 0x00, true),
+            new MemoryItem("NameAbbrev_Two", typeof(byte), 16, 0x00, true),
             new MemoryItem("x_UnknVar_L", typeof(byte), 24, 0x00), // 21788-21812
             new MemoryItem("x_UnknVar_M", typeof(Int32), 1, 0x00), // 21812
-            new MemoryItem("car_Description", typeof(char), 64, 0x00),
-            new MemoryItem("car_Team", typeof(char), 64, 0x00),
-            new MemoryItem("car_PitGroup", typeof(char), 64, 0x00),
-            new MemoryItem("car_Manufacturer", typeof(char), 64, 0x00),
-            new MemoryItem("car_Engine", typeof(char), 8, 0x00),
-            new MemoryItem("car_Number_str", typeof(char), 8, 0x00),
+            new MemoryItem("car_Description", typeof(byte), 64, 0x00, true),
+            new MemoryItem("car_Team", typeof(byte), 64, 0x00, true),
+            new MemoryItem("car_PitGroup", typeof(byte), 64, 0x00, true),
+            new MemoryItem("car_Manufacturer", typeof(byte), 64, 0x00, true),
+            new MemoryItem("car_Engine", typeof(byte), 8, 0x00, true),
+            new MemoryItem("car_Number_str", typeof(byte), 8, 0x00, true),
             new MemoryItem("car_Number_int", typeof(Int32), 1, 0x00),
-            new MemoryItem("car_FilePath", typeof(char), 128, 0x00),
-            new MemoryItem("svm_FilePath", typeof(char), 128, 0x00),
+            new MemoryItem("car_FilePath", typeof(byte), 128, 0x00, true),
+            new MemoryItem("svm_FilePath", typeof(byte), 128, 0x00, true),
             new MemoryItem("x_Unkn_L", typeof(byte), 128, 0x00), // 22348-22476
             new MemoryItem("x_UnknVar_EndA", typeof(Int32), 1, 0x00), // 22476
             new MemoryItem("x_UnknVar_EndB", typeof(Int32), 1, 0x00), // 22480
@@ -468,14 +468,14 @@ namespace Gtr2MemOpsTool.Models
             new MemoryItem("x_UnknVar_EndF", typeof(Int32), 1, 0x00), // 22588
             new MemoryItem("x_Unkn_EndD", typeof(byte), 32, 0x00) // 22592-22624
         ];
-        public Gtr2GridVehicleSlot(nint gtr2GridSlotOffset)
+        public Gtr2GridVehicleSlot(Int32 gtr2GridSlotOffset)
         {
             Gtr2GridSlotOffset = gtr2GridSlotOffset;
             CalculateOffsets();
         }
         public void CalculateOffsets()
         {
-            nint offset = Gtr2GridSlotOffset;
+            Int32 offset = Gtr2GridSlotOffset;
             foreach (var item in MemoryItems)
             {
                 item.Offset = offset;
@@ -483,6 +483,7 @@ namespace Gtr2MemOpsTool.Models
                 offset += typeSize * item.Length;
             }
             App.Log.AddDebug($"Final calculated offset: {offset} which should match {Gtr2GridSlotOffset} + {22624} = {Gtr2GridSlotOffset + 22624}");
+
         }
     }
 }

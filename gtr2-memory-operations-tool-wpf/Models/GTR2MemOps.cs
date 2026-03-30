@@ -234,7 +234,7 @@ namespace Gtr2MemOpsTool.Models
                     App.Log.AddDebug($"pitGroupId={pitGroupId}");
 
                     // Read data from the slot and add to gridData.Slots
-                    nint slotOffset = curSlotAddr - gridAddr;
+                    Int32 slotOffset = (Int32)(curSlotAddr - gridAddr);
                     Gtr2GridVehicleSlot vehicleSlot = new(slotOffset);
 
                     // We can read each Gtr2GridVehicleSlot field individually by reading the specific memory address for that field based on the slot base address + the known offset for that field, or we could read the entire slot's worth of memory into a byte array and then parse out each field from that byte array based on the known offsets within the slot. The latter would be more efficient as it would involve fewer calls to ReadProcessMemory, but it would also be more complex to implement. For simplicity and clarity, I'll read each field individually for now.

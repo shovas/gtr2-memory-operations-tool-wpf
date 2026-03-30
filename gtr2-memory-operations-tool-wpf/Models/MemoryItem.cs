@@ -6,19 +6,24 @@ using System.Threading.Tasks;
 
 namespace Gtr2MemOpsTool.Models
 {
-    public class MemoryItem(string name, Type heldType, int length, nint offset, byte[] data)
+    public class MemoryItem(string name, Type heldType, int length, nint offset, byte[] data, bool stringType)
     {
         public string Name { get; set; } = name;
         public Type HeldType { get; set; } = heldType; // Can be determined with typeof(Type) eg. typeof(int) for int, typeof(List<string>) for List<string>, etc.
         public int Length { get; set; } = length;
         public nint Offset { get; set; } = offset;
         public byte[] Data { get; set; } = data ?? new byte[length]; // Raw byte data read from memory, which can be converted to the appropriate type based on HeldType when needed.
-        public MemoryItem(string name, Type heldType, int length, nint offset) : this(name, heldType, length, offset, new byte[length])
+        public bool StringType { get; set; } = stringType; // Indicates when a byte type is actually a string
+        public MemoryItem(string name, Type heldType, int length, nint offset) : this(name, heldType, length, offset, new byte[length], false)
         {
             // Convenience constructor auto-creates byte[] Data
             //var heldTypeSize = Marshal.SizeOf(heldType);
             //var readLength = heldTypeSize * length;
             //Data = new byte[readLength];
+        }
+        public MemoryItem(string name, Type heldType, int length, nint offset, bool stringType) : this(name, heldType, length, offset, new byte[length], stringType)
+        {
+            // Convenience constructor to help with byte strings
         }
         public string? ValueAsString
         {
@@ -76,7 +81,7 @@ namespace Gtr2MemOpsTool.Models
                         //return BitConverter.ToBoolean(Data, 0).ToString();
                         //return "TODO:bool";
                     }
-                    else if (HeldType == typeof(char))
+                    else if (HeldType == typeof(byte))
                     {
                         //String? str = null;
                         //try
@@ -88,6 +93,10 @@ namespace Gtr2MemOpsTool.Models
                         //    return "[Convert char/String Error]";
                         //}
                         //return str;
+                        if (!StringType)
+                        {
+                            return $"Unsupported type: {HeldType.Name} (Non-String)";
+                        }
                         App.Log.AddDebug($"Converting char from data: name={Name}, Length={Length}");
                         App.Log.AddDebug($"Data (Data Length={Data.Length}) =>>>{BitConverter.ToString(Data)}<<<");
                         //var str2 = Encoding.UTF8.GetString(Data).TrimEnd('\0');
