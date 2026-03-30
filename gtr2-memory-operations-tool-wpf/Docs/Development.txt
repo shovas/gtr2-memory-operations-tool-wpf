@@ -18,8 +18,13 @@ Doing
   - Add memory reading logic: I already have a lot of this in Gtr2MemOps
   - Allow editing ListView values and writing them back to memory (use Settings tab for reference)
     - This will be a proof of concept protoype bit of logic for the Dynamic AI Adjustment Algorithm that I want to implement later. I want to be able to edit values in memory and see the effect in game before I start building out the algorithm.
+  - Current problem is I'm off by 4 bytes in my Gtr2GridVehicleSlots memory items.
 
 Done
+
+- 32bit offsets vs 64bit addresses issue
+  - GTR2.exe is a 32bit process, so all memory addresses are 32bit. 64bit nints can handle addresses but when I calculate nint offsets based on them the offsets are 64bit/8-byte and calculations can end up wrong.
+  - I think I need to make sure all of my offset calculations are based on 32bit integers and then only convert to nints when I actually read/write memory.
 
 - Log should simulaneously write to a log file
 
