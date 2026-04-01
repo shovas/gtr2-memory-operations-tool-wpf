@@ -362,7 +362,7 @@ namespace Gtr2MemOpsTool.Models
             new MemoryItem("x_Unkn_Gb_FFed", typeof(byte), 40, 0x00), // 19336-19376
             new MemoryItem("x_Unkn_Gb_Null_A", typeof(byte), 12, 0x00),
             new MemoryItem("x_Unkn_Gb_Var_A", typeof(Int32), 1, 0x00), // 19388
-            new MemoryItem("x_Unkn_Gb_Null_B", typeof(byte), 36, 0x00), // 19392-19428
+            new MemoryItem("x_Unkn_Gb_Null_B", typeof(byte), 40, 0x00), // 19392-19428
             new MemoryItem("Timing_LapStartET_B", typeof(float), 1, 0x00), // 19432
             new MemoryItem("Timing_Laptime_B", typeof(float), 1, 0x00),
             new MemoryItem("Timing_SectorOne_B", typeof(float), 1, 0x00),
