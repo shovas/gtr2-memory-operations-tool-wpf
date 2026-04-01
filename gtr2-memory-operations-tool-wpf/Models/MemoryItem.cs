@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Gtr2MemOpsTool.Models
 {
-    public class MemoryItem(string name, Type heldType, int length, nint offset, byte[] data, bool stringType)
+    public class MemoryItem(string name, Type heldType, int length, nint offset, byte[] data, bool stringType, Int32 offsetCheck)
     {
         public string Name { get; set; } = name;
         public Type HeldType { get; set; } = heldType; // Can be determined with typeof(Type) eg. typeof(int) for int, typeof(List<string>) for List<string>, etc.
@@ -14,16 +14,21 @@ namespace Gtr2MemOpsTool.Models
         public nint Offset { get; set; } = offset;
         public byte[] Data { get; set; } = data ?? new byte[length]; // Raw byte data read from memory, which can be converted to the appropriate type based on HeldType when needed.
         public bool StringType { get; set; } = stringType; // Indicates when a byte type is actually a string
-        public MemoryItem(string name, Type heldType, int length, nint offset) : this(name, heldType, length, offset, new byte[length], false)
+        public Int32 OffsetCheck { get; set; } = offsetCheck; // Used for checking if offsets are correct by comparing to expected values, can be set to 0 when not used
+        public MemoryItem(string name, Type heldType, int length, nint offset) : this(name, heldType, length, offset, new byte[length], false, 0)
         {
             // Convenience constructor auto-creates byte[] Data
             //var heldTypeSize = Marshal.SizeOf(heldType);
             //var readLength = heldTypeSize * length;
             //Data = new byte[readLength];
         }
-        public MemoryItem(string name, Type heldType, int length, nint offset, bool stringType) : this(name, heldType, length, offset, new byte[length], stringType)
+        public MemoryItem(string name, Type heldType, int length, nint offset, bool stringType) : this(name, heldType, length, offset, new byte[length], stringType, 0)
         {
             // Convenience constructor to help with byte strings
+        }
+        public MemoryItem(string name, Type heldType, int length, nint offset, bool stringType, Int32 offsetCheck) : this(name, heldType, length, offset, new byte[length], stringType, offsetCheck)
+        {
+            // Convenience constructor to help with offsetCheck
         }
         public string? ValueAsString
         {
