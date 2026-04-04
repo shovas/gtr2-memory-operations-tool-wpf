@@ -4,6 +4,8 @@ DEVELOPMENT
 
 Todo
 
+- Separate logging level for log file
+
 - Implement Automatic AI tab
   - Add buttons to read/write AI adjustment values to memory
   - Add ListView to show current values and allow editing them and writing them back to memory
@@ -13,12 +15,12 @@ Doing
 
 - Implement Program Memory tab memory reading
   - This tab will be for reading/writing values in the GTR2 process memory that aren't in the shared memory, such as player name, car setup values, etc.
-  - Add Buttons row like Shared Memory tab
-  - Add ListView like Shared Memory tab
-  - Add memory reading logic: I already have a lot of this in Gtr2MemOps
-  - Allow editing ListView values and writing them back to memory (use Settings tab for reference)
+  - Todo: Allow editing ListView values and writing them back to memory (use Settings tab for reference)
     - This will be a proof of concept protoype bit of logic for the Dynamic AI Adjustment Algorithm that I want to implement later. I want to be able to edit values in memory and see the effect in game before I start building out the algorithm.
-  - Current problem is I'm off by 4 bytes in my Gtr2GridVehicleSlots memory items.
+  - Done: Add Buttons row like Shared Memory tab
+  - Done: Add ListView like Shared Memory tab
+  - Done: Add memory reading logic: I already have a lot of this in Gtr2MemOps
+  - Fixed: Current problem is I'm off by 4 bytes in my Gtr2GridVehicleSlots memory items.
 
 Done
 

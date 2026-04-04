@@ -20,9 +20,9 @@ namespace Gtr2MemOpsTool.Models
         {
             foreach (MemoryItem field in fields)
             {
-                nint lastFieldOffset = (Fields.Count > 0) ? Fields[^1].Offset : 0;
+                Int32 lastFieldOffset = (Fields.Count > 0) ? Fields[^1].Offset : 0;
                 int lastFieldLength = (Fields.Count > 0) ? Fields[^1].Length : 0;
-                nint fieldOffset = lastFieldOffset + lastFieldLength;
+                Int32 fieldOffset = lastFieldOffset + lastFieldLength;
                 field.Offset = fieldOffset;
             }
             Fields.AddRange(fields);

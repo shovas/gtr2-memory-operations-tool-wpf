@@ -604,6 +604,29 @@ namespace Gtr2MemOpsTool.Models
             return true;
         }
 
+        public static nint? GetGtr2ProcessPointer()
+        {
+            nint? gtr2ProcessPointer;
+            try
+            {
+                // Get Process
+                Process? gtr2Process = GetProcessByName(GTR2_PROCESS_NAME) ?? throw new Exception("Failed finding GTR2 process.");
+
+                // Open process
+                gtr2ProcessPointer = OpenProcessForReadWrite(gtr2Process);
+                if (gtr2ProcessPointer == null || gtr2ProcessPointer == nint.Zero)
+                {
+                    throw new Exception("Failed opening GTR2 process.");
+                }
+            }
+            catch (Exception ex)
+            {
+                App.Log.AddDebug(ex.ToString());
+                return nint.Zero;
+            }
+            return gtr2ProcessPointer!;
+        }
+
         /// <summary>
         /// Finds the GTR2 process by name.
         /// </summary>
@@ -983,7 +1006,7 @@ namespace Gtr2MemOpsTool.Models
             return buf;
         }
 
-        private static bool WriteFloat(nint hProc, nint addr, float value)
+        public static bool WriteFloat(nint hProc, nint addr, float value)
         {
             byte[] buf = BitConverter.GetBytes(value);
             return WriteProcessMemory(hProc, addr, buf, 4, out _);
