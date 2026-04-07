@@ -99,6 +99,11 @@ namespace Gtr2MemOpsTool.Views
             progress.Report(batch);
         }
 
-        
+        private void ValueTextBox_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            var tb = sender as TextBox;
+            tb?.Focus();
+            e.Handled = false;
+        }
     }
 }

@@ -8,18 +8,18 @@ using System.Threading.Tasks;
 
 namespace Gtr2MemOpsTool.Models
 {
-    public class MemoryItem(string name, Type heldType, int length, Int32 offset, byte[] data, bool stringType, Int32 offsetCheck)
+    public class MemoryItem(string name, Type heldType, int length, uint offset, byte[] data, bool stringType, Int32 offsetCheck)
     {
         
         public string Name { get; set; } = name;
         public Type HeldType { get; set; } = heldType; // Can be determined with typeof(Type) eg. typeof(int) for int, typeof(List<string>) for List<string>, etc.
         public int Length { get; set; } = length;
-        public nint Address { get; set; } = 0;
-        public Int32 Offset { get; set; } = offset;
+        public uint Address { get; set; } = 0;
+        public uint Offset { get; set; } = offset;
         public byte[] Data { get; set; } = data ?? new byte[length]; // Raw byte data read from memory, which can be converted to the appropriate type based on HeldType when needed.
         public bool StringType { get; set; } = stringType; // Indicates when a byte type is actually a string
         public Int32 OffsetCheck { get; set; } = offsetCheck; // Used for checking if offsets are correct by comparing to expected values, can be set to 0 when not used
-        public MemoryItem(string name, Type heldType, int length, Int32 offset) : this(name, heldType, length, offset, new byte[length], false, 0)
+        public MemoryItem(string name, Type heldType, int length, uint offset) : this(name, heldType, length, offset, new byte[length], false, 0)
         {
             // Convenience constructor auto-creates byte[] Data
             //var heldTypeSize = Marshal.SizeOf(heldType);
@@ -27,7 +27,7 @@ namespace Gtr2MemOpsTool.Models
             //Data = new byte[readLength];
             _value = ValueToString() ?? "";
         }
-        public MemoryItem(string name, Type heldType, int length, Int32 offset, bool stringType) : this(name, heldType, length, offset, new byte[length], stringType, 0)
+        public MemoryItem(string name, Type heldType, int length, uint offset, bool stringType) : this(name, heldType, length, offset, new byte[length], stringType, 0)
         {
             // Convenience constructor to help with byte strings
             _value = ValueToString() ?? "";
@@ -43,35 +43,42 @@ namespace Gtr2MemOpsTool.Models
             {
                 return _value;
             }
+            //set
+            //{
+            //    if (_value != value)
+            //    {
+            //        _value = value;
+            //        Save();
+            //        OnPropertyChanged(nameof(Value));
+            //    }
+            //}
+        }
+        public string ValueAsString
+        {
+            get
+            {
+                return ValueToString() ?? "";
+            }
             set
             {
-                if (_value != value)
-                {
-                    _value = value;
-                    Save();
-                    OnPropertyChanged(nameof(Value));
-                }
+                if (_value != value) return;
+                //_value = "test";
+                Save(value);
+                OnPropertyChanged(nameof(Value));
             }
         }
-        public string? ValueAsString
+        public Int32 ValueAsInt32
         {
             get
             {
-                return ValueToString();
+                return ValueToInt32() ?? 0;
             }
         }
-        public int? ValueAsInt
+        public float ValueAsFloat
         {
             get
             {
-                return ValueToInt();
-            }
-        }
-        public float? ValueAsFloat
-        {
-            get
-            {
-                return ValueToSingle();
+                return ValueToSingle() ?? 0.00f;
             }
         }
         public event PropertyChangedEventHandler? PropertyChanged;
@@ -148,7 +155,7 @@ namespace Gtr2MemOpsTool.Models
                 return null;
             }
         }
-        public int? ValueToInt()
+        public Int32? ValueToInt32()
         {
             try
             {
@@ -191,27 +198,67 @@ namespace Gtr2MemOpsTool.Models
             }
         }
 
-        public bool Save()
+        public bool? ValueToBool()
+        {
+            try
+            {
+
+                if (HeldType == typeof(bool))
+                {
+                    return BitConverter.ToBoolean(Data, 0);
+                }
+                else
+                {
+                    throw new InvalidOperationException($"Cannot convert to bool: HeldType is {HeldType.Name}");
+                }
+            }
+            catch (Exception ex)
+            {
+                App.Log.AddDebug($"Error converting to bool: {ex.Message}");
+                return null;
+            }
+        }
+
+        public bool Save( string newValue )
         {
             bool success = false;
             try
             {
+                nint? gtr2ProcessPointer = Gtr2MemOps.GetGtr2ProcessPointer() ?? throw new Exception("GTR2 process not found");
                 if (HeldType == typeof(Int32))
                 {
-
+                    //Int32 int32Value = ValueToInt32() ?? 0;
+                    //Gtr2MemOps.WriteInt32((nint)gtr2ProcessPointer, Address, int32Value);
+                    success = true;
                 }
                 else if (HeldType == typeof(float))
                 {
-                    nint? gtr2ProcessPointer = Gtr2MemOps.GetGtr2ProcessPointer() ?? throw new Exception("GTR2 process not found");
-                    float floatValue = ValueToSingle() ?? 0.0f;
-                    Gtr2MemOps.WriteFloat((nint)gtr2ProcessPointer, Address, floatValue);
+                    //float floatValue = ValueToSingle() ?? 0.0f;
+                    //Gtr2MemOps.WriteFloat((nint)gtr2ProcessPointer, Address, floatValue);
                     success = true;
                 }
                 else if (HeldType == typeof(bool))
                 {
+                    //bool boolValue = ValueToBool() ?? false;
+                    //Gtr2MemOps.WriteBool((nint)gtr2ProcessPointer, Address, boolValue);
+                    success = true;
                 }
                 else if (HeldType == typeof(byte) && StringType)
                 {
+                    string stringValue = newValue;
+                    Encoding encoding = Encoding.GetEncoding(Gtr2MemOps.GTR2_ENCODING_CODEPAGE);
+                    Gtr2MemOps.WriteString((nint)gtr2ProcessPointer, Address, stringValue, encoding);
+                    _value = newValue;
+                    success = true;
+
+
+
+
+
+                    // TODO: MemoryItem.Address still needs to be populated
+
+
+
 
                 }
                 else

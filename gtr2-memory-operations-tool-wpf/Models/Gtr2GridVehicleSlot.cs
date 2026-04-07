@@ -9,7 +9,8 @@ namespace Gtr2MemOpsTool.Models
 {
     public class Gtr2GridVehicleSlot
     {
-        public Int32 Gtr2GridSlotOffset { get; set; } // Offset from Gtr2Grid memory region
+        public uint Address {  get; set; }
+        public uint Offset { get; set; } // Offset from Gtr2Grid memory region
         public List<MemoryItem> MemoryItems { get; set; } = [
             // This is specifically the GTR2MemVehSlot class from TShirt's memops.py. His GridData class only contains GTR2MemVehSlots, though, so it's okay. This is all we're looking for. And we already have code reading it.
             // I should be able to read through this sequentially and build a full list of memory items from this.
@@ -468,22 +469,23 @@ namespace Gtr2MemOpsTool.Models
             new MemoryItem("x_UnknVar_EndF", typeof(Int32), 1, 0x00), // 22588
             new MemoryItem("x_Unkn_EndD", typeof(byte), 32, 0x00) // 22592-22624
         ];
-        public Gtr2GridVehicleSlot(Int32 gtr2GridSlotOffset)
+        public Gtr2GridVehicleSlot(uint address, uint offset)
         {
-            Gtr2GridSlotOffset = gtr2GridSlotOffset;
-            CalculateOffsets();
+            Address = address;
+            Offset = offset;
+            CalculateMemoryLocations();
         }
-        public void CalculateOffsets()
+        public void CalculateMemoryLocations()
         {
-            Int32 offset = Gtr2GridSlotOffset;
+            uint offset = Offset;
             foreach (var item in MemoryItems)
             {
+                item.Address = Address + offset;
                 item.Offset = offset;
                 var typeSize = Marshal.SizeOf(item.HeldType);
-                offset += typeSize * item.Length;
+                offset += (uint)(typeSize * item.Length);
             }
-            App.Log.AddDebug($"Final calculated offset: {offset} which should match {Gtr2GridSlotOffset} + {22624} = {Gtr2GridSlotOffset + 22624}");
-
+            App.Log.AddDebug($"Final calculated offset: {offset} which should match {Offset} + {22624} = {Offset + 22624}");
         }
     }
 }

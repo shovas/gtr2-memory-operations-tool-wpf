@@ -166,7 +166,7 @@ namespace Gtr2MemOpsTool.Models
                 App.Log.AddDebug("Opened process");
 
                 // 3. Scan memory for the slot list header
-                nint gridAddr = FindGridAddress((nint)gtr2ProcessPointer);
+                uint gridAddr = FindGtr2GridAddress((nint)gtr2ProcessPointer);
                 if (gridAddr == nint.Zero)
                 {
                     throw new Exception("Failed to locate slot list header.");
@@ -199,14 +199,14 @@ namespace Gtr2MemOpsTool.Models
 
         // GridData is the name for the memory data structure containing slots for each vehicle in the grid. Each slot contains various data fields for the vehicle including DriverName, WeightPenalty, etc. This function walks the linked list of slots starting from the header and populates a GridData object with the data read from each slot.
         // - Note: All sessions will always have at least 20 slots, even if driver count is lower, and if driver count is >= 20 then slot count will match driver count.
-        private static Gtr2Grid ReadGtr2GridData(nint hProc, nint gridAddr)
+        private static Gtr2Grid ReadGtr2GridData(nint hProc, uint gridAddr)
         {
 
             // Follow the linked list of slots and populate gridData.Slots with the data you want to read from each slot (e.g. driver name, weight penalty, etc.)
             Gtr2Grid gridData = new(gridAddr);
 
-            const nint slotStep = GTR2_MEMORY_SLOT_SIZE;
-            nint curSlotAddr = gridAddr;
+            const uint slotStep = GTR2_MEMORY_SLOT_SIZE;
+            uint curSlotAddr = gridAddr;
 
             try
             {
@@ -219,7 +219,7 @@ namespace Gtr2MemOpsTool.Models
 
                     // Check final slot: pitGroupId will be -1
                     // - Read pitgroup_id (3rd int32, offset +8) to detect last slot
-                    nint pitGroupIdAddr = curSlotAddr + GTR2_MEMORY_SLOT_OFFSET_PITGROUPID; // Offset of pitGroupId within each slot (int32 at offset 8 from slot base)
+                    uint pitGroupIdAddr = curSlotAddr + GTR2_MEMORY_SLOT_OFFSET_PITGROUPID; // Offset of pitGroupId within each slot (int32 at offset 8 from slot base)
                     int? pitGroupId = ReadMemoryInt32(hProc, pitGroupIdAddr)!;
                     if (pitGroupId == null)
                     {
@@ -234,25 +234,22 @@ namespace Gtr2MemOpsTool.Models
                     App.Log.AddDebug($"pitGroupId={pitGroupId}");
 
                     // Read data from the slot and add to gridData.Slots
-                    Int32 slotOffset = (Int32)(curSlotAddr - gridAddr);
-                    Gtr2GridVehicleSlot vehicleSlot = new(slotOffset);
+                    uint slotOffset = (uint)(curSlotAddr - gridAddr);
+                    Gtr2GridVehicleSlot vehicleSlot = new(curSlotAddr, slotOffset);
 
-                    // We can read each Gtr2GridVehicleSlot field individually by reading the specific memory address for that field based on the slot base address + the known offset for that field, or we could read the entire slot's worth of memory into a byte array and then parse out each field from that byte array based on the known offsets within the slot. The latter would be more efficient as it would involve fewer calls to ReadProcessMemory, but it would also be more complex to implement. For simplicity and clarity, I'll read each field individually for now.
+                    // Read in each slot field's memory data and MemoryItem can deal with handling the data
                     foreach( var memoryItem in vehicleSlot.MemoryItems)
                     {
                         var heldTypeSize = Marshal.SizeOf(memoryItem.HeldType);
                         var readLength = heldTypeSize * memoryItem.Length;
                         var memoryItemAddress = curSlotAddr + memoryItem.Offset;
-                        memoryItem.Data = ReadMemoryByteArray(hProc, memoryItemAddress, readLength);
-
-                        // TODO: We have the memory data, the MemoryItem class can return the right type based on HeldType. I can return vehicleSlot poulated with these memoryItems and the caller then has the values to work with.
-
+                        memoryItem.Data = ReadGtr2MemoryByteArray(hProc, memoryItemAddress, readLength);
                     }
 
                     gridData.VehicleSlots.Add(vehicleSlot);
 
                     // Check for end of grid
-                    nint nextSlotAddr = curSlotAddr + slotStep;
+                    uint nextSlotAddr = curSlotAddr + slotStep;
                     if (ValidateEndOfGrid(hProc, nextSlotAddr))
                     {
                         App.Log.AddDebug("Next slot is end of list marker. Ending read.");
@@ -311,8 +308,8 @@ namespace Gtr2MemOpsTool.Models
                 // ---------------------------------------------------------
                 // 3. Scan memory for the slot list header
                 // ---------------------------------------------------------
-                nint gridAddr = FindGridAddress((nint)gtr2ProcessPointer);
-                if (gridAddr == nint.Zero)
+                uint gridAddr = FindGtr2GridAddress((nint)gtr2ProcessPointer);
+                if (gridAddr == 0u)
                 {
                     throw new Exception("Failed to locate slot list header.");
                 }
@@ -321,7 +318,7 @@ namespace Gtr2MemOpsTool.Models
                 // ---------------------------------------------------------
                 // 4. Walk the linked list and locate the first WeightPenalty
                 // ---------------------------------------------------------
-                Gtr2TestGrid gridData = ReadTestGridData((nint)gtr2ProcessPointer, gridAddr);
+                Gtr2TestGrid gridData = ReadGtr2TestGridData((nint)gtr2ProcessPointer, gridAddr);
                 if (gridData.NumVeh == 0)
                 {
                     throw new Exception("Failed finding grid data in slot list.");
@@ -345,14 +342,14 @@ namespace Gtr2MemOpsTool.Models
             return success;
         }
 
-        private static Gtr2TestGrid ReadTestGridData(nint hProc, nint gridAddr)
+        private static Gtr2TestGrid ReadGtr2TestGridData(nint hProc, uint gridAddr)
         {
 
             // Follow the linked list of slots and populate gridData.Slots with the data you want to read from each slot (e.g. driver name, weight penalty, etc.)
             Gtr2TestGrid gridData = new();
 
-            const Int32 slotStep = GTR2_MEMORY_SLOT_SIZE;
-            nint curSlotAddr = gridAddr;
+            const uint slotStep = GTR2_MEMORY_SLOT_SIZE;
+            uint curSlotAddr = gridAddr;
 
             try
             {
@@ -364,7 +361,7 @@ namespace Gtr2MemOpsTool.Models
 
                     // Check final slot: pitGroupId will be -1
                     // - Read pitgroup_id (3rd int32, offset +8) to detect last slot
-                    nint pitGroupIdAddr = curSlotAddr + GTR2_MEMORY_SLOT_OFFSET_PITGROUPID; // Offset of pitGroupId within each slot (int32 at offset 8 from slot base)
+                    uint pitGroupIdAddr = curSlotAddr + GTR2_MEMORY_SLOT_OFFSET_PITGROUPID; // Offset of pitGroupId within each slot (int32 at offset 8 from slot base)
                     int? pitGroupId = ReadMemoryInt32(hProc, pitGroupIdAddr)!;
                     if (pitGroupId == null)
                     {
@@ -382,7 +379,7 @@ namespace Gtr2MemOpsTool.Models
                     Gtr2TestGridVehicleSlot slotData = new();
                     try
                     {
-                        slotData.SlotId = FindSlotId(hProc, curSlotAddr);
+                        slotData.SlotId = FindGtr2GridSlotId(hProc, curSlotAddr);
                     }
                     catch (Exception ex)
                     {
@@ -390,7 +387,7 @@ namespace Gtr2MemOpsTool.Models
                     }
                     try
                     {
-                        slotData.DriverName = FindSlotDriverName(hProc, curSlotAddr);
+                        slotData.DriverName = FindGtr2GridSlotDriverName(hProc, curSlotAddr);
                         if (slotData.DriverName.Length == 0)
                         {
                             slotData.DriverName = "[MEMORY READ BLANK]";
@@ -402,7 +399,7 @@ namespace Gtr2MemOpsTool.Models
                     }
                     try
                     {
-                        slotData.WeightPenalty = FindSlotWeightPenalty(hProc, curSlotAddr);
+                        slotData.WeightPenalty = FindGtr2GridSlotWeightPenalty(hProc, curSlotAddr);
                     }
                     catch (Exception ex)
                     {
@@ -420,7 +417,7 @@ namespace Gtr2MemOpsTool.Models
                     gridData.Slots.Add(slotData);
 
                     // Check for end of grid
-                    nint nextSlotAddr = curSlotAddr + slotStep;
+                    uint nextSlotAddr = curSlotAddr + slotStep;
                     if (ValidateEndOfGrid(hProc, nextSlotAddr))
                     {
                         App.Log.AddDebug("Next slot is end of list marker. Ending read.");
@@ -480,7 +477,7 @@ namespace Gtr2MemOpsTool.Models
                 // ---------------------------------------------------------
                 // 3. Scan memory for the slot list header
                 // ---------------------------------------------------------
-                nint gridAddr = FindGridAddress((nint)gtr2ProcessPointer);
+                uint gridAddr = FindGtr2GridAddress((nint)gtr2ProcessPointer);
                 if (gridAddr == nint.Zero)
                 {
                     throw new Exception("Failed to locate slot list header.");
@@ -490,8 +487,8 @@ namespace Gtr2MemOpsTool.Models
                 // ---------------------------------------------------------
                 // 4. Walk the linked list and locate the first WeightPenalty
                 // ---------------------------------------------------------
-                nint weightPenaltyAddr = FollowGridAndGetWeightPenaltyAddr((nint)gtr2ProcessPointer, gridAddr);
-                if (weightPenaltyAddr == nint.Zero)
+                uint weightPenaltyAddr = FollowGridAndGetWeightPenaltyAddr((nint)gtr2ProcessPointer, gridAddr);
+                if (weightPenaltyAddr == 0)
                 {
                     throw new Exception("Failed finding weight penalty in slot list.");
                 }
@@ -500,7 +497,7 @@ namespace Gtr2MemOpsTool.Models
                 // ---------------------------------------------------------
                 // 5. Read current value to verify we can read and for later comparison after new write
                 // ---------------------------------------------------------
-                float? tempWeightPenaltyFloatData = ReadMemoryFloat((nint)gtr2ProcessPointer, weightPenaltyAddr) ?? throw new Exception("Failed reading current WeightPenalty value.");
+                float? tempWeightPenaltyFloatData = ReadMemoryFloat((nint)gtr2ProcessPointer, (nint)weightPenaltyAddr) ?? throw new Exception("Failed reading current WeightPenalty value.");
                 float weightPenaltyFloatData = tempWeightPenaltyFloatData.Value;
                 App.Log.AddDebug($"Current WeightPenalty read: {weightPenaltyFloatData}");
 
@@ -518,7 +515,7 @@ namespace Gtr2MemOpsTool.Models
                 // ---------------------------------------------------------
                 // 7. Read new value back to confirm the write worked
                 // ---------------------------------------------------------
-                float? newWeightPenaltyFloatData = ReadMemoryFloat((nint)gtr2ProcessPointer, weightPenaltyAddr) ?? throw new Exception("Failed reading new WeightPenalty value.");
+                float? newWeightPenaltyFloatData = ReadMemoryFloat((nint)gtr2ProcessPointer, (nint)weightPenaltyAddr) ?? throw new Exception("Failed reading new WeightPenalty value.");
                 float newWeightPenaltyFloatValue = newWeightPenaltyFloatData.Value;
                 App.Log.AddDebug($"New WeightPenalty read: {newWeightPenaltyFloatValue}");
 
@@ -676,7 +673,7 @@ namespace Gtr2MemOpsTool.Models
         }
 
         // GTR2 must be loaded into a driving session: Practice, Qualifying, Warmup, Race
-        public static nint FindGridAddress(nint hProcess)
+        public static uint FindGtr2GridAddress(nint hProcess)
         {
             App.Log.AddInfo("Starting memory scan for Grid address...");
 
@@ -710,26 +707,26 @@ namespace Gtr2MemOpsTool.Models
 
             App.Log.AddInfo("Scanning memory with multi-signature validation...");
 
-            nint curAddr = 0;
+            uint curAddr = 0;
             int mbiSize = Marshal.SizeOf<MEMORY_BASIC_INFORMATION>();
 
 
             // This loop will iterate through the process's virtual memory regions. For each region, it checks if it's committed and has read-write permissions, then reads the entire region and looks for the three signatures at their expected offsets relative to each other. If all signatures match, it computes the grid address and validates it before returning.
-            while (VirtualQueryEx(hProcess, curAddr, out MEMORY_BASIC_INFORMATION mbi, mbiSize) != 0)
+            while (VirtualQueryEx(hProcess, (nint)curAddr, out MEMORY_BASIC_INFORMATION mbi, mbiSize) != 0)
             {
 
                 // Only committed, read-write pages
                 if (mbi.State != MEM_COMMIT || mbi.Protect != PAGE_READWRITE)
                 {
-                    curAddr = mbi.BaseAddress + mbi.RegionSize;
+                    curAddr = (uint)(mbi.BaseAddress + mbi.RegionSize);
                     continue;
                 }
 
-                nint regionStart = mbi.BaseAddress;
-                nint regionEnd = regionStart + mbi.RegionSize;
+                uint regionStart = (uint)mbi.BaseAddress;
+                uint regionEnd = (uint)(regionStart + mbi.RegionSize);
 
                 // Read the whole region (safe – regions are < 4 MiB in GTR2)
-                long regionSize = regionEnd - regionStart;
+                uint regionSize = (uint)(regionEnd - regionStart);
                 byte[] region = new byte[regionSize];
                 if (!ReadProcessMemory(hProcess, mbi.BaseAddress, region, (int)regionSize, out int read) ||
                     read != regionSize)
@@ -741,22 +738,22 @@ namespace Gtr2MemOpsTool.Models
                 /* ----------------------------------------------------------
                  *  1. Validate AIW Signature at any offset within the region. This is the anchor signature we look for first. Then every other signature is an offset from this.
                  * ---------------------------------------------------------- */
-                nint aiwAddr = -1;
+                uint aiwAddr = 0;
                 for (Int32 aiwOffset = 0; aiwOffset <= regionSize - sigAiw.Length; aiwOffset++)
                 {
                     if (MemorySignatureMatches(region, aiwOffset, sigAiw))
                     {
                         App.Log.AddInfo($"Found AIW signature at 0x{(regionStart + aiwOffset):X}");
-                        aiwAddr = regionStart + aiwOffset;
+                        aiwAddr = (uint)(regionStart + aiwOffset);
                         break;
                     }
                 }
-                if (aiwAddr == -1) { curAddr = regionEnd; continue; }
+                if (aiwAddr == 0u) { curAddr = regionEnd; continue; }
 
                 /* ----------------------------------------------------------
                  *  2. Validate PLR signature at expected offset
                  * ---------------------------------------------------------- */
-                nint plrAddr = aiwAddr + plrOffsetFromAiw;
+                uint plrAddr = aiwAddr + plrOffsetFromAiw;
                 Int32 plrOffsetFromRegionStart = (Int32)(plrAddr - regionStart);
                 if (plrAddr < regionStart || plrAddr + sigPlr.Length > regionEnd ||
                     !MemorySignatureMatches(region, plrOffsetFromRegionStart, sigPlr))
@@ -773,7 +770,7 @@ namespace Gtr2MemOpsTool.Models
                 /* ----------------------------------------------------------
                  *  3. Validate GDB Horizon at expected offset
                  * ---------------------------------------------------------- */
-                nint gdbAddr = aiwAddr + gdbOffsetFromAiw;
+                uint gdbAddr = aiwAddr + gdbOffsetFromAiw;
                 Int32 gdbOffsetFromRegionStart = (Int32)(gdbAddr - regionStart);
                 if (gdbAddr < regionStart || gdbAddr + sigGdb.Length > regionEnd ||
                     !MemorySignatureMatches(region, gdbOffsetFromRegionStart, sigGdb))
@@ -790,7 +787,7 @@ namespace Gtr2MemOpsTool.Models
                 /* ----------------------------------------------------------
                  *  All three signatures match → compute grid address
                  * ---------------------------------------------------------- */
-                nint gridAddr = aiwAddr + gridOffsetFromAiw;
+                uint gridAddr = aiwAddr + gridOffsetFromAiw;
 
                 App.Log.AddInfo($"Grid Address Memory Search Results:");
                 App.Log.AddInfo($" - AIW        : 0x{aiwAddr:X}");
@@ -806,7 +803,7 @@ namespace Gtr2MemOpsTool.Models
             }
 
             App.Log.AddError("Failed searching memory for Grid address using multi-signature scan.");
-            return nint.Zero;
+            return 0u;
         }
 
         private static bool MemorySignatureMatches(byte[] data, Int32 offset, byte[] pattern)
@@ -820,59 +817,59 @@ namespace Gtr2MemOpsTool.Models
         // Validating grid as a linked list:
         // - First 4 bytes should equal the address of the slot itself
         // - Last 4 bytes should not be 0xFFFFFFFF ie. not an immediate terminator of a linked list
-        private static bool ValidateGridSlot(nint hProcess, nint addr)
+        private static bool ValidateGridSlot(nint hProcess, uint addr)
         {
             byte[] buf = new byte[12];
-            if (!ReadProcessMemory(hProcess, addr, buf, 12, out int read) || read != 12)
+            if (!ReadProcessMemory(hProcess, (nint)addr, buf, 12, out int read) || read != 12)
                 return false;
 
             uint match = BitConverter.ToUInt32(buf, 0);
             uint term = BitConverter.ToUInt32(buf, 8);
 
-            return match == (uint)addr && term != 0xFFFFFFFFU;
+            return match == addr && term != 0xFFFFFFFFU;
         }
 
-        private static bool ValidateEndOfGrid(nint hProcess, nint addr)
+        private static bool ValidateEndOfGrid(nint hProcess, uint addr)
         {
             byte[] buf = new byte[12];
-            if (!ReadProcessMemory(hProcess, addr, buf, 12, out int read) || read != 12)
+            if (!ReadProcessMemory(hProcess, (nint)addr, buf, 12, out int read) || read != 12)
                 return false;
             uint match = BitConverter.ToUInt32(buf, 0);
             uint term = BitConverter.ToUInt32(buf, 8);
-            return match == (uint)addr && term == 0xFFFFFFFFU;
+            return match == addr && term == 0xFFFFFFFFU;
         }
-        private static Int32 FindSlotId(nint hProc, nint slotAddr)
+        private static Int32 FindGtr2GridSlotId(nint hProc, uint slotAddr)
         {
-            Int32? slotId = FindSlotInt32Value(hProc, slotAddr, GTR2_MEMORY_SLOT_OFFSET_SLOT_ID, "SlotId") ?? throw new Exception("Failed finding Slot Id.");
+            Int32? slotId = FindGtr2GridSlotInt32Value(hProc, slotAddr, GTR2_MEMORY_SLOT_OFFSET_SLOT_ID, "SlotId") ?? throw new Exception("Failed finding Slot Id.");
             return slotId.Value;
         }
-        private static string FindSlotDriverName(nint hProc, nint slotAddr)
+        private static string FindGtr2GridSlotDriverName(nint hProc, uint slotAddr)
         {
             string? driverName = FindSlotStringValue(hProc, slotAddr, GTR2_MEMORY_SLOT_OFFSET_DRIVER_NAME, GTR2_MEMORY_DRIVER_NAME_LENGTH, "DriverName") ?? throw new Exception("Failed finding DriverName.");
             return driverName!;
         }
         // - Note: I'm pretty confident GTR2 is defaulting to 0.1 for Weight Penalties on all cars. Not sure why. But I confirmed by printing the actual bytes read from memory.
-        private static float FindSlotWeightPenalty(nint hProc, nint headerAddr)
+        private static float FindGtr2GridSlotWeightPenalty(nint hProc, uint headerAddr)
         {
             float? weightPenalty = FindSlotFloatValue(hProc, headerAddr, GTR2_MEMORY_SLOT_OFFSET_WEIGHT_PENALTY, "WeightPenalty") ?? throw new Exception("Failed finding WeightPenalty.");
             return weightPenalty!.Value;
         }
-        private static string FindSlotCarFilePath(nint hProc, nint slotAddr)
+        private static string FindSlotCarFilePath(nint hProc, uint slotAddr)
         {
             string? carFilePath = FindSlotStringValue(hProc, slotAddr, GTR2_MEMORY_SLOT_OFFSET_CAR_FILEPATH, GTR2_MEMORY_CAR_FILEPATH_LENGTH, "CarFilePath") ?? throw new Exception("Failed finding CarFilePath.");
             return carFilePath!;
         }
-        private static string? FindSlotStringValue(nint hProc, nint slotAddr, Int32 findStringOffset, int findStringLength, string findName)
+        private static string? FindSlotStringValue(nint hProc, uint slotAddr, uint findStringOffset, int findStringLength, string findName)
         {
-            nint cur = slotAddr;
+            uint cur = slotAddr;
 
             if (!ValidateGridSlot(hProc, slotAddr))
                 return null;
 
-            nint stringAddr = cur + findStringOffset;
+            uint stringAddr = cur + findStringOffset;
             if (IsAddressValid(hProc, stringAddr))
             {
-                string? tempStringData = ReadMemoryString(hProc, stringAddr, findStringLength, Encoding.GetEncoding(GTR2_ENCODING_CODEPAGE)) ?? throw new Exception($"Failed reading string value at offset {findStringOffset}.");
+                string? tempStringData = ReadMemoryString(hProc, (nint)stringAddr, findStringLength, Encoding.GetEncoding(GTR2_ENCODING_CODEPAGE)) ?? throw new Exception($"Failed reading string value at offset {findStringOffset}.");
                 string stringData = tempStringData.ToString();
                 App.Log.AddDebug($"Found {findName} string: {stringData}");
                 return stringData;
@@ -880,14 +877,14 @@ namespace Gtr2MemOpsTool.Models
 
             return null;
         }
-        private static Int32? FindSlotInt32Value(nint hProc, nint slotAddr, Int32 findOffset, string findName)
+        private static Int32? FindGtr2GridSlotInt32Value(nint hProc, uint slotAddr, uint findOffset, string findName)
         {
-            nint cur = slotAddr;
+            uint cur = slotAddr;
 
             if (!ValidateGridSlot(hProc, cur))
                 return null;
 
-            nint findAddr = cur + findOffset;
+            uint findAddr = cur + findOffset;
             if (IsAddressValid(hProc, findAddr))
             {
                 Int32? tempInt32Data = ReadMemoryInt32(hProc, findAddr) ?? throw new Exception($"Failed reading current Int32 value at offset {findOffset}.");
@@ -898,17 +895,17 @@ namespace Gtr2MemOpsTool.Models
 
             return null;
         }
-        private static float? FindSlotFloatValue(nint hProc, nint slotAddr, Int32 findFloatOffset, string findName)
+        private static float? FindSlotFloatValue(nint hProc, uint slotAddr, uint findFloatOffset, string findName)
         {
-            nint cur = slotAddr;
+            uint cur = slotAddr;
 
             if (!ValidateGridSlot(hProc, cur))
                 return null;
 
-            nint floatAddr = cur + findFloatOffset;
+            uint floatAddr = cur + findFloatOffset;
             if (IsAddressValid(hProc, floatAddr))
             {
-                float? tempFloatData = ReadMemoryFloat(hProc, floatAddr) ?? throw new Exception($"Failed reading current float value at offset {findFloatOffset}.");
+                float? tempFloatData = ReadMemoryFloat(hProc, (nint)floatAddr) ?? throw new Exception($"Failed reading current float value at offset {findFloatOffset}.");
                 float floatData = tempFloatData.Value;
                 App.Log.AddDebug($"Found {findName} float: {floatData}");
                 return floatData;
@@ -916,32 +913,32 @@ namespace Gtr2MemOpsTool.Models
 
             return null;
         }
-        private static nint FollowGridAndGetWeightPenaltyAddr(nint hProc, nint headerAddr)
+        private static uint FollowGridAndGetWeightPenaltyAddr(nint hProc, uint headerAddr)
         {
-            const nint weightPenaltySlotOffset = GTR2_MEMORY_SLOT_OFFSET_WEIGHT_PENALTY;   // slotBase + 16084 → WeightPenalty (float)
-            const nint slotStep = GTR2_MEMORY_SLOT_SIZE;
-            nint cur = headerAddr;
+            const uint weightPenaltySlotOffset = GTR2_MEMORY_SLOT_OFFSET_WEIGHT_PENALTY;   // slotBase + 16084 → WeightPenalty (float)
+            const uint slotStep = GTR2_MEMORY_SLOT_SIZE;
+            uint cur = headerAddr;
 
             while (true)
             {
                 if (!ValidateGridSlot(hProc, cur))
                     break;
 
-                nint wpAddr = cur + weightPenaltySlotOffset;
+                uint wpAddr = cur + weightPenaltySlotOffset;
                 if (IsAddressValid(hProc, wpAddr))
                     return wpAddr;
 
                 cur += slotStep;
             }
 
-            return nint.Zero;
+            return 0u;
         }
 
-        private static bool IsAddressValid(nint hProc, nint addr)
+        private static bool IsAddressValid(nint hProc, uint addr)
         {
             MEMORY_BASIC_INFORMATION mbi = new();
             int sz = Marshal.SizeOf(mbi);
-            return VirtualQueryEx(hProc, addr, out mbi, sz) != 0 &&
+            return VirtualQueryEx(hProc, (nint)addr, out mbi, sz) != 0 &&
                    mbi.State == MEM_COMMIT &&
                    mbi.Protect == PAGE_READWRITE;
         }
@@ -973,10 +970,10 @@ namespace Gtr2MemOpsTool.Models
             return encoding.GetString(buf, 0, actualLength);
             //return BitConverter.ToString(buf, 0);
         }
-        private static Int32? ReadMemoryInt32(nint hProc, nint addr)
+        private static Int32? ReadMemoryInt32(nint hProc, uint addr)
         {
             byte[] buf = new byte[4];
-            var result = ReadProcessMemory(hProc, addr, buf, 4, out _);
+            var result = ReadProcessMemory(hProc, (nint)addr, buf, 4, out _);
             if (!result)
             {
                 return null;
@@ -995,10 +992,10 @@ namespace Gtr2MemOpsTool.Models
             return BitConverter.ToSingle(buf, 0);
         }
 
-        private static byte[] ReadMemoryByteArray(nint hProc, nint addr, int length)
+        private static byte[] ReadGtr2MemoryByteArray(nint hProc, uint addr, int length)
         {
             byte[] buf = new byte[length];
-            var result = ReadProcessMemory(hProc, addr, buf, length, out _);
+            var result = ReadProcessMemory(hProc, (nint)addr, buf, length, out _);
             if (!result)
             {
                 throw new Exception($"Failed reading byte array from memory at address 0x{addr:X} with length {length}.");
@@ -1006,10 +1003,33 @@ namespace Gtr2MemOpsTool.Models
             return buf;
         }
 
-        public static bool WriteFloat(nint hProc, nint addr, float value)
+        public static bool WriteInt32(nint hProc, uint addr, int value)
         {
             byte[] buf = BitConverter.GetBytes(value);
-            return WriteProcessMemory(hProc, addr, buf, 4, out _);
+            return WriteProcessMemory(hProc, (nint)addr, buf, 4, out _);
+        }
+
+        public static bool WriteFloat(nint hProc, uint addr, float value)
+        {
+            byte[] buf = BitConverter.GetBytes(value);
+            return WriteProcessMemory(hProc, (nint)addr, buf, 4, out _);
+        }
+
+        public static bool WriteBytes(nint hProc, uint addr, byte[] value)
+        {
+            return WriteProcessMemory(hProc, (nint)addr, value, value.Length, out _);
+        }
+
+        public static bool WriteString(nint hProc, uint addr, string value, Encoding encoding)
+        {
+            byte[] buf = encoding.GetBytes(value);
+            return WriteProcessMemory(hProc, (nint)addr, buf, buf.Length, out _);
+        }
+
+        public static bool WriteBool(nint hProc, uint addr, bool value)
+        {
+            byte[] buf = BitConverter.GetBytes(value);
+            return WriteProcessMemory(hProc, (nint)addr, buf, 1, out _);
         }
 
     }

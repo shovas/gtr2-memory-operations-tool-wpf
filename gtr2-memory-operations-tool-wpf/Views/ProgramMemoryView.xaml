@@ -33,7 +33,9 @@
                         <GridViewColumn Header="Value" Width="350">
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
-                                    <TextBox Text="{Binding ValueAsString, UpdateSourceTrigger=PropertyChanged}"/>
+                                    <TextBox Text="{Binding ValueAsString, UpdateSourceTrigger=LostFocus}"
+                                             PreviewMouseDown="ValueTextBox_PreviewMouseDown"
+                                             IsReadOnly="False" IsEnabled="True"/>
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>

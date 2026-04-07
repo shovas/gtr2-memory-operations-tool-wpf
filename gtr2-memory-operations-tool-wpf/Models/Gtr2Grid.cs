@@ -10,9 +10,9 @@ namespace Gtr2MemOpsTool.Models
     /// Gtr2Grid represents the region of GTR2 memory containing Gtr2GridVehicleSlot regions
     /// This is based on the GridData class from TShirt's memops.py
     /// </summary>
-    public class Gtr2Grid(nint address)
+    public class Gtr2Grid(uint address)
     {
-        public nint Address { get; set; } = address; // Memory address of the grid region from the base address of the GTR2 process
+        public uint Address { get; set; } = address; // Memory address of the grid region from the base address of the GTR2 process
         public List<Gtr2GridVehicleSlot> VehicleSlots { get; set; } = [];
     }
 }
