@@ -22,7 +22,7 @@ namespace Gtr2MemOpsTool.Models
             foreach (MemoryItem field in fields)
             {
                 uint lastFieldOffset = (Fields.Count > 0) ? Fields[^1].Offset : 0;
-                int lastFieldLength = (Fields.Count > 0) ? Fields[^1].Length : 0;
+                uint lastFieldLength = (Fields.Count > 0) ? Fields[^1].Length : 0;
                 uint fieldOffset = (uint)(lastFieldOffset + lastFieldLength);
                 field.Offset = fieldOffset;
             }

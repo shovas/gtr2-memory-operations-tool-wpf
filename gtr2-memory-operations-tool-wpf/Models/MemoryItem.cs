@@ -3,23 +3,24 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Gtr2MemOpsTool.Models
 {
-    public class MemoryItem(string name, Type heldType, int length, uint offset, byte[] data, bool stringType, Int32 offsetCheck)
+    public class MemoryItem(string name, Type heldType, uint length, uint offset, byte[] data, bool stringType, Int32 offsetCheck)
     {
         
         public string Name { get; set; } = name;
         public Type HeldType { get; set; } = heldType; // Can be determined with typeof(Type) eg. typeof(int) for int, typeof(List<string>) for List<string>, etc.
-        public int Length { get; set; } = length;
+        public uint Length { get; set; } = length;
         public uint Address { get; set; } = 0;
         public uint Offset { get; set; } = offset;
         public byte[] Data { get; set; } = data ?? new byte[length]; // Raw byte data read from memory, which can be converted to the appropriate type based on HeldType when needed.
         public bool StringType { get; set; } = stringType; // Indicates when a byte type is actually a string
         public Int32 OffsetCheck { get; set; } = offsetCheck; // Used for checking if offsets are correct by comparing to expected values, can be set to 0 when not used
-        public MemoryItem(string name, Type heldType, int length, uint offset) : this(name, heldType, length, offset, new byte[length], false, 0)
+        public MemoryItem(string name, Type heldType, uint length, uint offset) : this(name, heldType, length, offset, new byte[length], false, 0)
         {
             // Convenience constructor auto-creates byte[] Data
             //var heldTypeSize = Marshal.SizeOf(heldType);
@@ -27,7 +28,7 @@ namespace Gtr2MemOpsTool.Models
             //Data = new byte[readLength];
             _value = ValueToString() ?? "";
         }
-        public MemoryItem(string name, Type heldType, int length, uint offset, bool stringType) : this(name, heldType, length, offset, new byte[length], stringType, 0)
+        public MemoryItem(string name, Type heldType, uint length, uint offset, bool stringType) : this(name, heldType, length, offset, new byte[length], stringType, 0)
         {
             // Convenience constructor to help with byte strings
             _value = ValueToString() ?? "";
@@ -61,10 +62,16 @@ namespace Gtr2MemOpsTool.Models
             }
             set
             {
-                if (_value != value) return;
-                //_value = "test";
-                Save(value);
-                OnPropertyChanged(nameof(Value));
+                if (_value == value) return;
+                App.Log.AddDebug("Setting new value");
+                if (!Save(value))
+                {
+                    App.Log.AddDebug("Setting new value: Save failed");
+                    return;
+                }
+                App.Log.AddDebug("Setting new value: Save succeeded");
+                _value = value;
+                OnPropertyChanged(nameof(ValueAsString));
             }
         }
         public Int32 ValueAsInt32
@@ -247,19 +254,15 @@ namespace Gtr2MemOpsTool.Models
                 {
                     string stringValue = newValue;
                     Encoding encoding = Encoding.GetEncoding(Gtr2MemOps.GTR2_ENCODING_CODEPAGE);
-                    Gtr2MemOps.WriteString((nint)gtr2ProcessPointer, Address, stringValue, encoding);
-                    _value = newValue;
+                    if(!Gtr2MemOps.WriteString((nint)gtr2ProcessPointer, Address, stringValue, encoding, Length))
+                    {
+                        throw new Exception("Failed to write string to memory");
+                    }
+                    if(!Read())
+                    {
+                        throw new Exception("Failed to read back string from memory after writing");
+                    }
                     success = true;
-
-
-
-
-
-                    // TODO: MemoryItem.Address still needs to be populated
-
-
-
-
                 }
                 else
                 {
@@ -271,6 +274,16 @@ namespace Gtr2MemOpsTool.Models
                 App.Log.AddDebug($"Exception saving MemoryItem: {ex.Message}");
             }
             return success;
+        }
+
+        private bool Read()
+        {
+            uint heldTypeSize = (uint)Marshal.SizeOf(HeldType);
+            uint byteLength = heldTypeSize * Length;
+            byte[] buf = Gtr2MemOps.ReadGtr2MemoryByteArray(Address, byteLength);
+            if (buf.Length is 0) return false;
+            Data = buf;
+            return true;
         }
     }
 }

@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -139,11 +140,50 @@ namespace Gtr2MemOpsTool.Models
             App.Log.AddInfo("Finished Getting GTR2 Program Memory Items");
         }
 
+        public static byte[] ReadGtr2MemoryByteArray(uint address, uint length)
+        {
+            nint? gtr2ProcessPointer = null;
+            byte[] buf = new byte[length];
+            try
+            {
+
+                // 1. Find gtr2.exe
+                Process? gtr2Process = GetProcessByName(GTR2_PROCESS_NAME) ?? throw new Exception("Failed finding GTR2 process.");
+                App.Log.AddDebug($"Found gtr2.exe (PID {gtr2Process.Id})");
+
+                // 2. Open process
+                gtr2ProcessPointer = OpenProcessForReadWrite(gtr2Process);
+                if (gtr2ProcessPointer == null || gtr2ProcessPointer == nint.Zero)
+                {
+                    throw new Exception("Failed opening GTR2 process.");
+                }
+                //gtr2ProcessPointer = gtr2TempProcessPointer.Value;
+                App.Log.AddDebug("Opened process");
+
+                // Read memory
+                buf = ReadMemoryByteArray((nint)gtr2ProcessPointer, address, length);
+
+            }
+            catch (Exception ex)
+            {
+                App.Log.AddDebug(ex.ToString());
+            }
+            finally
+            {
+                // Close process
+                if (gtr2ProcessPointer != null && gtr2ProcessPointer != nint.Zero)
+                {
+                    CloseHandle((nint)gtr2ProcessPointer);
+                }
+            }
+            return buf;
+        }
+
         private static Gtr2Grid? ReadGtr2Grid()
         {
             // Overview:
             // 1. Find GTR2.EXE process
-            // 2. Open GTR2.exe process for Read/Write
+            // 2. Open GTR2.EXE process for Read/Write
             // 3. Scan memory for the slot list header using multi-signature validation
             // 4. Walk the Grid linked list of Gtr2MemVehSlots and load in list of GridData
 
@@ -240,10 +280,11 @@ namespace Gtr2MemOpsTool.Models
                     // Read in each slot field's memory data and MemoryItem can deal with handling the data
                     foreach( var memoryItem in vehicleSlot.MemoryItems)
                     {
-                        var heldTypeSize = Marshal.SizeOf(memoryItem.HeldType);
-                        var readLength = heldTypeSize * memoryItem.Length;
-                        var memoryItemAddress = curSlotAddr + memoryItem.Offset;
-                        memoryItem.Data = ReadGtr2MemoryByteArray(hProc, memoryItemAddress, readLength);
+                        uint heldTypeSize = (uint)Marshal.SizeOf(memoryItem.HeldType);
+                        uint readLength = heldTypeSize * memoryItem.Length;
+                        uint memoryItemAddress = curSlotAddr + memoryItem.Offset;
+                        memoryItem.Address = memoryItemAddress;
+                        memoryItem.Data = ReadMemoryByteArray(hProc, memoryItemAddress, readLength);
                     }
 
                     gridData.VehicleSlots.Add(vehicleSlot);
@@ -992,10 +1033,10 @@ namespace Gtr2MemOpsTool.Models
             return BitConverter.ToSingle(buf, 0);
         }
 
-        private static byte[] ReadGtr2MemoryByteArray(nint hProc, uint addr, int length)
+        public static byte[] ReadMemoryByteArray(nint hProc, uint addr, uint length)
         {
             byte[] buf = new byte[length];
-            var result = ReadProcessMemory(hProc, (nint)addr, buf, length, out _);
+            var result = ReadProcessMemory(hProc, (nint)addr, buf, (int)length, out _);
             if (!result)
             {
                 throw new Exception($"Failed reading byte array from memory at address 0x{addr:X} with length {length}.");
@@ -1020,9 +1061,12 @@ namespace Gtr2MemOpsTool.Models
             return WriteProcessMemory(hProc, (nint)addr, value, value.Length, out _);
         }
 
-        public static bool WriteString(nint hProc, uint addr, string value, Encoding encoding)
+        public static bool WriteString(nint hProc, uint addr, string value, Encoding encoding, uint memoryFieldLength)
         {
-            byte[] buf = encoding.GetBytes(value);
+            byte[] encoded = encoding.GetBytes(value);
+            byte[] buf = new byte[encoded.Length + 1]; // +1 for null terminator
+            //Array.Copy(encoded, buf, encoded.Length);
+            Array.Copy(encoded, buf, Math.Min(encoded.Length, memoryFieldLength - 1));
             return WriteProcessMemory(hProc, (nint)addr, buf, buf.Length, out _);
         }
 
