@@ -26,11 +26,12 @@
             <ListView x:Name="ItemsListView" ItemsSource="{Binding ProgramMemoryItems, ElementName=ProgramMemoryViewControl}" VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling">
                 <ListView.View>
                     <GridView>
+                        <GridViewColumn Header="Base Offset" Width="80" DisplayMemberBinding="{Binding BaseOffset}"/>
                         <GridViewColumn Header="Offset" Width="80" DisplayMemberBinding="{Binding Offset}"/>
                         <GridViewColumn Header="Name" Width="150" DisplayMemberBinding="{Binding Name}"/>
                         <GridViewColumn Header="Type" Width="100" DisplayMemberBinding="{Binding HeldType}"/>
                         <GridViewColumn Header="Length" Width="80" DisplayMemberBinding="{Binding Length}"/>
-                        <GridViewColumn Header="Value" Width="350">
+                        <GridViewColumn Header="Value" Width="280">
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBox Text="{Binding ValueAsString, UpdateSourceTrigger=LostFocus}"

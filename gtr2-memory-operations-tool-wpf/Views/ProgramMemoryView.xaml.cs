@@ -80,10 +80,8 @@ namespace Gtr2MemOpsTool.Views
 
         private static void LoadItems(IProgress<List<MemoryItem>> progress)
         {
-            int batchLimit = 50; // TODO: Make this a setting
+            int batchLimit = 50;
             var batch = new List<MemoryItem>();
-            //List<SharedMemoryItem> items = GetGtr2SharedMemoryItems();
-            //foreach (var item in items) // your slow data source
             foreach (var item in Gtr2MemOps.GetGtr2ProgramMemoryItems()) // your slow data source
             {
                 //App.Log.AddDebug($"Loaded item: {item.Name} at offset {item.Offset} with length {item.Length}");

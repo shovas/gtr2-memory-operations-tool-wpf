@@ -15,8 +15,11 @@ namespace Gtr2MemOpsTool.Models
         public string Name { get; set; } = name;
         public Type HeldType { get; set; } = heldType; // Can be determined with typeof(Type) eg. typeof(int) for int, typeof(List<string>) for List<string>, etc.
         public uint Length { get; set; } = length;
-        public uint Address { get; set; } = 0;
-        public uint Offset { get; set; } = offset;
+        public uint BaseAddress { get; set; } = 0;
+        public uint BaseOffset { get; set; } = 0;
+        public uint RelativeOffset { get; set; } = 0; // 
+        public uint Address { get; set; } = 0; // Address of this memory item
+        public uint Offset { get; set; } = offset; // Offset from an arbitary address the caller must keep track of
         public byte[] Data { get; set; } = data ?? new byte[length]; // Raw byte data read from memory, which can be converted to the appropriate type based on HeldType when needed.
         public bool StringType { get; set; } = stringType; // Indicates when a byte type is actually a string
         public Int32 OffsetCheck { get; set; } = offsetCheck; // Used for checking if offsets are correct by comparing to expected values, can be set to 0 when not used

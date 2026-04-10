@@ -214,7 +214,7 @@ namespace Gtr2MemOpsTool.Models
                 App.Log.AddDebug($"Found slot list header at 0x{gridAddr:X}");
 
                 // 4. Walk the linked list and locate the first WeightPenalty
-                gridData = ReadGtr2GridData((nint)gtr2ProcessPointer, gridAddr);
+                gridData = ReadGtr2GridData(gtr2Process, (nint)gtr2ProcessPointer, gridAddr);
                 if (gridData.VehicleSlots.Count == 0)
                 {
                     throw new Exception("Failed finding grid data in slot list.");
@@ -239,8 +239,14 @@ namespace Gtr2MemOpsTool.Models
 
         // GridData is the name for the memory data structure containing slots for each vehicle in the grid. Each slot contains various data fields for the vehicle including DriverName, WeightPenalty, etc. This function walks the linked list of slots starting from the header and populates a GridData object with the data read from each slot.
         // - Note: All sessions will always have at least 20 slots, even if driver count is lower, and if driver count is >= 20 then slot count will match driver count.
-        private static Gtr2Grid ReadGtr2GridData(nint hProc, uint gridAddr)
+        private static Gtr2Grid ReadGtr2GridData(Process gtr2Process, nint hProc, uint gridAddr)
         {
+
+            uint? baseAddress = (uint)gtr2Process.MainModule.BaseAddress;
+            if (baseAddress is null)
+            {
+                throw new Exception("Failed getting process main module base address.");
+            }
 
             // Follow the linked list of slots and populate gridData.Slots with the data you want to read from each slot (e.g. driver name, weight penalty, etc.)
             Gtr2Grid gridData = new(gridAddr);
@@ -282,9 +288,12 @@ namespace Gtr2MemOpsTool.Models
                     {
                         uint heldTypeSize = (uint)Marshal.SizeOf(memoryItem.HeldType);
                         uint readLength = heldTypeSize * memoryItem.Length;
-                        uint memoryItemAddress = curSlotAddr + memoryItem.Offset;
-                        memoryItem.Address = memoryItemAddress;
-                        memoryItem.Data = ReadMemoryByteArray(hProc, memoryItemAddress, readLength);
+                        
+                        memoryItem.BaseAddress = (uint)baseAddress;
+                        memoryItem.BaseOffset = (curSlotAddr + memoryItem.Offset) - memoryItem.BaseAddress;
+                        memoryItem.Address = curSlotAddr + memoryItem.Offset;
+
+                        memoryItem.Data = ReadMemoryByteArray(hProc, memoryItem.Address, readLength);
                     }
 
                     gridData.VehicleSlots.Add(vehicleSlot);
@@ -742,9 +751,9 @@ namespace Gtr2MemOpsTool.Models
 
             // Relative offsets from dynamically located GTR2 memory region containing these nested memory regions
             //const nint aiwBaseOffset = GTR2_MEMORY_AIW_BASE_OFFSET;
-            const Int32 gridOffsetFromAiw = GTR2_MEMORY_AIW_OFFSET_GRID;
-            const Int32 gdbOffsetFromAiw = GTR2_MEMORY_AIW_OFFSET_GDB;
-            const Int32 plrOffsetFromAiw = GTR2_MEMORY_AIW_OFFSET_PLR;
+            const uint gridOffsetFromAiw = GTR2_MEMORY_AIW_OFFSET_GRID;
+            const uint gdbOffsetFromAiw = GTR2_MEMORY_AIW_OFFSET_GDB;
+            const uint plrOffsetFromAiw = GTR2_MEMORY_AIW_OFFSET_PLR;
 
             App.Log.AddInfo("Scanning memory with multi-signature validation...");
 
@@ -780,7 +789,7 @@ namespace Gtr2MemOpsTool.Models
                  *  1. Validate AIW Signature at any offset within the region. This is the anchor signature we look for first. Then every other signature is an offset from this.
                  * ---------------------------------------------------------- */
                 uint aiwAddr = 0;
-                for (Int32 aiwOffset = 0; aiwOffset <= regionSize - sigAiw.Length; aiwOffset++)
+                for (uint aiwOffset = 0; aiwOffset <= regionSize - sigAiw.Length; aiwOffset++)
                 {
                     if (MemorySignatureMatches(region, aiwOffset, sigAiw))
                     {
@@ -795,7 +804,7 @@ namespace Gtr2MemOpsTool.Models
                  *  2. Validate PLR signature at expected offset
                  * ---------------------------------------------------------- */
                 uint plrAddr = aiwAddr + plrOffsetFromAiw;
-                Int32 plrOffsetFromRegionStart = (Int32)(plrAddr - regionStart);
+                uint plrOffsetFromRegionStart = plrAddr - regionStart;
                 if (plrAddr < regionStart || plrAddr + sigPlr.Length > regionEnd ||
                     !MemorySignatureMatches(region, plrOffsetFromRegionStart, sigPlr))
                 {
@@ -812,7 +821,7 @@ namespace Gtr2MemOpsTool.Models
                  *  3. Validate GDB Horizon at expected offset
                  * ---------------------------------------------------------- */
                 uint gdbAddr = aiwAddr + gdbOffsetFromAiw;
-                Int32 gdbOffsetFromRegionStart = (Int32)(gdbAddr - regionStart);
+                uint gdbOffsetFromRegionStart = gdbAddr - regionStart;
                 if (gdbAddr < regionStart || gdbAddr + sigGdb.Length > regionEnd ||
                     !MemorySignatureMatches(region, gdbOffsetFromRegionStart, sigGdb))
                 {
@@ -847,7 +856,7 @@ namespace Gtr2MemOpsTool.Models
             return 0u;
         }
 
-        private static bool MemorySignatureMatches(byte[] data, Int32 offset, byte[] pattern)
+        private static bool MemorySignatureMatches(byte[] data, uint offset, byte[] pattern)
         {
             for (int i = 0; i < pattern.Length; i++)
                 if (data[offset + i] != pattern[i])

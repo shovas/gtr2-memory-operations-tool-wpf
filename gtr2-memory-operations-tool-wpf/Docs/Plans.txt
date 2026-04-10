@@ -2,6 +2,11 @@
 
 PLANS
 
+- Make a setting for:
+    private static void LoadItems(IProgress<List<MemoryItem>> progress)
+    {
+        int batchLimit = 50; // TODO: Make this a setting
+
 - Allow writing log file to a custom path not just to a custom file name in the exe directory
 
 - Map out all grid data fields in a way that I can dynamically go find them in memory
