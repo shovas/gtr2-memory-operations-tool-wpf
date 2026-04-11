@@ -35,21 +35,33 @@ namespace Gtr2MemOpsTool.Views
             view.Filter = item =>
             {
                 var memoryItem = (MemoryItem)item;
-                if (memoryItem.Name.Contains(SearchFilterBox.Text, StringComparison.OrdinalIgnoreCase))
+                string subject = memoryItem.Name;
+                if (subject.Contains(SearchFilterBox.Text, StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
                 }
-                else
+                subject = memoryItem.ValueAsString ?? "";
+                if (subject.Contains(SearchFilterBox.Text,
+                    StringComparison.OrdinalIgnoreCase))
                 {
-                    string? valueAsString = memoryItem.ValueAsString;
-                    if (valueAsString is not null)
-                    {
-                        if (valueAsString.Contains(SearchFilterBox.Text, StringComparison.OrdinalIgnoreCase))
-                        {
-                            return true;
-                        }
-                    }
+                    return true;
                 }
+                subject = memoryItem.ValueAsString ?? "";
+                if (subject.Contains(SearchFilterBox.Text, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+                subject = memoryItem.BaseOffsetAsHex;
+                if (subject.Contains(SearchFilterBox.Text, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+                subject = memoryItem.OffsetWithHex;
+                if (subject.Contains(SearchFilterBox.Text, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+
                 return false;
             };
         }

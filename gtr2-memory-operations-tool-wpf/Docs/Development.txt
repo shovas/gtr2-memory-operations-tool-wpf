@@ -15,13 +15,16 @@ Doing
 
 - Implement Program Memory tab memory reading
   - This tab will be for reading/writing values in the GTR2 process memory that aren't in the shared memory, such as player name, car setup values, etc.
+  - Doing: Sync up Addresses/Offsets between Cheat Engine and Gtr2MemOpsTool so that I can leverage both at the same time. Should help accelerate memory work.
+    - Use hex instead of uints in UI? To match up with CE, yes.
   - Todo: Allow editing ListView values and writing them back to memory (use Settings tab for reference)
     - Todo: Allow editing ints
     - Todo: Allow editing floats
     - Done: Allow editing strings
     - Todo: Allow editing bools
     - This will be a proof of concept protoype bit of logic for the Dynamic AI Adjustment Algorithm that I want to implement later. I want to be able to edit values in memory and see the effect in game before I start building out the algorithm.
-  - Todo: I want to be able to allow double-clicking the ListView to open another User Control (?) as a modal(?) "popup" that shows some peoples and allows saving or canceling.
+  - Todo: I want to allow double-clicking the ListView to open another User Control (?) as a modal(?) "popup" that shows some peoples and allows saving or canceling.
+    - https://claude.ai/share/2b9844a1-117a-4e92-9901-259f885f320c
   - Done: Add Buttons row like Shared Memory tab
   - Done: Add ListView like Shared Memory tab
   - Done: Add memory reading logic: I already have a lot of this in Gtr2MemOps

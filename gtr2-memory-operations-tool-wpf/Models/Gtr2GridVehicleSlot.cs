@@ -451,8 +451,8 @@ namespace Gtr2MemOpsTool.Models
             new MemoryItem("car_Description", typeof(byte), 64, 0x00, true),
             new MemoryItem("car_Team", typeof(byte), 64, 0x00, true),
             new MemoryItem("car_PitGroup", typeof(byte), 64, 0x00, true),
-            new MemoryItem("car_Manufacturer", typeof(byte), 64, 0x00, true),
-            new MemoryItem("car_Engine", typeof(byte), 8, 0x00, true),
+            new MemoryItem("sim_gdb_Category_Tag", typeof(byte), 64, 0x00, true), // Was: car_Manufacturer
+            new MemoryItem("sim_gdb_Category_Tag_Name", typeof(byte), 8, 0x00, true), // Was: car_Engine
             new MemoryItem("car_Number_str", typeof(byte), 8, 0x00, true),
             new MemoryItem("car_Number_int", typeof(Int32), 1, 0x00),
             new MemoryItem("car_FilePath", typeof(byte), 128, 0x00, true),
