@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Gtr2MemOpsTool.Models
 {
-    public class MemoryItem(string name, Type heldType, uint length, uint offset, byte[] data, bool stringType, Int32 offsetCheck)
+    public class MemoryItem(string name, Type heldType, uint length, uint offset, byte[] data, bool stringType, Int32 offsetCheck) : INotifyPropertyChanged
     {
         
         public string Name { get; set; } = name;
@@ -247,22 +247,26 @@ namespace Gtr2MemOpsTool.Models
                 {
                     //Int32 int32Value = ValueToInt32() ?? 0;
                     //Gtr2MemOps.WriteInt32((nint)gtr2ProcessPointer, Address, int32Value);
+                    App.Log.AddDebug($"Todo: Write new Int32 to memory: {newValue}");
                     success = true;
                 }
                 else if (HeldType == typeof(float))
                 {
                     //float floatValue = ValueToSingle() ?? 0.0f;
                     //Gtr2MemOps.WriteFloat((nint)gtr2ProcessPointer, Address, floatValue);
+                    App.Log.AddDebug($"Todo: Write new float to memory: {newValue}");
                     success = true;
                 }
                 else if (HeldType == typeof(bool))
                 {
                     //bool boolValue = ValueToBool() ?? false;
                     //Gtr2MemOps.WriteBool((nint)gtr2ProcessPointer, Address, boolValue);
+                    App.Log.AddDebug($"Todo: Write new bool to memory: {newValue}");
                     success = true;
                 }
                 else if (HeldType == typeof(byte) && StringType)
                 {
+                    App.Log.AddDebug($"Writing new string to memory: {newValue}");
                     string stringValue = newValue;
                     Encoding encoding = Encoding.GetEncoding(Gtr2MemOps.GTR2_ENCODING_CODEPAGE);
                     if(!Gtr2MemOps.WriteString((nint)gtr2ProcessPointer, Address, stringValue, encoding, Length))

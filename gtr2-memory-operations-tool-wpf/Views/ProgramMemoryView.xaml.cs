@@ -1,5 +1,6 @@
 ﻿using Gtr2MemOpsTool.Helpers;
 using Gtr2MemOpsTool.Models;
+using Gtr2MemOpsTool.Windows;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -114,6 +115,26 @@ namespace Gtr2MemOpsTool.Views
             var tb = sender as TextBox;
             tb?.Focus();
             e.Handled = false;
+        }
+
+        private void ItemsListView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            var selectedItem = ItemsListView.SelectedItem;
+            App.Log.AddDebug($"ItemsListView_MouseDoubleClick(): {selectedItem}");
+            if (ItemsListView.SelectedItem is MemoryItem selected)
+            {
+                App.Log.AddDebug($"Selected item: {selected.Name}=\"{selected.ValueAsString}\" at offset {selected.Offset} with length {selected.Length}");
+                // only fires if a row was actually selected
+                var dialog = new EditProgramMemoryItemWindow(selected)
+                {
+                    Owner = Window.GetWindow(this)
+                };
+                if (dialog.ShowDialog() == true)
+                {
+                    App.Log.AddDebug($"New value: {dialog.EditedValue}");
+                    selected.ValueAsString = dialog.EditedValue;
+                }
+            }
         }
     }
 }

@@ -23,7 +23,7 @@
             </StackPanel>
         </Grid>
         <Grid Grid.Row="1" Grid.Column="0">
-            <ListView x:Name="ItemsListView" ItemsSource="{Binding ProgramMemoryItems, ElementName=ProgramMemoryViewControl}" VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling">
+            <ListView x:Name="ItemsListView" ItemsSource="{Binding ProgramMemoryItems, ElementName=ProgramMemoryViewControl}" VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling" MouseDoubleClick="ItemsListView_MouseDoubleClick">
                 <ListView.View>
                     <GridView>
                         <GridViewColumn Header="Base Offset" Width="80" DisplayMemberBinding="{Binding BaseOffsetAsHex}"/>

@@ -242,11 +242,7 @@ namespace Gtr2MemOpsTool.Models
         private static Gtr2Grid ReadGtr2GridData(Process gtr2Process, nint hProc, uint gridAddr)
         {
 
-            uint? baseAddress = (uint)gtr2Process.MainModule.BaseAddress;
-            if (baseAddress is null)
-            {
-                throw new Exception("Failed getting process main module base address.");
-            }
+            nint? baseAddress = (gtr2Process.MainModule?.BaseAddress) ?? throw new Exception("Failed getting process main module base address.");
 
             // Follow the linked list of slots and populate gridData.Slots with the data you want to read from each slot (e.g. driver name, weight penalty, etc.)
             Gtr2Grid gridData = new(gridAddr);
