@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CheatTable>
+  <CheatEntries>
+    <CheatEntry>
+      <ID>1</ID>
+      <Description>"Collard/Berrige Last Laptime"</Description>
+      <VariableType>Float</VariableType>
+      <Address>GTR2.exe+3102C8 (3211976)</Address>
+    </CheatEntry>
+  </CheatEntries>
+</CheatTable>

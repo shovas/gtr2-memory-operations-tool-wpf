@@ -245,23 +245,59 @@ namespace Gtr2MemOpsTool.Models
                 nint? gtr2ProcessPointer = Gtr2MemOps.GetGtr2ProcessPointer() ?? throw new Exception("GTR2 process not found");
                 if (HeldType == typeof(Int32))
                 {
-                    //Int32 int32Value = ValueToInt32() ?? 0;
-                    //Gtr2MemOps.WriteInt32((nint)gtr2ProcessPointer, Address, int32Value);
-                    App.Log.AddDebug($"Todo: Write new Int32 to memory: {newValue}");
+                    App.Log.AddDebug($"Write new Int32 to memory: {newValue}");
+                    Int32 int32Value = int.Parse(newValue);
+                    if (!Gtr2MemOps.WriteInt32((nint)gtr2ProcessPointer, Address, int32Value))
+                    {
+                        throw new Exception("Failed to write Int32 to memory");
+                    }
+                    if (!Read())
+                    {
+                        throw new Exception("Failed to read back Int32 from memory after writing");
+                    }
+                    Int32 newReadInt32 = ValueToInt32() ?? 0;
+                    if (int32Value != newReadInt32)
+                    {
+                        throw new Exception($"Int32 verification failed after writing. Expected: {int32Value}, Read Back: {newReadInt32}");
+                    }
                     success = true;
                 }
                 else if (HeldType == typeof(float))
                 {
-                    //float floatValue = ValueToSingle() ?? 0.0f;
-                    //Gtr2MemOps.WriteFloat((nint)gtr2ProcessPointer, Address, floatValue);
-                    App.Log.AddDebug($"Todo: Write new float to memory: {newValue}");
+                    App.Log.AddDebug($"Write new float to memory: {newValue}");
+                    float floatValue = float.Parse(newValue);
+                    if (!Gtr2MemOps.WriteFloat((nint)gtr2ProcessPointer, Address, floatValue))
+                    {
+                        throw new Exception("Failed to write float to memory");
+                    }
+                    if (!Read())
+                    {
+                        throw new Exception("Failed to read back float from memory after writing");
+                    }
+                    float newReadFloat = ValueToSingle() ?? 0.0f;
+                    if (floatValue != newReadFloat)
+                    {
+                        throw new Exception($"Float verification failed after writing. Expected: {floatValue}, Read Back: {newReadFloat}");
+                    }
                     success = true;
                 }
                 else if (HeldType == typeof(bool))
                 {
-                    //bool boolValue = ValueToBool() ?? false;
-                    //Gtr2MemOps.WriteBool((nint)gtr2ProcessPointer, Address, boolValue);
                     App.Log.AddDebug($"Todo: Write new bool to memory: {newValue}");
+                    bool boolValue = newValue.ToLower() == "true" || newValue == "1";
+                    if (!Gtr2MemOps.WriteBool((nint)gtr2ProcessPointer, Address, boolValue))
+                    {
+                        throw new Exception("Failed to write bool to memory");
+                    }
+                    if (!Read())
+                    {
+                        throw new Exception("Failed to read back bool from memory after writing");
+                    }
+                    bool newReadBool = ValueToBool() ?? false;
+                    if (boolValue != newReadBool)
+                    {
+                        throw new Exception($"Bool verification failed after writing. Expected: {boolValue}, Read Back: {newReadBool}");
+                    }
                     success = true;
                 }
                 else if (HeldType == typeof(byte) && StringType)
@@ -273,9 +309,15 @@ namespace Gtr2MemOpsTool.Models
                     {
                         throw new Exception("Failed to write string to memory");
                     }
-                    if(!Read())
+                    byte[] oldData = Data;
+                    if (!Read())
                     {
                         throw new Exception("Failed to read back string from memory after writing");
+                    }
+                    string newReadString = ValueToString() ?? "";
+                    if ( stringValue != newReadString)
+                    {
+                        throw new Exception($"String verification failed after writing. Expected: {stringValue}, Read Back: {newReadString}");
                     }
                     success = true;
                 }

@@ -2,6 +2,8 @@
 
 PLANS
 
+- Light/Dark/System colour switch and setting to remember it
+
 - Make a setting for:
     private static void LoadItems(IProgress<List<MemoryItem>> progress)
     {

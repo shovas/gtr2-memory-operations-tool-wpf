@@ -2,6 +2,11 @@
 
 DEVELOPMENT
 
+Reminders
+
+- Session > Timing > Sector has Weight Penalty, Sector 1 Laptime, Sector 2 Laptime, Laptime, Split Time
+  - **Split Time**
+
 Todo
 
 - Separate logging level for log file
@@ -11,26 +16,31 @@ Todo
   - Add ListView to show current values and allow editing them and writing them back to memory
   - Add logic to automatically adjust the values based on player performance (lap times, etc.) and maybe even some machine learning down the line
 
+- Bug: If not in a race session and you refresh Program Memory, nothing happens and Refresh button stays inactive forever
+
 Doing
 
-- Implement Program Memory tab memory reading
+- Bug: Shared Memory tab displays corrupted data after byte[] driver name for mPlayerName, mDriverName, etc.
+  - Null terminator?
+
+Done
+
+- Implement Program Memory tab memory reading and writing
   - This tab will be for reading/writing values in the GTR2 process memory that aren't in the shared memory, such as player name, car setup values, etc.
-  - Doing: Sync up Addresses/Offsets between Cheat Engine and Gtr2MemOpsTool so that I can leverage both at the same time. Should help accelerate memory work.
-    - Use hex instead of uints in UI? To match up with CE, yes.
-  - Todo: Allow editing ListView values and writing them back to memory (use Settings tab for reference)
-    - Todo: Allow editing ints
-    - Todo: Allow editing floats
+  - Done: Allow editing ListView values and writing them back to memory (use Settings tab for reference)
+    - Done: Allow editing ints
+    - Done: Allow editing floats
     - Done: Allow editing strings
-    - Todo: Allow editing bools
+    - Scratch (no bools in Grid Slot data yet): Allow editing bools
     - This will be a proof of concept protoype bit of logic for the Dynamic AI Adjustment Algorithm that I want to implement later. I want to be able to edit values in memory and see the effect in game before I start building out the algorithm.
-  - Todo: I want to allow double-clicking the ListView to open another User Control (?) as a modal(?) "popup" that shows some peoples and allows saving or canceling.
+  - Done: I want to allow double-clicking the ListView to open another Window as a modal popup that show the row's value, allows editing, and allows saving, which writes the new value to memory, or canceling.
     - https://claude.ai/share/2b9844a1-117a-4e92-9901-259f885f320c
+  - Done: Sync up Addresses/Offsets between Cheat Engine and Gtr2MemOpsTool so that I can leverage both at the same time. Should help accelerate memory work.
+    - Use hex instead of uints in UI? To match up with CE, yes.
   - Done: Add Buttons row like Shared Memory tab
   - Done: Add ListView like Shared Memory tab
   - Done: Add memory reading logic: I already have a lot of this in Gtr2MemOps
   - Fixed: Current problem is I'm off by 4 bytes in my Gtr2GridVehicleSlots memory items.
-
-Done
 
 - 32bit offsets vs 64bit addresses issue
   - GTR2.exe is a 32bit process, so all memory addresses are 32bit. 64bit nints can handle addresses but when I calculate nint offsets based on them the offsets are 64bit/8-byte and calculations can end up wrong.

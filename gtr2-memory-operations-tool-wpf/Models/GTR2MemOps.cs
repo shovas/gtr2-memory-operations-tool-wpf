@@ -211,7 +211,7 @@ namespace Gtr2MemOpsTool.Models
                 {
                     throw new Exception("Failed to locate slot list header.");
                 }
-                App.Log.AddDebug($"Found slot list header at 0x{gridAddr:X}");
+                App.Log.AddDebug($"Found slot list header at address 0x{gridAddr:X}");
 
                 // 4. Walk the linked list and locate the first WeightPenalty
                 gridData = ReadGtr2GridData(gtr2Process, (nint)gtr2ProcessPointer, gridAddr);
@@ -359,7 +359,7 @@ namespace Gtr2MemOpsTool.Models
                 {
                     throw new Exception("Failed to locate slot list header.");
                 }
-                App.Log.AddDebug($"Found slot list header at 0x{gridAddr:X}");
+                App.Log.AddDebug($"Found slot list header at address 0x{gridAddr:X}");
 
                 // ---------------------------------------------------------
                 // 4. Walk the linked list and locate the first WeightPenalty
@@ -528,7 +528,7 @@ namespace Gtr2MemOpsTool.Models
                 {
                     throw new Exception("Failed to locate slot list header.");
                 }
-                App.Log.AddDebug($"Found slot list header at 0x{gridAddr:X}");
+                App.Log.AddDebug($"Found slot list header at address 0x{gridAddr:X}");
 
                 // ---------------------------------------------------------
                 // 4. Walk the linked list and locate the first WeightPenalty
@@ -538,7 +538,7 @@ namespace Gtr2MemOpsTool.Models
                 {
                     throw new Exception("Failed finding weight penalty in slot list.");
                 }
-                App.Log.AddDebug($"Found WeightPenalty address for first slot: 0x{weightPenaltyAddr:X}");
+                App.Log.AddDebug($"Found WeightPenalty for first slot at address 0x{weightPenaltyAddr:X}");
 
                 // ---------------------------------------------------------
                 // 5. Read current value to verify we can read and for later comparison after new write
@@ -768,16 +768,16 @@ namespace Gtr2MemOpsTool.Models
                     continue;
                 }
 
-                uint regionStart = (uint)mbi.BaseAddress;
-                uint regionEnd = (uint)(regionStart + mbi.RegionSize);
+                uint regionStartAddress = (uint)mbi.BaseAddress;
+                uint regionEndAddress = (uint)(regionStartAddress + mbi.RegionSize);
 
                 // Read the whole region (safe – regions are < 4 MiB in GTR2)
-                uint regionSize = (uint)(regionEnd - regionStart);
+                uint regionSize = (uint)(regionEndAddress - regionStartAddress);
                 byte[] region = new byte[regionSize];
                 if (!ReadProcessMemory(hProcess, mbi.BaseAddress, region, (int)regionSize, out int read) ||
                     read != regionSize)
                 {
-                    curAddr = regionEnd;
+                    curAddr = regionEndAddress;
                     continue;
                 }
 
@@ -789,45 +789,45 @@ namespace Gtr2MemOpsTool.Models
                 {
                     if (MemorySignatureMatches(region, aiwOffset, sigAiw))
                     {
-                        App.Log.AddInfo($"Found AIW signature at 0x{(regionStart + aiwOffset):X}");
-                        aiwAddr = (uint)(regionStart + aiwOffset);
+                        App.Log.AddInfo($"Found AIW signature at address 0x{(regionStartAddress + aiwOffset):X}");
+                        aiwAddr = (uint)(regionStartAddress + aiwOffset);
                         break;
                     }
                 }
-                if (aiwAddr == 0u) { curAddr = regionEnd; continue; }
+                if (aiwAddr == 0u) { curAddr = regionEndAddress; continue; }
 
                 /* ----------------------------------------------------------
                  *  2. Validate PLR signature at expected offset
                  * ---------------------------------------------------------- */
                 uint plrAddr = aiwAddr + plrOffsetFromAiw;
-                uint plrOffsetFromRegionStart = plrAddr - regionStart;
-                if (plrAddr < regionStart || plrAddr + sigPlr.Length > regionEnd ||
+                uint plrOffsetFromRegionStart = plrAddr - regionStartAddress;
+                if (plrAddr < regionStartAddress || plrAddr + sigPlr.Length > regionEndAddress ||
                     !MemorySignatureMatches(region, plrOffsetFromRegionStart, sigPlr))
                 {
-                    App.Log.AddError($"PLR signature mismatch at expected offset. Expected at 0x{plrAddr:X}");
-                    curAddr = regionEnd;
+                    App.Log.AddError($"PLR signature mismatch at expected offset. Expected at address 0x{plrAddr:X}");
+                    curAddr = regionEndAddress;
                     continue;
                 }
                 else
                 {
-                    App.Log.AddInfo($"Confirmed PLR signature at expected offset: 0x{plrAddr:X}");
+                    App.Log.AddInfo($"Confirmed PLR signature with expected offset at address 0x{plrAddr:X}");
                 }
 
                 /* ----------------------------------------------------------
                  *  3. Validate GDB Horizon at expected offset
                  * ---------------------------------------------------------- */
                 uint gdbAddr = aiwAddr + gdbOffsetFromAiw;
-                uint gdbOffsetFromRegionStart = gdbAddr - regionStart;
-                if (gdbAddr < regionStart || gdbAddr + sigGdb.Length > regionEnd ||
+                uint gdbOffsetFromRegionStart = gdbAddr - regionStartAddress;
+                if (gdbAddr < regionStartAddress || gdbAddr + sigGdb.Length > regionEndAddress ||
                     !MemorySignatureMatches(region, gdbOffsetFromRegionStart, sigGdb))
                 {
-                    App.Log.AddError($"GDB Horizon signature mismatch at expected offset. Expected at 0x{gdbAddr:X}");
-                    curAddr = regionEnd;
+                    App.Log.AddError($"GDB Horizon signature mismatch with expected offset at expected address 0x{gdbAddr:X}");
+                    curAddr = regionEndAddress;
                     continue;
                 }
                 else
                 {
-                    App.Log.AddInfo($"Confirmed GDB Horizon signature at expected offset: 0x{gdbAddr:X}");
+                    App.Log.AddInfo($"Confirmed GDB Horizon signature with expected offset at address 0x{gdbAddr:X}");
                 }
 
                 /* ----------------------------------------------------------
@@ -836,16 +836,16 @@ namespace Gtr2MemOpsTool.Models
                 uint gridAddr = aiwAddr + gridOffsetFromAiw;
 
                 App.Log.AddInfo($"Grid Address Memory Search Results:");
-                App.Log.AddInfo($" - AIW        : 0x{aiwAddr:X}");
-                App.Log.AddInfo($" - Grid Data  : 0x{gridAddr:X}");
-                App.Log.AddInfo($" - GDB Horizon: 0x{gdbAddr:X}");
-                App.Log.AddInfo($" - PLR AI     : 0x{plrAddr:X}");
+                App.Log.AddInfo($" - AIW Address        : 0x{aiwAddr:X}");
+                App.Log.AddInfo($" - Grid Data Address  : 0x{gridAddr:X}");
+                App.Log.AddInfo($" - GDB Horizon Address: 0x{gdbAddr:X}");
+                App.Log.AddInfo($" - PLR AI Address     : 0x{plrAddr:X}");
 
                 // If the header pattern is wrong, keep searching but that's extremely unlikely given the multi signature match it took to get here
                 if (ValidateGridSlot(hProcess, gridAddr))
                     return gridAddr;
 
-                curAddr = regionEnd;
+                curAddr = regionEndAddress;
             }
 
             App.Log.AddError("Failed searching memory for Grid address using multi-signature scan.");
