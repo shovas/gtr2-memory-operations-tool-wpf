@@ -20,8 +20,8 @@ namespace Gtr2MemOpsTool.Models
     public class MappedBuffer<MappedBufferT>
     {
         const int NUM_MAX_RETRIEES = 10;
-        readonly int GTR2_BUFFER_VERSION_BLOCK_SIZE_BYTES = Marshal.SizeOf(typeof(Gtr2MappedBufferVersionBlock));
-        readonly int GTR2_BUFFER_VERSION_BLOCK_WITH_SIZE_SIZE_BYTES = Marshal.SizeOf(typeof(Gtr2MappedBufferVersionBlockWithSize));
+        readonly int GTR2_BUFFER_VERSION_BLOCK_SIZE_BYTES = Marshal.SizeOf<Gtr2MappedBufferVersionBlock>();
+        readonly int GTR2_BUFFER_VERSION_BLOCK_WITH_SIZE_SIZE_BYTES = Marshal.SizeOf<Gtr2MappedBufferVersionBlockWithSize>();
 
         readonly int BUFFER_SIZE_BYTES;
         readonly string BUFFER_NAME;
@@ -36,7 +36,7 @@ namespace Gtr2MemOpsTool.Models
         bool SkipUnchanged { get; set; } = false;
         public MappedBuffer(string buffName, bool partial, bool skipUnchanged)
         {
-            this.BUFFER_SIZE_BYTES = Marshal.SizeOf(typeof(MappedBufferT));
+            this.BUFFER_SIZE_BYTES = Marshal.SizeOf<MappedBufferT>();
             this.BUFFER_NAME = buffName;
             this.Partial = partial;
             this.SkipUnchanged = skipUnchanged;
@@ -45,7 +45,7 @@ namespace Gtr2MemOpsTool.Models
         // Write buffer ctor.
         public MappedBuffer(string buffName)
         {
-            this.BUFFER_SIZE_BYTES = Marshal.SizeOf(typeof(MappedBufferT));
+            this.BUFFER_SIZE_BYTES = Marshal.SizeOf<MappedBufferT>();
             this.BUFFER_NAME = buffName;
         }
 

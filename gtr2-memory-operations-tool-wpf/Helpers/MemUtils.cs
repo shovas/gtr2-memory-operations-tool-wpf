@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Gtr2MemOpsTool.Helpers
 {
-    internal class Utilities
+    internal class MemUtils
     {
         public static string FormatHexAddress(int address)
         {

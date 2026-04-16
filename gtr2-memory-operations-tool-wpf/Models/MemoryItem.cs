@@ -284,7 +284,7 @@ namespace Gtr2MemOpsTool.Models
                 else if (HeldType == typeof(bool))
                 {
                     App.Log.AddDebug($"Todo: Write new bool to memory: {newValue}");
-                    bool boolValue = newValue.ToLower() == "true" || newValue == "1";
+                    bool boolValue = newValue.Equals("true", StringComparison.CurrentCultureIgnoreCase) || newValue == "1";
                     if (!Gtr2MemOps.WriteBool((nint)gtr2ProcessPointer, Address, boolValue))
                     {
                         throw new Exception("Failed to write bool to memory");

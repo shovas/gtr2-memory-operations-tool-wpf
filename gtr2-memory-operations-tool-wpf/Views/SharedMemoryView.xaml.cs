@@ -68,7 +68,7 @@ namespace Gtr2MemOpsTool.Views
                 
                 ReadGtr2MemoryBuffers();
 
-                App.Log.AddDebug($"Telemetry mVersion: {Utilities.GetStringFromBytes(Gtr2Extended.mVersion)}");
+                App.Log.AddDebug($"Telemetry mVersion: {MemUtils.GetStringFromBytes(Gtr2Extended.mVersion)}");
 
                 DisplayMemoryStructs();
 
@@ -112,6 +112,7 @@ namespace Gtr2MemOpsTool.Views
             ScoringBuffer.Disconnect(); ;
         }
 
+        // This reads the byte data into buffers. The buffers will then be parsed into the Gtr2Telemetry, Gtr2Scoring, and Gtr2Extended structs by the caller.
         private void ReadGtr2MemoryBuffers()
         {
             ExtendedBuffer.GetMappedData(ref Gtr2Extended);
@@ -149,7 +150,7 @@ namespace Gtr2MemOpsTool.Views
 
                 ReadGtr2MemoryBuffers();
 
-                App.Log.AddDebug($"Telemetry mVersion: {Utilities.GetStringFromBytes(Gtr2Extended.mVersion)}");
+                App.Log.AddDebug($"Telemetry mVersion: {MemUtils.GetStringFromBytes(Gtr2Extended.mVersion)}");
 
                 var structs = GetMemoryStructs();
                 foreach (var structItem in structs ) {
@@ -243,7 +244,8 @@ namespace Gtr2MemOpsTool.Views
                 // IGtr2Struct instances
                 App.Log.AddDebug($"Field {structItemField.Name} is a IGtr2Struct: {structItemField}");
 
-                string fieldValueString = $"IGtr2Struct: {structItemFieldValue}";
+                //string fieldValueString = structItemFieldValue.ToString() ?? "[Error: Failed converting to string]";
+                string fieldValueString = structItemFieldValue.GetType().Name;
                 SharedMemoryItem memoryItem = new(parentStructName, structItemField.Name, fieldValueString, structItemField.FieldType.Name);
                 items.Add(memoryItem);
 
@@ -290,9 +292,14 @@ namespace Gtr2MemOpsTool.Views
                 App.Log.AddDebug($"Field {structItemField.Name} is a byte array: {structItemField}");
 
                 byte[] fieldValueBytes = (byte[])structItemFieldValue;
-                Encoding encoding = Encoding.GetEncoding(Gtr2MemOps.GTR2_ENCODING_CODEPAGE);
-                string fieldValue = encoding.GetString(fieldValueBytes).TrimEnd('\0');
-                string fieldValueString = $"byte[]: {fieldValue}";
+
+                var encoding = Encoding.GetEncoding(Gtr2MemOps.GTR2_ENCODING_CODEPAGE);
+                int nullIndex = Array.IndexOf(fieldValueBytes, (byte)0);
+                int byteLength = nullIndex >= 0 ? nullIndex : fieldValueBytes.Length;
+                string fieldValue = encoding.GetString(fieldValueBytes, 0, byteLength);
+                //string fieldValueString = $"byte[]: {fieldValue}";
+                string fieldValueString = fieldValue;
+                App.Log.AddDebug($"Converting char from data: fieldValue={fieldValue}, fieldValueString={fieldValueString}");
 
                 SharedMemoryItem memoryItem = new(parentStructName, structItemField.Name, fieldValueString, structItemField.FieldType.Name);
                 items.Add(memoryItem);
@@ -311,7 +318,8 @@ namespace Gtr2MemOpsTool.Views
                 {
                     if (fieldItemValue is IGtr2Struct itemValueStruct)
                     {
-                        string fieldItemValueString = $"IGtr2Struct: {fieldItemValue}";
+                        //string fieldItemValueString = $"IGtr2Struct: {fieldItemValue}";
+                        string fieldItemValueString = fieldItemValue.GetType().Name;
                         SharedMemoryItem newMemoryItem = new(parentStructName, structItemField.Name, fieldItemValueString, structItemField.FieldType.Name);
                         items.Add(newMemoryItem);
 
@@ -339,7 +347,8 @@ namespace Gtr2MemOpsTool.Views
                 // Primitives: Byte, SByte, Int16, UInt16, Int32, UInt32, Int64, UInt64, Single, Double, Decimal, Char, Boolean
                 App.Log.AddDebug($"Field {structItemField.Name} is a primitive: {structItemField}");
 
-                string fieldValueString = $"Primitive: {structItemFieldValue}";
+                //string fieldValueString = $"Primitive: {structItemFieldValue}";
+                string fieldValueString = structItemFieldValue.ToString() ?? "[Error: Failed converting to string]";
                 SharedMemoryItem memoryItem = new(parentStructName, structItemField.Name, fieldValueString, structItemField.FieldType.Name);
                 items.Add(memoryItem);
             }
@@ -391,7 +400,9 @@ namespace Gtr2MemOpsTool.Views
                 // IGtr2Struct instances
                 App.Log.AddDebug($"Field {structItemField.Name} is a IGtr2Struct: {structItemField}");
 
-                string displayValue = $"IGtr2Struct: {structItemFieldValue}";
+                //string displayValue = $"IGtr2Struct: {structItemFieldValue}";
+                //string displayValue = structItemFieldValue.ToString() ?? "[Error: Failed converting to string]";
+                string displayValue = structItemFieldValue.GetType().Name;
                 SharedMemoryItem memoryItem = new(parentStructName, structItemField.Name, displayValue, structItemField.FieldType.Name);
                 AddSharedMemoryItem(memoryItem);
 
@@ -403,7 +414,9 @@ namespace Gtr2MemOpsTool.Views
                 // IGtr2Struct arrays
                 App.Log.AddDebug($"Field {structItemField.Name} is an IGtr2Struct[]: {structItemField}");
 
-                string displayValue = $"IGtr2Struct[]: {structItemFieldValue}";
+                //string displayValue = $"IGtr2Struct[]: {structItemFieldValue}";
+                //string displayValue = structItemFieldValue.ToString() ?? "[Error: Failed converting to string]";
+                string displayValue = structItemFieldValue.GetType().Name;
                 SharedMemoryItem memoryItem = new(parentStructName, structItemField.Name, displayValue, structItemField.FieldType.Name);
                 AddSharedMemoryItem(memoryItem);
 
@@ -433,12 +446,14 @@ namespace Gtr2MemOpsTool.Views
                 App.Log.AddDebug($"Field {structItemField.Name} is a byte array: {structItemField}");
 
                 byte[] fieldValueBytes = (byte[])structItemFieldValue;
-                Encoding encoding = Encoding.GetEncoding(Gtr2MemOps.GTR2_ENCODING_CODEPAGE);
-                string fieldValue = encoding.GetString(fieldValueBytes).TrimEnd('\0');
-                string displayValue = $"byte[]: {fieldValue}";
-                //displayValue = "typeof(byte[]):" + Encoding.UTF8.GetString((byte[])structItemFieldValue).TrimEnd('\0');
-                //displayValue = GetByteArrayString((byte[])structItemFieldValue);
-                //DisplayMemoryStructFieldByteArray(structItem, field, (byte[])obj);
+
+                var encoding = Encoding.GetEncoding(Gtr2MemOps.GTR2_ENCODING_CODEPAGE);
+                int nullIndex = Array.IndexOf(fieldValueBytes, (byte)0);
+                int byteLength = nullIndex >= 0 ? nullIndex : fieldValueBytes.Length;
+                string fieldValue = encoding.GetString(fieldValueBytes, 0, byteLength);
+                
+                //string displayValue = $"byte[]: {fieldValue}";
+                string displayValue = fieldValue;
 
                 SharedMemoryItem memoryItem = new(parentStructName, structItemField.Name, displayValue, structItemField.FieldType.Name);
                 AddSharedMemoryItem(memoryItem);
@@ -457,19 +472,11 @@ namespace Gtr2MemOpsTool.Views
                 {
                     if (fieldItemValue is IGtr2Struct)
                     {
-                        string fieldItemValueDisplayValue = $"IGtr2Struct: {fieldItemValue}";
+                        //string fieldItemValueDisplayValue = $"IGtr2Struct: {fieldItemValue}";
+                        //string fieldItemValueDisplayValue = fieldItemValue.ToString() ?? "[Error: Failed converting to string]";
+                        string fieldItemValueDisplayValue = fieldItemValue.GetType().Name;
                         SharedMemoryItem newMemoryItem = new(parentStructName, structItemField.Name, fieldItemValueDisplayValue, structItemField.FieldType.Name);
                         AddSharedMemoryItem(newMemoryItem);
-
-                        //IGtr2Struct fieldItemValueStruct = (IGtr2Struct)fieldItemValue;
-                        //FieldInfo[] fieldItemValueStructFields = fieldItemValueStruct.GetType().GetFields(BindingFlags.Public | BindingFlags.Instance);
-                        //DisplayMemoryStructFields(fieldItemValueStructFields, fieldItemValueStruct);
-
-                        ////////////////////////////////////////////////////////
-                        // fixme
-                        ////////////////////////////////////////////////////////
-
-                        //DisplayMemoryStruct(fieldItemValueStruct);
                     }
                     else
                     {
@@ -479,12 +486,6 @@ namespace Gtr2MemOpsTool.Views
                     }
 
                 }
-
-                //FieldInfo[] fields = structItemField.FieldType.GetFields(BindingFlags.Public | BindingFlags.Instance);
-                //foreach (FieldInfo field in fields)
-                //{
-                //    DisplayMemoryStructFields(fields, (IGtr2Struct)structItemFieldValue); // Recursively display nested struct fields
-                //}
             }
             else if (structItemField.FieldType.IsPrimitive)
             {
@@ -492,7 +493,8 @@ namespace Gtr2MemOpsTool.Views
                 App.Log.AddDebug($"Field {structItemField.Name} is a primitive: {structItemField}");
 
                 //displayValue = $"[Unexpected: {structItemField.FieldType.Name}]";
-                string displayValue = $"Primitive: {structItemFieldValue}";
+                //string displayValue = $"Primitive: {structItemFieldValue}";
+                string displayValue = structItemFieldValue.ToString() ?? "[Error: Failed converting to string]";
                 SharedMemoryItem memoryItem = new(parentStructName, structItemField.Name, displayValue, structItemField.FieldType.Name);
                 AddSharedMemoryItem(memoryItem);
             }
@@ -524,9 +526,13 @@ namespace Gtr2MemOpsTool.Views
         //    AddSharedMemoryItem(new SharedMemoryItem(structName, field.Name, displayValue, field.FieldType.Name));
         //}
 
-        private static string GetByteArrayString(byte[] byteArray)
+        // encoding example: var encoding = Encoding.GetEncoding(Gtr2MemOps.GTR2_ENCODING_CODEPAGE);
+        private static string GetByteArrayString(byte[] byteArray, Encoding encoding)
         {
-            return Encoding.UTF8.GetString(byteArray).TrimEnd('\0');
+            int nullIndex = Array.IndexOf(byteArray, (byte)0);
+            int byteLength = nullIndex >= 0 ? nullIndex : byteArray.Length;
+            var str = encoding.GetString(byteArray, 0, byteLength);
+            return str;
         }
 
         private static string GetArrayString(Array array)
