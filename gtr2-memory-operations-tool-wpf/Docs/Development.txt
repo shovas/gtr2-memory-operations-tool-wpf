@@ -9,21 +9,23 @@ Reminders
 
 Todo
 
-- Separate logging level for log file
-
 - Implement Automatic AI tab
   - Add buttons to read/write AI adjustment values to memory
   - Add ListView to show current values and allow editing them and writing them back to memory
   - Add logic to automatically adjust the values based on player performance (lap times, etc.) and maybe even some machine learning down the line
 
-- Bug: If not in a race session and you refresh Program Memory, nothing happens and Refresh button stays inactive forever
+- Separate logging level for log file
 
 Doing
 
-- Bug: Shared Memory tab displays corrupted data after byte[] driver name for mPlayerName, mDriverName, etc.
-  - Null terminator?
+- Make this a setting in SharedMemoryView.xaml.xs LoadItems: int batchLimit = 50; // TODO: Make this a setting
 
 Done
+
+- Fixed: If not in a race session and you refresh Program Memory, nothing happens and Refresh button stays inactive forever
+
+- Fixed: Shared Memory tab displays corrupted data after byte[] driver name for mPlayerName, mDriverName, etc.
+  - Yep: Null terminator?
 
 - Implement Program Memory tab memory reading and writing
   - This tab will be for reading/writing values in the GTR2 process memory that aren't in the shared memory, such as player name, car setup values, etc.

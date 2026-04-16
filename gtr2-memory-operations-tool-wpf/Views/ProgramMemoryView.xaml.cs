@@ -71,12 +71,15 @@ namespace Gtr2MemOpsTool.Views
         {
             RefreshButton.IsEnabled = false;
             ProgramMemoryItems.Clear();
+            App.Log.AddDebug("Starting to load program memory items...");
             var progress = new Progress<List<MemoryItem>>(items =>
             {
                 //App.Log.AddDebug("Loading items");
+                App.Log.AddDebug($"LoadItems Progress: Adding batch of {items.Count} items to ProgramMemoryItems");
                 AddProgramMemoryItems([.. items]);
-            }); // runs on UI thread
+            }); // Progress executes at intervals on UI thread but work is with Task.Run() on background thread next
             await Task.Run(() => LoadItems(progress));
+            App.Log.AddDebug("Finished loading program memory items.");
             RefreshButton.IsEnabled = true;
         }
 
@@ -85,6 +88,7 @@ namespace Gtr2MemOpsTool.Views
             //App.Log.AddDebug("AddProgramMemoryItem()");
             ProgramMemoryItems.Add(item);
         }
+
         public void AddProgramMemoryItems(MemoryItem[] items)
         {
             //App.Log.AddDebug("AddProgramMemoryItems()");

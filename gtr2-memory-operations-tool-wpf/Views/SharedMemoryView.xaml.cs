@@ -606,11 +606,14 @@ namespace Gtr2MemOpsTool.Views
 
             RefreshButton.IsEnabled = false;
             SharedMemoryItems.Clear();
+            App.Log.AddDebug("Starting to load shared memory items...");
             var progress = new Progress<List<SharedMemoryItem>>(items => {
+                App.Log.AddDebug($"LoadItems Progress: Adding batch of {items.Count} items to SharedMemoryItems");
                 AddSharedMemoryItems([.. items]);
                 //SharedMemoryItems.AddRange(items); // New custom BulkObservableCollection method to add a range of items with a single CollectionChanged event
             }); // runs on UI thread
             await Task.Run(() => LoadItems(progress));
+            App.Log.AddDebug("Finished loading shared memory items.");
             RefreshButton.IsEnabled = true;
         }
 

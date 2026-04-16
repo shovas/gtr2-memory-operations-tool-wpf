@@ -209,7 +209,7 @@ namespace Gtr2MemOpsTool.Models
                 uint gridAddr = FindGtr2GridAddress((nint)gtr2ProcessPointer);
                 if (gridAddr == nint.Zero)
                 {
-                    throw new Exception("Failed to locate slot list header.");
+                    throw new Exception("Failed finding slot list header.");
                 }
                 App.Log.AddDebug($"Found slot list header at address 0x{gridAddr:X}");
 
@@ -357,7 +357,7 @@ namespace Gtr2MemOpsTool.Models
                 uint gridAddr = FindGtr2GridAddress((nint)gtr2ProcessPointer);
                 if (gridAddr == 0u)
                 {
-                    throw new Exception("Failed to locate slot list header.");
+                    throw new Exception("Failed finding slot list header.");
                 }
                 App.Log.AddDebug($"Found slot list header at address 0x{gridAddr:X}");
 
@@ -526,7 +526,7 @@ namespace Gtr2MemOpsTool.Models
                 uint gridAddr = FindGtr2GridAddress((nint)gtr2ProcessPointer);
                 if (gridAddr == nint.Zero)
                 {
-                    throw new Exception("Failed to locate slot list header.");
+                    throw new Exception("Failed finding slot list header.");
                 }
                 App.Log.AddDebug($"Found slot list header at address 0x{gridAddr:X}");
 
@@ -782,7 +782,7 @@ namespace Gtr2MemOpsTool.Models
                 }
 
                 /* ----------------------------------------------------------
-                 *  1. Validate AIW Signature at any offset within the region. This is the anchor signature we look for first. Then every other signature is an offset from this.
+                 *  1. Validate AIW Signature at any offset within the region. This is the anchor signature we look for first. This is at an unknown address but once we find it then every other signature is an offset from this.
                  * ---------------------------------------------------------- */
                 uint aiwAddr = 0;
                 for (uint aiwOffset = 0; aiwOffset <= regionSize - sigAiw.Length; aiwOffset++)
@@ -806,7 +806,7 @@ namespace Gtr2MemOpsTool.Models
                 {
                     App.Log.AddError($"PLR signature mismatch at expected offset. Expected at address 0x{plrAddr:X}");
                     curAddr = regionEndAddress;
-                    continue;
+                    break;
                 }
                 else
                 {
@@ -823,7 +823,7 @@ namespace Gtr2MemOpsTool.Models
                 {
                     App.Log.AddError($"GDB Horizon signature mismatch with expected offset at expected address 0x{gdbAddr:X}");
                     curAddr = regionEndAddress;
-                    continue;
+                    break;
                 }
                 else
                 {
@@ -843,7 +843,10 @@ namespace Gtr2MemOpsTool.Models
 
                 // If the header pattern is wrong, keep searching but that's extremely unlikely given the multi signature match it took to get here
                 if (ValidateGridSlot(hProcess, gridAddr))
+                {
                     return gridAddr;
+                }
+                App.Log.AddWarning("Grid address failed validation after multi-signature match. Continuing search in case of hash collision, but this is unexpected.");
 
                 curAddr = regionEndAddress;
             }
