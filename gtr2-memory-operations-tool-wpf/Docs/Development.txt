@@ -14,9 +14,17 @@ Todo
 Doing
 
 - Implement Automatic AI tab
-  - Add buttons to read/write AI adjustment values to memory
-  - Add ListView to show current values and allow editing them and writing them back to memory
-  - Add logic to automatically adjust the values based on player performance (lap times, etc.) and maybe even some machine learning down the line
+  - Todo: Add new tab for Automatic AI adjustments
+    - Todo: Button bar: Refresh, Reset, Activate, Deactivate
+      - Todo: Refresh: Re-read memory and update list of Drivers and their current AI adjustment values
+      - Todo: Reset: Set all AI adjustment values back to original values in memory and update display
+      - Todo: Activate: Start the automatic adjustment algorithm that will adjust AI values in memory based on player performance and other factors
+      - Todo: Deactivate: Stop the automatic adjustment algorithm and leave AI values as they are in memory
+      - Done: Xaml interface 
+    - Todo: List of Drivers and their current AI adjustment values
+      - Done: Xaml interface 
+    - Todo: ListView logging adjustments as they happen
+      - Done: Xaml interface 
 
 Done
 

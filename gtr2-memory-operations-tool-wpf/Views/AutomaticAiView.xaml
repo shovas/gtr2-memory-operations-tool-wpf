@@ -1,0 +1,57 @@
+﻿<UserControl x:Class="Gtr2MemOpsTool.Views.AutomaticAiView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Gtr2MemOpsTool.Views"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Grid Grid.Row="0" Grid.Column="0" Background="#EEE" VerticalAlignment="Center">
+            <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" Background="White">
+                <Button x:Name="RefreshButton" Content="Refresh" Click="RefreshButton_Click" Height="20" Margin="5,5,5,5" Padding="5,0,5,0"/>
+                <Button x:Name="ResetButton" Content="Reset" Click="ResetButton_Click" Height="20" Margin="5,5,5,5" Padding="5,0,5,0"/>
+                <Button x:Name="ActivateButton" Content="Activate" Click="ActivateButton_Click" Height="20" Margin="5,5,5,5" Padding="5,0,5,0"/>
+                <Button x:Name="DeactivateButton" Content="Deactivate" Click="DeactivateButton_Click" Height="20" Margin="5,5,5,5" Padding="5,0,5,0"/>
+            </StackPanel>
+        </Grid>
+        <Grid Grid.Row="1" Grid.Column="0">
+            <DataGrid ItemsSource="{Binding AaiDrivers}"
+              AutoGenerateColumns="False"
+              IsReadOnly="True"
+              CanUserAddRows="False"
+              CanUserDeleteRows="False"
+              CanUserReorderColumns="False">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Name"  Binding="{Binding Name}"  Width="Auto"/>
+                    <DataGridTextColumn Header="Value" Binding="{Binding Value}" Width="Auto"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Grid>
+        <Grid Grid.Row="2" Grid.Column="0">
+            <ListView x:Name="LogListView" ItemsSource="{Binding LogItems}" VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling">
+                <ListView.View>
+                    <GridView>
+                        <GridViewColumn Header="Timestamp" Width="150">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Timestamp, StringFormat={}{0:yyyy-MM-dd HH:mm:ss.fff}}" />
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                        <GridViewColumn Header="Level" Width="75" DisplayMemberBinding="{Binding LogLevel}"/>
+                        <GridViewColumn Header="Message" Width="550" DisplayMemberBinding="{Binding Message}"/>
+                    </GridView>
+                </ListView.View>
+            </ListView>
+        </Grid>
+    </Grid>
+</UserControl>

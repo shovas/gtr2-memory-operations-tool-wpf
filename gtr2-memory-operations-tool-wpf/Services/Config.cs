@@ -17,26 +17,26 @@ namespace Gtr2MemOpsTool.Services
 
         public Config() {
             LoadSettings();
-            ApplySettings();
+            //ApplySettings();
         }
 
-        public void ApplySettings()
-        {
+        //public void ApplySettings()
+        //{
 
-            //// Example: Apply log level setting
-            //if (IniData.Global.TryGetKey("LogLevel", out var logLevelKey))
-            //{
-            //    if (Enum.TryParse(logLevelKey.Value, true, out AsyncBatchLogger.LogLevel logLevel))
-            //    {
-            //        App.Log.SetLogLevel(logLevel);
-            //        App.Log.AddInfo($"Log level set to {logLevel}");
-            //    }
-            //    else
-            //    {
-            //        App.Log.AddWarning($"Invalid log level in settings: {logLevelKey.Value}");
-            //    }
-            //}
-        }
+        //    //// Example: Apply log level setting
+        //    //if (IniData.Global.TryGetKey("LogLevel", out var logLevelKey))
+        //    //{
+        //    //    if (Enum.TryParse(logLevelKey.Value, true, out AsyncBatchLogger.LogLevel logLevel))
+        //    //    {
+        //    //        App.Log.SetLogLevel(logLevel);
+        //    //        App.Log.AddInfo($"Log level set to {logLevel}");
+        //    //    }
+        //    //    else
+        //    //    {
+        //    //        App.Log.AddWarning($"Invalid log level in settings: {logLevelKey.Value}");
+        //    //    }
+        //    //}
+        //}
 
         public void LoadSettings()
         {
