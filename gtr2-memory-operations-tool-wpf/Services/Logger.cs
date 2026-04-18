@@ -26,19 +26,19 @@ namespace Gtr2MemOpsTool.Services
             Exception
         }
         /// <summary>
-        ///  The effective logging level. Log entries with a level below this will be ignored. For example, if set to Warning, Debug and Info entries will be ignored, but Warning, Error and Exception entries will be logged.
+        ///  Log View logging level. Log entries with a level below this will be ignored. For example, if set to Warning, Debug and Info entries will be ignored, but Warning, Error and Exception entries will be logged.
         /// </summary>
         public LogLevel LoggingLevel { get; set; } = LogLevel.Info; // Will be updated once config is loaded
+        public LogLevel LogFileLoggingLevel { get; set; } = LogLevel.Info; // Log file specific logging level. Will be updated once config is loaded.
 
         public Logger ()
         {
+            App.Config.ConfigLoaded += OnConfigLoaded;
             StartLogWriter();
         }
 
         public void Log(LogItem logItem)
         {
-            LoggingLevel = GetLogLevel(App.Config.IniData.Global["StartupLoggingLevel"]);
-            App.Config.ConfigLoaded += OnConfigLoaded;
             _channel.Writer.TryWrite(logItem);
         }
 
@@ -47,6 +47,10 @@ namespace Gtr2MemOpsTool.Services
             string loggingLevel = App.Config.IniData.Global["StartupLoggingLevel"];
             LogLevel logLevel = GetLogLevel(loggingLevel);
             LoggingLevel = logLevel;
+
+            string logFileLoggingLevel = App.Config.IniData.Global["StartupLogFileLoggingLevel"];
+            LogLevel logFileLogLevel = GetLogLevel(logFileLoggingLevel);
+            LogFileLoggingLevel = logFileLogLevel;
         }
 
         public void Add(string message, LogLevel loggingLevel)
@@ -70,7 +74,7 @@ namespace Gtr2MemOpsTool.Services
                 var logFile = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, logFileName);
                 await foreach (var logItem in _logFileChannel.Reader.ReadAllAsync())
                 {
-                    if ( logItem.LogLevel < App.Log.LoggingLevel ) { 
+                    if ( logItem.LogLevel < App.Log.LogFileLoggingLevel ) { 
                         continue; // Skip log entries below the configured logging level
                     }
                     var logLevelLabel = Services.Logger.GetLogLevelLabel(logItem.LogLevel);

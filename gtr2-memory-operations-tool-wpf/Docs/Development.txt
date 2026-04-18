@@ -9,18 +9,20 @@ Reminders
 
 Todo
 
+
+
+Doing
+
 - Implement Automatic AI tab
   - Add buttons to read/write AI adjustment values to memory
   - Add ListView to show current values and allow editing them and writing them back to memory
   - Add logic to automatically adjust the values based on player performance (lap times, etc.) and maybe even some machine learning down the line
 
+Done
+
 - Separate logging level for log file
 
-Doing
-
-- Make this a setting in SharedMemoryView.xaml.xs LoadItems: int batchLimit = 50; // TODO: Make this a setting
-
-Done
+- Make this a setting in SharedMemoryView.xaml.xs LoadItems: int batchLimit = 50;
 
 - Fixed: If not in a race session and you refresh Program Memory, nothing happens and Refresh button stays inactive forever
 
