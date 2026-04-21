@@ -1,6 +1,7 @@
 ﻿using Gtr2MemOpsTool.Models;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.DirectoryServices;
@@ -165,6 +166,23 @@ namespace Gtr2MemOpsTool
             Process.Start(new ProcessStartInfo("https://www.simwiki.net/wiki/Help_Support_Simwiki") { UseShellExecute = true });
         }
 
-        
+        protected override void OnSourceInitialized(EventArgs e)
+        {
+            base.OnSourceInitialized(e);
+            Width = Properties.Settings.Default.WindowWidth;
+            Height = Properties.Settings.Default.WindowHeight;
+            Top = Properties.Settings.Default.WindowTop;
+            Left = Properties.Settings.Default.WindowLeft;
+        }
+
+        protected override void OnClosing(CancelEventArgs e)
+        {
+            base.OnClosing(e);
+            Properties.Settings.Default.WindowWidth = Width;
+            Properties.Settings.Default.WindowHeight = Height;
+            Properties.Settings.Default.WindowTop = Top;
+            Properties.Settings.Default.WindowLeft = Left;
+            Properties.Settings.Default.Save();
+        }
     }
 }

@@ -23,10 +23,12 @@ Doing
       - Done: Xaml interface 
     - Todo: List of Drivers and their current AI adjustment values
       - Done: Xaml interface 
-    - Todo: ListView logging adjustments as they happen
+    - Doing: ListView logging adjustments as they happen
       - Done: Xaml interface 
 
 Done
+
+- Window now remembers its size and position on screen between sessions
 
 - Separate logging level for log file
 
