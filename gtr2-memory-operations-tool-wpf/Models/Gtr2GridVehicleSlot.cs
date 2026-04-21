@@ -9,7 +9,7 @@ namespace Gtr2MemOpsTool.Models
 {
     public class Gtr2GridVehicleSlot
     {
-        public uint Address {  get; set; }
+        public uint Address { get; set; }
         public uint Offset { get; set; } // Offset from Gtr2Grid memory region
         public List<MemoryItem> MemoryItems { get; set; } = [
             // This is specifically the GTR2MemVehSlot class from TShirt's memops.py. His GridData class only contains GTR2MemVehSlots, though, so it's okay. This is all we're looking for. And we already have code reading it.
@@ -485,7 +485,24 @@ namespace Gtr2MemOpsTool.Models
                 var typeSize = Marshal.SizeOf(item.HeldType);
                 offset += (uint)(typeSize * item.Length);
             }
-            App.Log.AddDebug($"Final calculated offset: {offset} which should match {Offset} + {22624} = {Offset + 22624}");
+            //App.Log.AddDebug($"Final calculated offset: {offset} which should match {Offset} + {22624} = {Offset + 22624}");
         }
+
+        public MemoryItem? GetMemoryItemByName(string name)
+        {
+            return MemoryItems.FirstOrDefault(item => item.Name == name);
+        }
+
+        public string GetDriverName()
+        {
+            var nameItem = GetMemoryItemByName("NameFull_One");
+            if (nameItem != null)
+            {
+                return nameItem.ValueAsString ?? string.Empty;
+            }
+            return string.Empty;
+        }
+
+
     }
 }

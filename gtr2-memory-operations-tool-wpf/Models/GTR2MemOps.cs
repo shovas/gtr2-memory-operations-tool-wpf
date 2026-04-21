@@ -1,4 +1,5 @@
 ﻿using Gtr2MemOpsTool.Models;
+using Gtr2MemOpsTool.Services;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -84,7 +85,7 @@ namespace Gtr2MemOpsTool.Models
 
         [LibraryImport("kernel32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        private static partial bool CloseHandle(nint hObject);
+        public static partial bool CloseHandle(nint hObject);
 
         public Gtr2MemOps()
         {
@@ -179,7 +180,7 @@ namespace Gtr2MemOpsTool.Models
             return buf;
         }
 
-        private static Gtr2Grid? ReadGtr2Grid()
+        public static Gtr2Grid? ReadGtr2Grid()
         {
             // Overview:
             // 1. Find GTR2.EXE process
@@ -194,7 +195,7 @@ namespace Gtr2MemOpsTool.Models
 
                 // 1. Find gtr2.exe
                 Process? gtr2Process = GetProcessByName(GTR2_PROCESS_NAME) ?? throw new Exception("Failed finding GTR2 process.");
-                App.Log.AddDebug($"Found gtr2.exe (PID {gtr2Process.Id})");
+                //App.Log.AddDebug($"Found gtr2.exe (PID {gtr2Process.Id})");
 
                 // 2. Open process
                 gtr2ProcessPointer = OpenProcessForReadWrite(gtr2Process);
@@ -203,7 +204,7 @@ namespace Gtr2MemOpsTool.Models
                     throw new Exception("Failed opening GTR2 process.");
                 }
                 //gtr2ProcessPointer = gtr2TempProcessPointer.Value;
-                App.Log.AddDebug("Opened process");
+                //App.Log.AddDebug("Opened process");
 
                 // 3. Scan memory for the slot list header
                 uint gridAddr = FindGtr2GridAddress((nint)gtr2ProcessPointer);
@@ -211,7 +212,7 @@ namespace Gtr2MemOpsTool.Models
                 {
                     throw new Exception("Failed finding slot list header.");
                 }
-                App.Log.AddDebug($"Found slot list header at address 0x{gridAddr:X}");
+                //App.Log.AddDebug($"Found slot list header at address 0x{gridAddr:X}");
 
                 // 4. Walk the linked list and locate the first WeightPenalty
                 gridData = ReadGtr2GridData(gtr2Process, (nint)gtr2ProcessPointer, gridAddr);
@@ -219,7 +220,7 @@ namespace Gtr2MemOpsTool.Models
                 {
                     throw new Exception("Failed finding grid data in slot list.");
                 }
-                App.Log.AddDebug($"Found GridData for {gridData.VehicleSlots.Count} vehicles");
+                //App.Log.AddDebug($"Found GridData for {gridData.VehicleSlots.Count} vehicles");
 
             }
             catch (Exception ex)
@@ -252,7 +253,7 @@ namespace Gtr2MemOpsTool.Models
 
             try
             {
-                // TODO: Instead of a loop, could I just straight up read all the memory right through and put it into a struct? 
+                
                 while (true)
                 {
                     // Validate grid slot
@@ -270,10 +271,10 @@ namespace Gtr2MemOpsTool.Models
                     else if (pitGroupId == -1)
                     {
                         // End of grid slots
-                        App.Log.AddDebug("Reached end of slot list.");
+                        //App.Log.AddDebug("Reached end of slot list.");
                         break;
                     }
-                    App.Log.AddDebug($"pitGroupId={pitGroupId}");
+                    //App.Log.AddDebug($"pitGroupId={pitGroupId}");
 
                     // Read data from the slot and add to gridData.Slots
                     uint slotOffset = (uint)(curSlotAddr - gridAddr);
@@ -298,7 +299,7 @@ namespace Gtr2MemOpsTool.Models
                     uint nextSlotAddr = curSlotAddr + slotStep;
                     if (ValidateEndOfGrid(hProc, nextSlotAddr))
                     {
-                        App.Log.AddDebug("Next slot is end of list marker. Ending read.");
+                        //App.Log.AddDebug("Next slot is end of list marker. Ending read.");
                         break;
                     }
 
@@ -674,28 +675,42 @@ namespace Gtr2MemOpsTool.Models
         /// Finds the GTR2 process by name.
         /// </summary>
         /// <returns>Process if found otherwise null</returns>
-        private static Process? GetProcessByName(string processName)
+        public static Process? GetProcessByName(string processName)
         {
             // Find process by name
             Process[] gtr2Processes = Process.GetProcessesByName(processName);
             if (gtr2Processes.Length == 0)
             {
-                App.Log.AddDebug($"Process \"{processName}\" is not running.");
+                //App.Log.AddDebug($"Process \"{processName}\" is not running.");
                 return null;
             }
             else if (gtr2Processes.Length > 1)
             {
-                App.Log.AddDebug($"Multiple \"{processName}\" processes found. Aborting.");
+                //App.Log.AddDebug($"Multiple \"{processName}\" processes found. Aborting.");
                 return null;
             }
             // Exactly one process found
             Process gtr2Process = gtr2Processes[0];
             if (gtr2Process == null) // This shouldn't even be necessary but whatever
             {
-                App.Log.AddDebug("Unexpected condition: Process \"{gtr2ProcessName}\" found but invalid (null).");
+                App.Log.AddInfo("Unexpected condition: Process \"{gtr2ProcessName}\" found but invalid (null).");
                 return null;
             }
             return gtr2Process;
+        }
+
+        public static nint OpenGtr2ProcessForReadWrite()
+        {
+            // 1. Find gtr2.exe
+            Process? gtr2Process = Gtr2MemOps.GetProcessByName(Gtr2MemOps.GTR2_PROCESS_NAME) ?? throw new Exception("Failed finding GTR2 process.");
+
+            // 2. Open process
+            nint gtr2ProcessPointer = Gtr2MemOps.OpenProcessForReadWrite(gtr2Process);
+            if (gtr2ProcessPointer == nint.Zero)
+            {
+                throw new Exception("Failed opening GTR2 process.");
+            }
+            return gtr2ProcessPointer;
         }
 
         /// <summary>
@@ -703,7 +718,7 @@ namespace Gtr2MemOpsTool.Models
         /// </summary>
         /// <param name="process">Process to open</param>
         /// <returns>nint process pointer on success otherwise null</returns>
-        private static nint OpenProcessForReadWrite(Process process)
+        public static nint OpenProcessForReadWrite(Process process)
         {
             nint processPointer = OpenProcess(
                 PROCESS_QUERY_INFORMATION | PROCESS_VM_READ | PROCESS_VM_WRITE | PROCESS_VM_OPERATION,
@@ -711,10 +726,10 @@ namespace Gtr2MemOpsTool.Models
                 process.Id);
             if (processPointer == 0)
             {
-                App.Log.AddError($"Failed opening process: {process.Id}");
+                //App.Log.AddError($"Failed opening process: {process.Id}");
                 return nint.Zero;
             }
-            App.Log.AddDebug($"Opened process {process.Id} for READ/WRITE");
+            //App.Log.AddDebug($"Opened process {process.Id} for READ/WRITE");
             return processPointer;
         }
 

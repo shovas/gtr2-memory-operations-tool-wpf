@@ -14,8 +14,7 @@ namespace Gtr2MemOpsTool.Services
         // Using a Channel to implement an async logging system that batches log entries and updates the UI at regular intervals without blocking the main thread.
         private readonly Channel<LogItem> _channel = Channel.CreateUnbounded<LogItem>();
         public ChannelReader<LogItem> Reader => _channel.Reader; // Expose the reader to allow the MainWindow to consume log items without exposing the writer, ensuring encapsulation and thread safety.
-        private static readonly Channel<LogItem> _logFileChannel =
-    Channel.CreateUnbounded<LogItem>();
+        private static readonly Channel<LogItem> _logFileChannel = Channel.CreateUnbounded<LogItem>();
         private static readonly object _writeLogFileLock = new();
         public enum LogLevel
         {

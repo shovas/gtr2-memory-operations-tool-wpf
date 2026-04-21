@@ -9,7 +9,7 @@ Reminders
 
 Todo
 
-
+- Could Gtr2MemOps.ReadGtr2GridData() just read all memory right through instead of in a loop which is probably slower?
 
 Doing
 

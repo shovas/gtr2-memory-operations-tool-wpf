@@ -153,13 +153,13 @@ namespace Gtr2MemOpsTool.Models
                     {
                         return $"Unsupported type: {HeldType.Name} (Non-String)";
                     }
-                    App.Log.AddDebug($"Converting char from data: name={Name}, Length={Length}");
-                    App.Log.AddDebug($"Data (Data Length={Data.Length}) =>>>{BitConverter.ToString(Data)}<<<");
+                    //App.Log.AddDebug($"Converting char from data: name={Name}, Length={Length}");
+                    //App.Log.AddDebug($"Data (Data Length={Data.Length}) =>>>{BitConverter.ToString(Data)}<<<");
                     var encoding = Encoding.GetEncoding(Gtr2MemOps.GTR2_ENCODING_CODEPAGE);
                     int nullIndex = Array.IndexOf(Data, (byte)0);
                     int byteLength = nullIndex >= 0 ? nullIndex : Data.Length;
                     var str = encoding.GetString(Data, 0, byteLength);
-                    App.Log.AddDebug($"str=>>>{str}<<<");
+                    //App.Log.AddDebug($"str=>>>{str}<<<");
                     return str;
                 }
                 else
