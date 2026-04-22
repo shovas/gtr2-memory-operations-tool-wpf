@@ -22,7 +22,7 @@ namespace Gtr2MemOpsTool.Models
         private const uint PAGE_READWRITE = 0x04;
 
         // Sizes
-        private const int GTR2_MEMORY_SLOT_SIZE = 22624; // Byte length of each slot in the slot list
+        public const int GTR2_MEMORY_SLOT_SIZE = 22624; // Byte length of each slot in the slot list
 
         // Memory signatures
         // - The base memory region is found by matching these byte signatures within it (they must all match)
@@ -207,7 +207,9 @@ namespace Gtr2MemOpsTool.Models
                 //App.Log.AddDebug("Opened process");
 
                 // 3. Scan memory for the slot list header
+                App.Log.AddDebug("Started scanning memory for Grid address...");
                 uint gridAddr = FindGtr2GridAddress((nint)gtr2ProcessPointer);
+                App.Log.AddDebug("Finished scanning memory for Grid address.");
                 if (gridAddr == nint.Zero)
                 {
                     throw new Exception("Failed finding slot list header.");
@@ -215,7 +217,9 @@ namespace Gtr2MemOpsTool.Models
                 //App.Log.AddDebug($"Found slot list header at address 0x{gridAddr:X}");
 
                 // 4. Walk the linked list and locate the first WeightPenalty
+                App.Log.AddDebug("Started reading grid data from memory...");
                 gridData = ReadGtr2GridData(gtr2Process, (nint)gtr2ProcessPointer, gridAddr);
+                App.Log.AddDebug("Finished reading grid data from memory.");
                 if (gridData.VehicleSlots.Count == 0)
                 {
                     throw new Exception("Failed finding grid data in slot list.");
@@ -253,7 +257,6 @@ namespace Gtr2MemOpsTool.Models
 
             try
             {
-                
                 while (true)
                 {
                     // Validate grid slot
@@ -277,11 +280,13 @@ namespace Gtr2MemOpsTool.Models
                     //App.Log.AddDebug($"pitGroupId={pitGroupId}");
 
                     // Read data from the slot and add to gridData.Slots
-                    uint slotOffset = (uint)(curSlotAddr - gridAddr);
-                    Gtr2GridVehicleSlot vehicleSlot = new(curSlotAddr, slotOffset);
+                    uint gridSlotOffset = (uint)(curSlotAddr - gridAddr);
+                    Gtr2GridVehicleSlot vehicleSlot = new(curSlotAddr, gridAddr, gridSlotOffset);
+
+                    byte[] slotBytes = ReadMemoryByteArray(hProc, curSlotAddr, GTR2_MEMORY_SLOT_SIZE);
 
                     // Read in each slot field's memory data and MemoryItem can deal with handling the data
-                    foreach( var memoryItem in vehicleSlot.MemoryItems)
+                    foreach ( var memoryItem in vehicleSlot.MemoryItems)
                     {
                         uint heldTypeSize = (uint)Marshal.SizeOf(memoryItem.HeldType);
                         uint readLength = heldTypeSize * memoryItem.Length;
@@ -290,7 +295,10 @@ namespace Gtr2MemOpsTool.Models
                         memoryItem.BaseOffset = (curSlotAddr + memoryItem.Offset) - memoryItem.BaseAddress;
                         memoryItem.Address = curSlotAddr + memoryItem.Offset;
 
-                        memoryItem.Data = ReadMemoryByteArray(hProc, memoryItem.Address, readLength);
+                        //memoryItem.Data = ReadMemoryByteArray(hProc, memoryItem.Address, readLength);
+                        memoryItem.Data = new byte[readLength];
+                        //App.Log.AddDebug($"slotBytes.Length={slotBytes.Length}, memoryItem.Offset={memoryItem.Offset}, readLength={readLength}");
+                        Array.Copy(slotBytes, memoryItem.Offset, memoryItem.Data, 0, readLength);
                     }
 
                     gridData.VehicleSlots.Add(vehicleSlot);
@@ -820,7 +828,7 @@ namespace Gtr2MemOpsTool.Models
                     !MemorySignatureMatches(region, plrOffsetFromRegionStart, sigPlr))
                 {
                     App.Log.AddError($"PLR signature mismatch at expected offset. Expected at address 0x{plrAddr:X}");
-                    curAddr = regionEndAddress;
+                    //curAddr = regionEndAddress;
                     break;
                 }
                 else
@@ -837,7 +845,7 @@ namespace Gtr2MemOpsTool.Models
                     !MemorySignatureMatches(region, gdbOffsetFromRegionStart, sigGdb))
                 {
                     App.Log.AddError($"GDB Horizon signature mismatch with expected offset at expected address 0x{gdbAddr:X}");
-                    curAddr = regionEndAddress;
+                    //curAddr = regionEndAddress;
                     break;
                 }
                 else
@@ -859,6 +867,7 @@ namespace Gtr2MemOpsTool.Models
                 // If the header pattern is wrong, keep searching but that's extremely unlikely given the multi signature match it took to get here
                 if (ValidateGridSlot(hProcess, gridAddr))
                 {
+                    App.Log.AddInfo("Finished memory scan for Grid address.");
                     return gridAddr;
                 }
                 App.Log.AddWarning("Grid address failed validation after multi-signature match. Continuing search in case of hash collision, but this is unexpected.");

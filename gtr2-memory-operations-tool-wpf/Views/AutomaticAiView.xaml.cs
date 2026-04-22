@@ -31,17 +31,19 @@ namespace Gtr2MemOpsTool.Views
             DataContext = this;
             AddLogItem("Automatic AI tab starting...", Logger.LogLevel.Info);
 
-            Task.Run(() =>
-            {
-                LoadDrivers();
-            });
+            //Task.Run(() =>
+            //{
+            //    LoadDrivers();
+            //});
 
             AddLogItem("Automatic AI tab started.", Logger.LogLevel.Info);
         }
 
-        private void RefreshButton_Click(object sender, RoutedEventArgs e)
+        private async void RefreshButton_Click(object sender, RoutedEventArgs e)
         {
-            //LoadDrivers();
+            RefreshButton.IsEnabled = false;
+            await Task.Run(() => LoadDrivers()); 
+            RefreshButton.IsEnabled = true;
         }
 
         private void ResetButton_Click(object sender, RoutedEventArgs e)
@@ -75,7 +77,9 @@ namespace Gtr2MemOpsTool.Views
             nint? gtr2ProcessPointer = null;
             try
             {
+                App.Log.AddDebug("LoadDrivers(): Start Gtr2MemOps.ReadGtr2Grid()");
                 Gtr2Grid gtr2Grid = Gtr2MemOps.ReadGtr2Grid() ?? throw new Exception("Failed reading GTR2 grid.");
+                App.Log.AddDebug("LoadDrivers(): End Gtr2MemOps.ReadGtr2Grid()");
 
 
 

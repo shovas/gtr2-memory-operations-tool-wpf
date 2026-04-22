@@ -22,8 +22,17 @@ Doing
       - Todo: Deactivate: Stop the automatic adjustment algorithm and leave AI values as they are in memory
       - Done: Xaml interface 
     - Todo: List of Drivers and their current AI adjustment values
+      - Todo: Display current AI adjustment
       - Done: Xaml interface 
-    - Doing: ListView logging adjustments as they happen
+    - Doing: Reading grid memory is too slow for the usage that I need.
+      - Doing: Create a class like Gtr2GridVehicleSlot that contains only fields neede for Automatic AI tab
+        - Eg. Fields: Name and Last Laptime for now
+      - Done: Investigate if slowness is searching through memory to find GTR2 Grid Address or reading fields after finding the grid
+        - Problem is reading memory for each field, not searching through memory to find GTR2 Grid address.
+        - Reading field by field takes 50sec
+        - Reading the whole Slot's bytes at once (22624) and parsing fields out of that takes 30sec
+        - So, solution is probably just reading the fields we need
+    - Done: ListView logging adjustments as they happen
       - Done: Xaml interface 
 
 Done

@@ -18,7 +18,7 @@ namespace Gtr2MemOpsTool.Models
         public uint BaseAddress { get; set; } = 0; // Process.MainModule.BaseAddress
         public uint BaseOffset { get; set; } = 0; // Offset from BaseAddress
         public uint Address { get; set; } = 0; // Address of this memory item
-        public uint Offset { get; set; } = offset; // Offset from an arbitary address the caller must keep track of eg. Gtr2GridVehicleSlot address
+        public uint Offset { get; set; } = offset; // Offset from Address (eg. Gtr2GridVehicleSlot address)
         public byte[] Data { get; set; } = data ?? new byte[length]; // Raw byte data read from memory, which can be converted to the appropriate type based on HeldType when needed.
         public bool StringType { get; set; } = stringType; // Indicates when a byte type is actually a string
         public Int32 OffsetCheck { get; set; } = offsetCheck; // Used for checking if offsets are correct by comparing to expected values, can be set to 0 when not used
