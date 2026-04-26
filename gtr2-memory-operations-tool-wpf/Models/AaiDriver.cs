@@ -8,7 +8,7 @@ namespace Gtr2MemOpsTool.Models
     {
         public string Name { get; set; } = "";
         public string Value { get; set; } = "";
-        public float LastLaptime { get; set; } = 0;
+        public float LastLaptime { get; set; } = 0; // Watch out for -1 (no lap time yet)
         public string LastLaptimeFormatted {
             get
             {

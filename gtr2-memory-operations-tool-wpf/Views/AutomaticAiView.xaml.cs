@@ -64,7 +64,10 @@ namespace Gtr2MemOpsTool.Views
         private void AddLogItem(string message, Logger.LogLevel logLevel)
         {
             LogItem logItem = new(DateTime.Now, message, logLevel);
-            LogItems.Add(logItem);
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                LogItems.Add(logItem);
+            });
         }
 
         private void LoadDrivers()
@@ -77,30 +80,32 @@ namespace Gtr2MemOpsTool.Views
             nint? gtr2ProcessPointer = null;
             try
             {
-                App.Log.AddDebug("LoadDrivers(): Start Gtr2MemOps.ReadGtr2Grid()");
-                Gtr2Grid gtr2Grid = Gtr2MemOps.ReadGtr2Grid() ?? throw new Exception("Failed reading GTR2 grid.");
-                App.Log.AddDebug("LoadDrivers(): End Gtr2MemOps.ReadGtr2Grid()");
+                // Read grid drivers
+                App.Log.AddDebug("LoadDrivers(): Start Gtr2MemOps.ReadGtr2GridDrivers()");
+                Gtr2GridDrivers gtr2GridDrivers = Gtr2MemOps.ReadGtr2GridDrivers() ?? throw new Exception("Failed reading GTR2 grid.");
+                App.Log.AddDebug("LoadDrivers(): End Gtr2MemOps.ReadGtr2GridDrivers()");
 
+                // Convert Gtr2GridDrivers to AaiDriver list
+                List<AaiDriver> newAaiDrivers = [];
+                foreach (var gridDriver in gtr2GridDrivers.Drivers)
+                {
+                    string driverName = gridDriver.GetFirstDriverName();
+                    MemoryItem lastLaptimeMemoryItem = gridDriver.GetMemoryItemByName("Timing_Laptime_A") ?? throw new Exception($"Failed reading laptime memory item for driver {driverName}.");
+                    float lastLaptime = lastLaptimeMemoryItem.ValueAsFloat;
+                    AaiDriver driver = new AaiDriver
+                    {
+                        Name = driverName,
+                        LastLaptime = lastLaptime
+                    };
+                    newAaiDrivers.Add(driver);
+                }
 
-
-                // FIXME: HERE
-
-
-
-
-                //foreach (var vehicleSlot in gtr2Grid.VehicleSlots)
-                //{
-                //    string driverName = vehicleSlot.GetDriverName();
-                //    MemoryItem lastLaptimeMemoryItem = vehicleSlot.GetMemoryItemByName("Timing_Laptime_A") ?? throw new Exception($"Failed reading laptime memory item for driver {driverName}.");
-                //    float lastLaptime = lastLaptimeMemoryItem.ValueAsFloat;
-                //    AaiDriver driver = new AaiDriver
-                //    {
-                //        Name = driverName,
-                //        LastLaptime = lastLaptime
-                //    };
-                //    AaiDrivers.Add(driver);
-                //}
-
+                // Update UI
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    AaiDrivers.Clear();
+                    AaiDrivers.AddRange(newAaiDrivers);
+                });
             }
             catch (Exception ex)
             {

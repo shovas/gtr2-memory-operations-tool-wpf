@@ -11,7 +11,7 @@ namespace Gtr2MemOpsTool.Models
     {
         public uint Address { get; set; }
         public uint GridAddress { get; set; }
-        public uint GridOffset { get; set; } // Offset from Address (Gtr2Grid Vehicle Slot Address)
+        public uint GridOffset { get; set; } // Offset from Grid Address. Grid Address + Grid Offset = Vehicle Slot Address
         public List<MemoryItem> MemoryItems { get; set; } = [
             // This is specifically the GTR2MemVehSlot class from TShirt's memops.py. His GridData class only contains GTR2MemVehSlots, though, so it's okay. This is all we're looking for. And we already have code reading it.
             // I should be able to read through this sequentially and build a full list of memory items from this.
@@ -353,7 +353,7 @@ namespace Gtr2MemOpsTool.Models
             new MemoryItem("x_Unkn_Ga_Var_I_sco", typeof(float), 1, 0x00), // 19292
             new MemoryItem("x_Unkn_Ga_Var_J", typeof(float), 1, 0x00),
             new MemoryItem("x_Unkn_Ga_Var_K_sco", typeof(float), 1, 0x00), // 19300
-            new MemoryItem("Timing_Laptime_A", typeof(float), 1, 0x00),
+            new MemoryItem("Timing_Laptime_A", typeof(float), 1, 0x00), // -1: No lap time (Confirmed)
             new MemoryItem("Timing_SectorOne_A", typeof(float), 1, 0x00),
             new MemoryItem("Timing_SectorTwo_A", typeof(float), 1, 0x00),
             new MemoryItem("QualPos_Forced", typeof(Int32), 1, 0x00), // 19316
@@ -366,15 +366,15 @@ namespace Gtr2MemOpsTool.Models
             new MemoryItem("x_Unkn_Gb_Var_A", typeof(Int32), 1, 0x00), // 19388
             new MemoryItem("x_Unkn_Gb_Null_B", typeof(byte), 40, 0x00), // 19392-19428
             new MemoryItem("Timing_LapStartET_B", typeof(float), 1, 0x00), // 19432
-            new MemoryItem("Timing_Laptime_B", typeof(float), 1, 0x00),
-            new MemoryItem("Timing_SectorOne_B", typeof(float), 1, 0x00),
-            new MemoryItem("Timing_SectorTwo_B", typeof(float), 1, 0x00),
-            new MemoryItem("Timing_Laptime_C", typeof(float), 1, 0x00),
+            new MemoryItem("Timing_Laptime_B", typeof(float), 1, 0x00), // -1: No lap time
+            new MemoryItem("Timing_SectorOne_B", typeof(float), 1, 0x00), // -1: No lap time?
+            new MemoryItem("Timing_SectorTwo_B", typeof(float), 1, 0x00), // -1: No lap time?
+            new MemoryItem("Timing_Laptime_C", typeof(float), 1, 0x00), // -1: No lap time
             new MemoryItem("Timing_SectorOne_C", typeof(float), 1, 0x00),
             new MemoryItem("Timing_SectorTwo_C", typeof(float), 1, 0x00),
             new MemoryItem("x_Unkn_Gb_Var_C", typeof(float), 1, 0x00), // 19460
             new MemoryItem("x_Unkn_Gb_Null_C", typeof(byte), 4, 0x00),
-            new MemoryItem("Timing_Laptime_D", typeof(float), 1, 0x00),
+            new MemoryItem("Timing_Laptime_D", typeof(float), 1, 0x00), // -1: No lap time?
             new MemoryItem("x_Unkn_Gb_Var_D", typeof(Int32), 1, 0x00), // 19472
             new MemoryItem("x_Unkn_Gb_Var_E", typeof(Int32), 1, 0x00),
             new MemoryItem("Timing_LapStartET_Log_MAR", typeof(Int32), 1, 0x00), // 19480
@@ -495,7 +495,7 @@ namespace Gtr2MemOpsTool.Models
             return MemoryItems.FirstOrDefault(item => item.Name == name);
         }
 
-        public string GetDriverName()
+        public string GetFirstDriverName()
         {
             var nameItem = GetMemoryItemByName("NameFull_One");
             if (nameItem != null)

@@ -16,16 +16,21 @@ Doing
 - Implement Automatic AI tab
   - Todo: Add new tab for Automatic AI adjustments
     - Todo: Button bar: Refresh, Reset, Activate, Deactivate
-      - Todo: Refresh: Re-read memory and update list of Drivers and their current AI adjustment values
       - Todo: Reset: Set all AI adjustment values back to original values in memory and update display
       - Todo: Activate: Start the automatic adjustment algorithm that will adjust AI values in memory based on player performance and other factors
       - Todo: Deactivate: Stop the automatic adjustment algorithm and leave AI values as they are in memory
+      - Done: Refresh: Re-read memory and update UI list of drivers from grid vehicle slots
       - Done: Xaml interface 
-    - Todo: List of Drivers and their current AI adjustment values
-      - Todo: Display current AI adjustment
+>   - Todo: List of Drivers and their current AI adjustment values
+      - Todo: Display current AI adjustment for each driver
+      - Todo: Run an AI adjustment calculation every refresh and record adjustment with each driver
+        - Reminder this AI adjustment is a weight penalty adjustment: +0.3s for every 1kg added.
+>     - Doing: Refresh Automatic AI tab on an interval
       - Done: Xaml interface 
-    - Doing: Reading grid memory is too slow for the usage that I need.
-      - Doing: Create a class like Gtr2GridVehicleSlot that contains only fields neede for Automatic AI tab
+    - Done: Reading grid memory is too slow for the usage that I need.
+      - Done: Reading class with minimal fields (driver name, last laptime) is fast enough (100ms for 10 drivers)
+        - I'm sure there's other ways to optimize this because I think the time is going into allocating memory for each field and the class itself.
+      - Done: Create a class like Gtr2GridVehicleSlot that contains only fields needed for Automatic AI tab
         - Eg. Fields: Name and Last Laptime for now
       - Done: Investigate if slowness is searching through memory to find GTR2 Grid Address or reading fields after finding the grid
         - Problem is reading memory for each field, not searching through memory to find GTR2 Grid address.
