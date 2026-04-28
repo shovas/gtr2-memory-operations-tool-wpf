@@ -21,11 +21,14 @@ Doing
       - Todo: Deactivate: Stop the automatic adjustment algorithm and leave AI values as they are in memory
       - Done: Refresh: Re-read memory and update UI list of drivers from grid vehicle slots
       - Done: Xaml interface 
->   - Todo: List of Drivers and their current AI adjustment values
+    - Todo: List of Drivers and their current AI adjustment values
       - Todo: Display current AI adjustment for each driver
       - Todo: Run an AI adjustment calculation every refresh and record adjustment with each driver
         - Reminder this AI adjustment is a weight penalty adjustment: +0.3s for every 1kg added.
->     - Doing: Refresh Automatic AI tab on an interval
+      - Todo: Driver names are the current driver in the car so you can't always match up with GTR2's Timing screen. 
+>       - Doing: Select first mDriverName (first Gtr2VehicleScoring) in shared memory and compare to NameFull_One and NameFull_Two from Program Memory to determine who is currently in the car.
+        - Will this be a problem for Automatic AI? I don't think so since the adjustment will be against the car not the driver.
+     - Done: Refresh Automatic AI tab on an interval
       - Done: Xaml interface 
     - Done: Reading grid memory is too slow for the usage that I need.
       - Done: Reading class with minimal fields (driver name, last laptime) is fast enough (100ms for 10 drivers)

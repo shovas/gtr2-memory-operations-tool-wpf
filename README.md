@@ -44,6 +44,6 @@ How It Works
 
   - T-Shirt for the original memory operations python scripts that provided much of the foundation for reading and writing memory and also mapping out many useful memory locations
   - The Iron Wolf for CCGEP and especially the open source CCGEP Monitor that had valuable shared memory reading code
-  - Angel Alonso F. from Simwiki discord for his work on various Python script to do similar things
+  - Angel Alonso F. from Simwiki discord for his work on various Python scripts to do similar things
   - The Simwiki Discord where many of us GTR2 fans congregate and share information about modding
   - The GTR2 forum communities such as Trackaholics, EEC, Evolution Modding, GT-IMT, Steam Forums, and Reddit r/GTR2 where we can post questions for the community

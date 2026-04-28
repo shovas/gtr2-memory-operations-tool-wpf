@@ -12,7 +12,9 @@ namespace Gtr2MemOpsTool.Models
         public string LastLaptimeFormatted {
             get
             {
-                var ret = TimeSpan.FromSeconds(LastLaptime).ToString(@"mm\:ss\.fff");
+                float lastLaptime = (float)Math.Round(LastLaptime, 3, MidpointRounding.ToEven); // Kind of surprised it's not ToPositiveInfinity but ToEven seems to match GTR2's Timing screen.
+                var ts = TimeSpan.FromSeconds(lastLaptime);
+                var ret = ts.ToString(@"mm\:ss\.fff");
                 return ret;
             }
         }

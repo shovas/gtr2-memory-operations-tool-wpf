@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
+using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -15,6 +16,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 
 namespace Gtr2MemOpsTool.Views
 {
@@ -25,24 +27,45 @@ namespace Gtr2MemOpsTool.Views
     {
         public BulkObservableCollection<AaiDriver> AaiDrivers { get; set; } = [];
         public BulkObservableCollection<LogItem> LogItems { get; set; } = [];
+        private DispatcherTimer _refreshTimer;
         public AutomaticAiView()
         {
             InitializeComponent();
             DataContext = this;
             AddLogItem("Automatic AI tab starting...", Logger.LogLevel.Info);
-
-            //Task.Run(() =>
-            //{
-            //    LoadDrivers();
-            //});
-
             AddLogItem("Automatic AI tab started.", Logger.LogLevel.Info);
+            if ( Gtr2MemOps.IsGtr2ProcessRunning())
+            {
+                AddLogItem("GTR2 process detected. Loading drivers...", Logger.LogLevel.Info);
+                RefreshDrivers();
+                StartRefreshTimer();
+            }
+            else
+            {
+                AddLogItem("GTR2 process not detected. Please start GTR2 to load drivers.", Logger.LogLevel.Warning);
+            }
+        }
+
+        public void StartRefreshTimer()
+        {
+            int refreshTime = int.TryParse(App.Config.IniData.Sections["AutomaticAiView"]["RefreshDriversTime"], out int result) ? result : 1;
+            _refreshTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromSeconds(refreshTime)
+            };
+            _refreshTimer.Tick += OnRefreshTimerTick;
+            _refreshTimer.Start();
+        }
+
+        private void OnRefreshTimerTick(object sender, EventArgs e)
+        {
+            RefreshDrivers();
         }
 
         private async void RefreshButton_Click(object sender, RoutedEventArgs e)
         {
             RefreshButton.IsEnabled = false;
-            await Task.Run(() => LoadDrivers()); 
+            RefreshDrivers();
             RefreshButton.IsEnabled = true;
         }
 
@@ -68,6 +91,11 @@ namespace Gtr2MemOpsTool.Views
             {
                 LogItems.Add(logItem);
             });
+        }
+
+        private async void RefreshDrivers()
+        {
+            await Task.Run(() => LoadDrivers());
         }
 
         private void LoadDrivers()
