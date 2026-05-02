@@ -46,7 +46,7 @@ namespace Gtr2MemOpsTool.Views
             }
         }
 
-        public void StartRefreshTimer()
+        private void StartRefreshTimer()
         {
             int refreshTime = int.TryParse(App.Config.IniData.Sections["AutomaticAiView"]["RefreshDriversTime"], out int result) ? result : 1;
             _refreshTimer = new DispatcherTimer

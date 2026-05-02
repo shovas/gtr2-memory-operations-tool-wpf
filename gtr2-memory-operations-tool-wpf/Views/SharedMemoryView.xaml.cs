@@ -62,7 +62,7 @@ namespace Gtr2MemOpsTool.Views
             App.Log.AddInfo("Testing GTR2 Shared Memory");
             try
             {
-                MarshalGtr2MemoryRegions();
+                CreateGtr2MemoryStructs();
 
                 ConnectGtr2MemoryBuffers();
                 
@@ -90,7 +90,7 @@ namespace Gtr2MemOpsTool.Views
             }
         }
 
-        private void MarshalGtr2MemoryRegions()
+        private void CreateGtr2MemoryStructs()
         {
             Gtr2Telemetry = new Gtr2Telemetry();
             Gtr2Scoring = new Gtr2Scoring();
@@ -144,7 +144,7 @@ namespace Gtr2MemOpsTool.Views
             App.Log.AddInfo("Getting GTR2 Shared Memory Items");
             //try
             //{
-                MarshalGtr2MemoryRegions();
+                CreateGtr2MemoryStructs();
 
                 ConnectGtr2MemoryBuffers();
 
@@ -179,10 +179,10 @@ namespace Gtr2MemOpsTool.Views
         {
             // Loop over all structs and their fields, and add them to the SharedMemoryItems collection for display
             var structsList = new List<IGtr2Struct> {
-                    Gtr2Telemetry,
-                    Gtr2Scoring,
-                    Gtr2Extended
-                };
+                Gtr2Telemetry,
+                Gtr2Scoring,
+                Gtr2Extended
+            };
             //List<SharedMemoryItem> items = [];
             foreach (var structsItem in structsList)
             {

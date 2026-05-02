@@ -9,6 +9,9 @@ Reminders
 
 Todo
 
+- Consider: Converting Gtr2GridVehicleSlot to a struct should be much faster.
+  - If I can get away without the fancy class logic then it'll be a win.
+
 - Could Gtr2MemOps.ReadGtr2GridData() just read all memory right through instead of in a loop which is probably slower?
 
 Doing

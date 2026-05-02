@@ -17,6 +17,10 @@ using System.Threading;
 
 namespace Gtr2MemOpsTool.Models
 {
+    // This class encapsulates and abstracts reading from GTR2 shared memory based on structs that map out the memory layout.
+    // - It allows the caller to read a struct from shared memory, without worrying about the details of memory mapping, synchronization, retries, etc.
+    //   - eg. Gtr2Telemetry, Gtr2Scoring, Gtr2Extended
+    // - It implements some retry logic on read to ensure we get consistent data, and also collects some stats on read success/failures.
     public class MappedBuffer<MappedBufferT>
     {
         const int NUM_MAX_RETRIEES = 10;
