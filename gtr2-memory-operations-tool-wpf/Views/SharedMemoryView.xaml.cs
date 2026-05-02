@@ -293,7 +293,7 @@ namespace Gtr2MemOpsTool.Views
 
                 byte[] fieldValueBytes = (byte[])structItemFieldValue;
 
-                var encoding = Encoding.GetEncoding(Gtr2MemOps.GTR2_ENCODING_CODEPAGE);
+                var encoding = Encoding.GetEncoding(Gtr2ProgMemOps.GTR2_ENCODING_CODEPAGE);
                 int nullIndex = Array.IndexOf(fieldValueBytes, (byte)0);
                 int byteLength = nullIndex >= 0 ? nullIndex : fieldValueBytes.Length;
                 string fieldValue = encoding.GetString(fieldValueBytes, 0, byteLength);
@@ -447,7 +447,7 @@ namespace Gtr2MemOpsTool.Views
 
                 byte[] fieldValueBytes = (byte[])structItemFieldValue;
 
-                var encoding = Encoding.GetEncoding(Gtr2MemOps.GTR2_ENCODING_CODEPAGE);
+                var encoding = Encoding.GetEncoding(Gtr2ProgMemOps.GTR2_ENCODING_CODEPAGE);
                 int nullIndex = Array.IndexOf(fieldValueBytes, (byte)0);
                 int byteLength = nullIndex >= 0 ? nullIndex : fieldValueBytes.Length;
                 string fieldValue = encoding.GetString(fieldValueBytes, 0, byteLength);

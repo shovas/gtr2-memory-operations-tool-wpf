@@ -47,7 +47,7 @@ namespace Gtr2MemOpsTool.Models
         public const int MAX_STATUS_MSG_LEN = 128;
         public const int MAX_RULES_INSTRUCTION_MSG_LEN = 96;
         public const int MAX_HWCONTROL_NAME_LEN = 96;
-        public const string GTR2_PROCESS_NAME = Gtr2MemOps.GTR2_PROCESS_NAME;
+        public const string GTR2_PROCESS_NAME = Gtr2ProgMemOps.GTR2_PROCESS_NAME;
 
         public const byte RowX = 0;
         public const byte RowY = 1;
@@ -241,6 +241,7 @@ namespace Gtr2MemOpsTool.Models
         }
     }
 
+    // IGtr2Struct was created so I could more easily use structs without having to worry about the specific type of struct
     public interface IGtr2Struct { }
 
     ////////////////////////////////////////////////////////////////////////////

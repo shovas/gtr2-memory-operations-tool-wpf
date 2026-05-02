@@ -9,7 +9,7 @@ using System.Text;
 
 namespace Gtr2MemOpsTool.Models
 {
-    public partial class Gtr2MemOps
+    public partial class Gtr2ProgMemOps
     {
         public const string GTR2_PROCESS_NAME = "gtr2";
 
@@ -87,7 +87,7 @@ namespace Gtr2MemOpsTool.Models
         [return: MarshalAs(UnmanagedType.Bool)]
         public static partial bool CloseHandle(nint hObject);
 
-        public Gtr2MemOps()
+        public Gtr2ProgMemOps()
         {
             // Register Code Pages provider so that Windows-1252 is available to use
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
@@ -848,10 +848,10 @@ namespace Gtr2MemOpsTool.Models
         public static nint OpenGtr2ProcessForReadWrite()
         {
             // 1. Find gtr2.exe
-            Process? gtr2Process = Gtr2MemOps.GetProcessByName(Gtr2MemOps.GTR2_PROCESS_NAME) ?? throw new Exception("Failed finding GTR2 process.");
+            Process? gtr2Process = Gtr2ProgMemOps.GetProcessByName(Gtr2ProgMemOps.GTR2_PROCESS_NAME) ?? throw new Exception("Failed finding GTR2 process.");
 
             // 2. Open process
-            nint gtr2ProcessPointer = Gtr2MemOps.OpenProcessForReadWrite(gtr2Process);
+            nint gtr2ProcessPointer = Gtr2ProgMemOps.OpenProcessForReadWrite(gtr2Process);
             if (gtr2ProcessPointer == nint.Zero)
             {
                 throw new Exception("Failed opening GTR2 process.");

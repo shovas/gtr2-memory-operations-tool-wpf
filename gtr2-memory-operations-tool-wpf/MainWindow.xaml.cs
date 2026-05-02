@@ -29,7 +29,7 @@ namespace Gtr2MemOpsTool
     public partial class MainWindow : Window
     {
         // Gtr2MemOps instance to handle all memory operations related to GTR2, ensuring a single point of access and consistent state management across the application.
-        private Gtr2MemOps Gtr2MemOps { get; set; } = new Gtr2MemOps();
+        private Gtr2ProgMemOps Gtr2MemOps { get; set; } = new Gtr2ProgMemOps();
 
         public MainWindow()
         {
@@ -81,7 +81,7 @@ namespace Gtr2MemOpsTool
         private static async void CheckGtr2Process()
         {
             bool isRunning = false;
-            await Task.Run(() => isRunning = Gtr2MemOps.IsGtr2ProcessRunning());
+            await Task.Run(() => isRunning = Gtr2ProgMemOps.IsGtr2ProcessRunning());
             if (isRunning)
             {
                 App.Log.AddInfo("GTR2 Process Detected");
@@ -106,7 +106,7 @@ namespace Gtr2MemOpsTool
 
         private async void MenuItem_Tests_TestGTR2Process(object sender, RoutedEventArgs e)
         {
-            bool success = Gtr2MemOps.TestGtr2Process();
+            bool success = Gtr2ProgMemOps.TestGtr2Process();
             if (success)
             {
                 App.Log.AddInfo("Test Pass: Test GTR2 Process");
@@ -119,7 +119,7 @@ namespace Gtr2MemOpsTool
 
         private async void MenuItem_Tests_TestGetProcess(object sender, RoutedEventArgs e)
         {
-            bool success = Gtr2MemOps.TestGtr2GetProcess();
+            bool success = Gtr2ProgMemOps.TestGtr2GetProcess();
             if (success)
             {
                 App.Log.AddInfo("Test Pass: Test GTR2 Get Process");
@@ -132,7 +132,7 @@ namespace Gtr2MemOpsTool
 
         private async void MenuItem_Tests_TestOpenProcess(object sender, RoutedEventArgs e)
         {
-            bool success = Gtr2MemOps.TestGtr2OpenProcess();
+            bool success = Gtr2ProgMemOps.TestGtr2OpenProcess();
             if (success)
             {
                 App.Log.AddInfo("Test Pass: Test GTR2 Open Process");

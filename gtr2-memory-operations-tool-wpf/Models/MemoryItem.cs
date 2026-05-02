@@ -155,7 +155,7 @@ namespace Gtr2MemOpsTool.Models
                     }
                     //App.Log.AddDebug($"Converting char from data: name={Name}, Length={Length}");
                     //App.Log.AddDebug($"Data (Data Length={Data.Length}) =>>>{BitConverter.ToString(Data)}<<<");
-                    var encoding = Encoding.GetEncoding(Gtr2MemOps.GTR2_ENCODING_CODEPAGE);
+                    var encoding = Encoding.GetEncoding(Gtr2ProgMemOps.GTR2_ENCODING_CODEPAGE);
                     int nullIndex = Array.IndexOf(Data, (byte)0);
                     int byteLength = nullIndex >= 0 ? nullIndex : Data.Length;
                     var str = encoding.GetString(Data, 0, byteLength);
@@ -242,12 +242,12 @@ namespace Gtr2MemOpsTool.Models
             bool success = false;
             try
             {
-                nint? gtr2ProcessPointer = Gtr2MemOps.GetGtr2ProcessPointer() ?? throw new Exception("GTR2 process not found");
+                nint? gtr2ProcessPointer = Gtr2ProgMemOps.GetGtr2ProcessPointer() ?? throw new Exception("GTR2 process not found");
                 if (HeldType == typeof(Int32))
                 {
                     App.Log.AddDebug($"Write new Int32 to memory: {newValue}");
                     Int32 int32Value = int.Parse(newValue);
-                    if (!Gtr2MemOps.WriteInt32((nint)gtr2ProcessPointer, Address, int32Value))
+                    if (!Gtr2ProgMemOps.WriteInt32((nint)gtr2ProcessPointer, Address, int32Value))
                     {
                         throw new Exception("Failed to write Int32 to memory");
                     }
@@ -266,7 +266,7 @@ namespace Gtr2MemOpsTool.Models
                 {
                     App.Log.AddDebug($"Write new float to memory: {newValue}");
                     float floatValue = float.Parse(newValue);
-                    if (!Gtr2MemOps.WriteFloat((nint)gtr2ProcessPointer, Address, floatValue))
+                    if (!Gtr2ProgMemOps.WriteFloat((nint)gtr2ProcessPointer, Address, floatValue))
                     {
                         throw new Exception("Failed to write float to memory");
                     }
@@ -285,7 +285,7 @@ namespace Gtr2MemOpsTool.Models
                 {
                     App.Log.AddDebug($"Todo: Write new bool to memory: {newValue}");
                     bool boolValue = newValue.Equals("true", StringComparison.CurrentCultureIgnoreCase) || newValue == "1";
-                    if (!Gtr2MemOps.WriteBool((nint)gtr2ProcessPointer, Address, boolValue))
+                    if (!Gtr2ProgMemOps.WriteBool((nint)gtr2ProcessPointer, Address, boolValue))
                     {
                         throw new Exception("Failed to write bool to memory");
                     }
@@ -304,8 +304,8 @@ namespace Gtr2MemOpsTool.Models
                 {
                     App.Log.AddDebug($"Writing new string to memory: {newValue}");
                     string stringValue = newValue;
-                    Encoding encoding = Encoding.GetEncoding(Gtr2MemOps.GTR2_ENCODING_CODEPAGE);
-                    if(!Gtr2MemOps.WriteString((nint)gtr2ProcessPointer, Address, stringValue, encoding, Length))
+                    Encoding encoding = Encoding.GetEncoding(Gtr2ProgMemOps.GTR2_ENCODING_CODEPAGE);
+                    if(!Gtr2ProgMemOps.WriteString((nint)gtr2ProcessPointer, Address, stringValue, encoding, Length))
                     {
                         throw new Exception("Failed to write string to memory");
                     }
@@ -337,7 +337,7 @@ namespace Gtr2MemOpsTool.Models
         {
             uint heldTypeSize = (uint)Marshal.SizeOf(HeldType);
             uint byteLength = heldTypeSize * Length;
-            byte[] buf = Gtr2MemOps.ReadGtr2MemoryByteArray(Address, byteLength);
+            byte[] buf = Gtr2ProgMemOps.ReadGtr2MemoryByteArray(Address, byteLength);
             if (buf.Length is 0) return false;
             Data = buf;
             return true;

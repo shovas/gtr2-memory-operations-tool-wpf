@@ -34,7 +34,7 @@ namespace Gtr2MemOpsTool.Views
             DataContext = this;
             AddLogItem("Automatic AI tab starting...", Logger.LogLevel.Info);
             AddLogItem("Automatic AI tab started.", Logger.LogLevel.Info);
-            if ( Gtr2MemOps.IsGtr2ProcessRunning())
+            if ( Gtr2ProgMemOps.IsGtr2ProcessRunning())
             {
                 AddLogItem("GTR2 process detected. Loading drivers...", Logger.LogLevel.Info);
                 RefreshDrivers();
@@ -110,7 +110,7 @@ namespace Gtr2MemOpsTool.Views
             {
                 // Read grid drivers
                 App.Log.AddDebug("LoadDrivers(): Start Gtr2MemOps.ReadGtr2GridDrivers()");
-                Gtr2GridDrivers gtr2GridDrivers = Gtr2MemOps.ReadGtr2GridDrivers() ?? throw new Exception("Failed reading GTR2 grid.");
+                Gtr2GridDrivers gtr2GridDrivers = Gtr2ProgMemOps.ReadGtr2GridDrivers() ?? throw new Exception("Failed reading GTR2 grid.");
                 App.Log.AddDebug("LoadDrivers(): End Gtr2MemOps.ReadGtr2GridDrivers()");
 
                 // Convert Gtr2GridDrivers to AaiDriver list
@@ -143,7 +143,7 @@ namespace Gtr2MemOpsTool.Views
             {
                 if (gtr2ProcessPointer is not null)
                 {
-                    Gtr2MemOps.CloseHandle((nint)gtr2ProcessPointer);
+                    Gtr2ProgMemOps.CloseHandle((nint)gtr2ProcessPointer);
                 }
             }
         }
