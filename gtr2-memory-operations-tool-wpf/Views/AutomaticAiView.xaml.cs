@@ -28,7 +28,7 @@ namespace Gtr2MemOpsTool.Views
     {
         public BulkObservableCollection<AaiDriver> AaiDrivers { get; set; } = [];
         public BulkObservableCollection<LogItem> LogItems { get; set; } = [];
-        private DispatcherTimer _refreshTimer;
+        private DispatcherTimer? _refreshTimer;
         public AutomaticAiView()
         {
             InitializeComponent();
@@ -58,7 +58,7 @@ namespace Gtr2MemOpsTool.Views
             _refreshTimer.Start();
         }
 
-        private void OnRefreshTimerTick(object sender, EventArgs e)
+        private void OnRefreshTimerTick(object? sender, EventArgs e)
         {
             RefreshDrivers();
         }
@@ -167,7 +167,7 @@ namespace Gtr2MemOpsTool.Views
                     float lastLaptime = lastLaptimeMemoryItem.ValueAsFloat;
 
                     // Add new AaiDriver to list
-                    AaiDriver driver = new AaiDriver
+                    AaiDriver driver = new()
                     {
                         VehicleSlotId = vehicleSlotId,
                         Name = driverName,
