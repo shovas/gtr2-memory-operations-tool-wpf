@@ -222,7 +222,7 @@ namespace Gtr2MemOpsTool.Models
             new MemoryItem("x_Unkn_e", typeof(byte), 68, 0x00), // 6504-6572
             new MemoryItem("Damage_PartCount", typeof(Int32), 1, 0x00),
             new MemoryItem("Damage_PartCount_Unkn", typeof(byte), 4, 0x00),
-            new MemoryItem("Damage_PartInfo", typeof(byte), 8228, 0x00), // 6580-14808 perlen:748, length=(GTR2MemDmgPartInfo)748 * 11 = 8228, TODO: Read as a real struct
+            new MemoryItem("Damage_PartInfo", typeof(byte), 8228, 0x00), // 6580-14808 perlen:748, length=(GTR2MemDmgPartInfo)748 * 11 = 8228
             new MemoryItem("x_Unkn_f", typeof(byte), 808, 0x00), // 14808-15616
             new MemoryItem("Unkn_Timing_A", typeof(float), 1, 0x00),
             new MemoryItem("x_Unkn_g", typeof(byte), 264, 0x00), // 15620-15884

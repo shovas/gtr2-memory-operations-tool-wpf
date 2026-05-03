@@ -30,8 +30,8 @@
             <MenuItem Header="Tests">
                 <MenuItem Header="Test Get GTR2 Process" Click="MenuItem_Tests_TestGetProcess"/>
                 <MenuItem Header="Test Open GTR2 Process" Click="MenuItem_Tests_TestOpenProcess" />
-                <MenuItem Header="TODO: Test Read GTR2 Process"/>
-                <MenuItem Header="TODO: Test Write GTR2 Process"/>
+                <MenuItem Header="[Not Yet Implemented] Test Read GTR2 Process"/>
+                <MenuItem Header="[Not Yet Implemented] Test Write GTR2 Process"/>
                 <MenuItem Header="Test GTR2 Process" Click="MenuItem_Tests_TestGTR2Process"/>
                 <Separator/>
                 <MenuItem Header="Test GTR2 Shared Memory" Click="MenuItem_Tests_TestSharedMemory"/>

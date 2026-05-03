@@ -2,12 +2,16 @@
 
 PLANS
 
+- AutomaticAiView.xaml.cs LoadDrivers(): Only log error when in a racing session. Shared Memory might be an easy way to check this.
+
+- Read memory field as a real struct in Gtr2GridVehicleSlot.cs: new MemoryItem("Damage_PartInfo", typeof(byte), 8228, 0x00), // 6580-14808 perlen:748, length=(GTR2MemDmgPartInfo)748 * 11 = 8228, 
+
 - Light/Dark/System colour switch and setting to remember it
 
-- Make a setting for:
+- Make a setting for ProgramMemoryView.xaml.cs LoadItems():
     private static void LoadItems(IProgress<List<MemoryItem>> progress)
     {
-        int batchLimit = 50; // TODO: Make this a setting
+        int batchLimit = 50;
 
 - Allow writing log file to a custom path not just to a custom file name in the exe directory
 

@@ -144,8 +144,6 @@ namespace Gtr2MemOpsTool.Models
                         return "[Convert bool/Boolean Error]";
                     }
                     return str;
-                    //return BitConverter.ToBoolean(Data, 0).ToString();
-                    //return "TODO:bool";
                 }
                 else if (HeldType == typeof(byte))
                 {
@@ -283,7 +281,7 @@ namespace Gtr2MemOpsTool.Models
                 }
                 else if (HeldType == typeof(bool))
                 {
-                    App.Log.AddDebug($"Todo: Write new bool to memory: {newValue}");
+                    App.Log.AddDebug($"Write new bool to memory: {newValue}");
                     bool boolValue = newValue.Equals("true", StringComparison.CurrentCultureIgnoreCase) || newValue == "1";
                     if (!Gtr2ProgMemOps.WriteBool((nint)gtr2ProcessPointer, Address, boolValue))
                     {

@@ -202,7 +202,6 @@ namespace Gtr2MemOpsTool.Views
             }
             catch (Exception ex)
             {
-                // Todo: Not a failure if not in a racing session. Be quiet unless we failed while in a racing session. Shared Memory might be an easy way to check this.
                 AddLogItem($"Failed loading drivers: {ex.Message}", Logger.LogLevel.Exception);
             }
             finally 
