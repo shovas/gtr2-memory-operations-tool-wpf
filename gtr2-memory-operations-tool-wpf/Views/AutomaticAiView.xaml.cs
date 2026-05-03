@@ -5,6 +5,7 @@ using Gtr2MemOpsTool.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.ConstrainedExecution;
 using System.Text;
 using System.Timers;
 using System.Windows;
@@ -69,9 +70,9 @@ namespace Gtr2MemOpsTool.Views
             RefreshButton.IsEnabled = true;
         }
 
-        private void ResetButton_Click(object sender, RoutedEventArgs e)
+        private async void ResetButton_Click(object sender, RoutedEventArgs e)
         {
-
+            await Task.Run(() => Reset());
         }
 
         private void ActivateButton_Click(object sender, RoutedEventArgs e)
@@ -90,6 +91,14 @@ namespace Gtr2MemOpsTool.Views
             Application.Current.Dispatcher.Invoke(() =>
             {
                 LogItems.Add(logItem);
+            });
+        }
+
+        private async void Reset()
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                AaiDrivers.Clear();
             });
         }
 
@@ -113,30 +122,87 @@ namespace Gtr2MemOpsTool.Views
                 Gtr2GridDrivers gtr2GridDrivers = Gtr2ProgMemOps.ReadGtr2GridDrivers() ?? throw new Exception("Failed reading GTR2 grid.");
                 App.Log.AddDebug("LoadDrivers(): End Gtr2MemOps.ReadGtr2GridDrivers()");
 
+                // Get drivers from shared memory (SM) to match against drivers from program memory (PM) to determine active driver ie. driver one or two in each slot
+                // - SM mDriver is currently active driver. The name we pick from PM should match SM mDriver.
+                Gtr2SharMemOps gtr2SharMemOps = new();
+                gtr2SharMemOps.FetchGtr2SharedMemoryStructs();
+                Gtr2Scoring scoring = gtr2SharMemOps.Gtr2Scoring;
+                //var mDriverNameTmp = MemUtils.GetStringFromBytes(scoring.mVehicles[0].mDriverName, Encoding.GetEncoding(Gtr2ProgMemOps.GTR2_ENCODING_CODEPAGE));
+                //AddLogItem($"mDriverNameTmp={mDriverNameTmp}", Logger.LogLevel.Debug);
+
                 // Convert Gtr2GridDrivers to AaiDriver list
                 List<AaiDriver> newAaiDrivers = [];
-                foreach (var gridDriver in gtr2GridDrivers.Drivers)
+                //foreach (var gridDriver in gtr2GridDrivers.Drivers)
+                for (int i = 0; i < gtr2GridDrivers.Drivers.Count; i++)
                 {
-                    string driverName = gridDriver.GetFirstDriverName();
+                    var mVehicle = scoring.mVehicles[i];
+                    var mDriverName = MemUtils.GetStringFromBytes(mVehicle.mDriverName, Encoding.GetEncoding(Gtr2ProgMemOps.GTR2_ENCODING_CODEPAGE));
+                    //AddLogItem($"mDriverName={mDriverName}", Logger.LogLevel.Debug);
+                    var gridDriver = gtr2GridDrivers.Drivers[i];
+
+                    // Vehicle Slot Id is our unique id for each data grid row for now
+                    var vehicleSlotIdMemoryItem = gridDriver.GetMemoryItemByName("slot_id") ?? throw new Exception($"Failed reading vehicle slot id memory item for driver at grid slot {i}.");
+                    var vehicleSlotId = vehicleSlotIdMemoryItem.ValueAsInt32;
+
+                    // Determine active driver
+                    // XXX: This is unnecessary as mDriverName already gives us the active driver name for each slot, but I'm doing it to learn.
+                    MemoryItem driverNameOneMemoryItem = gridDriver.GetMemoryItemByName("NameFull_One") ?? throw new Exception($"Failed reading driver name memory item for driver at grid slot {i}.");
+                    MemoryItem driverNameTwoMemoryItem = gridDriver.GetMemoryItemByName("NameFull_Two") ?? throw new Exception($"Failed reading driver name memory item for driver at grid slot {i}.");
+                    string driverNameOne = driverNameOneMemoryItem.ValueAsString;
+                    string driverNameTwo = driverNameTwoMemoryItem.ValueAsString;
+                    string driverName = "";
+                    if ( mDriverName == driverNameOne )
+                    {
+                        //AddLogItem($"Chose driverNameOne={driverNameOne}", Logger.LogLevel.Info);
+                        driverName = driverNameOne;
+                    } else
+                    {
+                        //AddLogItem($"Chose driverNameTwo={driverNameTwo}", Logger.LogLevel.Info);
+                        driverName = driverNameTwo;
+                    }
+                    //string driverName = gridDriver.GetFirstDriverName();
+
+                    // Get last laptime
                     MemoryItem lastLaptimeMemoryItem = gridDriver.GetMemoryItemByName("Timing_Laptime_A") ?? throw new Exception($"Failed reading laptime memory item for driver {driverName}.");
                     float lastLaptime = lastLaptimeMemoryItem.ValueAsFloat;
+
+                    // Add new AaiDriver to list
                     AaiDriver driver = new AaiDriver
                     {
+                        VehicleSlotId = vehicleSlotId,
                         Name = driverName,
                         LastLaptime = lastLaptime
                     };
                     newAaiDrivers.Add(driver);
                 }
-
+                
                 // Update UI
                 Application.Current.Dispatcher.Invoke(() =>
                 {
-                    AaiDrivers.Clear();
-                    AaiDrivers.AddRange(newAaiDrivers);
+                    // This is a manual update of each row rather than a clear and re-add of a whole list as that seems to heavy for a smooth UX
+                    if (AaiDrivers.Count > 0)
+                    {
+                        for (int i = 0; i < AaiDrivers.Count; i++)
+                        {
+                            var aaiDriver = AaiDrivers[i];
+                            var newAaiDriver = newAaiDrivers[i];
+                            aaiDriver.VehicleSlotId = newAaiDriver.VehicleSlotId;
+                            aaiDriver.Name = newAaiDriver.Name;
+                            aaiDriver.LastLaptime = newAaiDriver.LastLaptime;
+                        }
+                    }
+                    else
+                    {
+                        AaiDrivers.AddRange(newAaiDrivers);
+                    }
+                    //AaiDrivers.Clear();
+                    //AaiDrivers.AddRange(newAaiDrivers);
+                    LogListView.ScrollIntoView(LogItems.Last());
                 });
             }
             catch (Exception ex)
             {
+                // Todo: Not a failure if not in a racing session. Be quiet unless we failed while in a racing session. Shared Memory might be an easy way to check this.
                 AddLogItem($"Failed loading drivers: {ex.Message}", Logger.LogLevel.Exception);
             }
             finally 

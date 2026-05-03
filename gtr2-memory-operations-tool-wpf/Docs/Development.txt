@@ -28,8 +28,8 @@ Doing
       - Todo: Display current AI adjustment for each driver
       - Todo: Run an AI adjustment calculation every refresh and record adjustment with each driver
         - Reminder this AI adjustment is a weight penalty adjustment: +0.3s for every 1kg added.
-      - Todo: Driver names are the current driver in the car so you can't always match up with GTR2's Timing screen. 
->       - Doing: Select first mDriverName (first Gtr2VehicleScoring) in shared memory and compare to NameFull_One and NameFull_Two from Program Memory to determine who is currently in the car.
+      - Done: Driver names are the current driver in the car so you can't always match up with GTR2's Timing screen. 
+        - Done: Select first mDriverName (first Gtr2VehicleScoring) in shared memory and compare to NameFull_One and NameFull_Two from Program Memory to determine who is currently in the car.
         - Will this be a problem for Automatic AI? I don't think so since the adjustment will be against the car not the driver.
      - Done: Refresh Automatic AI tab on an interval
       - Done: Xaml interface 

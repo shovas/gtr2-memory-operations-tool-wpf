@@ -33,8 +33,10 @@ namespace Gtr2MemOpsTool.Models
 
                 App.Log.AddInfo("Finished Getting GTR2 Shared Memory Structs");
 
-                App.Log.AddDebug($"Telemetry mVersion: {MemUtils.GetStringFromBytes(Gtr2Extended.mVersion)}");
-                
+                App.Log.AddDebug($"Telemetry mVersion: {MemUtils.GetStringFromBytes(Gtr2Extended.mVersion, Encoding.GetEncoding(Gtr2ProgMemOps.GTR2_ENCODING_CODEPAGE))}");
+
+                // Can I still read the structs after disconnecting?
+                DisconnectGtr2MemoryBuffers();
             }
             catch (Exception ex)
             {

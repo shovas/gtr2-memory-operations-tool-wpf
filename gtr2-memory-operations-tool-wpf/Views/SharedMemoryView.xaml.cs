@@ -68,7 +68,7 @@ namespace Gtr2MemOpsTool.Views
                 
                 ReadGtr2MemoryBuffers();
 
-                App.Log.AddDebug($"Telemetry mVersion: {MemUtils.GetStringFromBytes(Gtr2Extended.mVersion)}");
+                App.Log.AddDebug($"Telemetry mVersion: {MemUtils.GetStringFromBytes(Gtr2Extended.mVersion, Encoding.GetEncoding(Gtr2ProgMemOps.GTR2_ENCODING_CODEPAGE))}");
 
                 DisplayMemoryStructs();
 
@@ -150,7 +150,7 @@ namespace Gtr2MemOpsTool.Views
 
                 ReadGtr2MemoryBuffers();
 
-                App.Log.AddDebug($"Telemetry mVersion: {MemUtils.GetStringFromBytes(Gtr2Extended.mVersion)}");
+                App.Log.AddDebug($"Telemetry mVersion: {MemUtils.GetStringFromBytes(Gtr2Extended.mVersion, Encoding.GetEncoding(Gtr2ProgMemOps.GTR2_ENCODING_CODEPAGE))}");
 
                 var structs = GetMemoryStructs();
                 foreach (var structItem in structs ) {
