@@ -17,7 +17,9 @@ namespace Gtr2MemOpsTool.Models
 
         public Gtr2SharMemOps()
         {
-
+            Gtr2Telemetry = new Gtr2Telemetry();
+            Gtr2Scoring = new Gtr2Scoring();
+            Gtr2Extended = new Gtr2Extended();
         }
 
         public void FetchGtr2SharedMemoryStructs()
@@ -25,8 +27,6 @@ namespace Gtr2MemOpsTool.Models
             App.Log.AddInfo("Getting GTR2 Shared Memory Structs");
             try
             {
-                CreateGtr2MemoryStructs();
-
                 ConnectGtr2MemoryBuffers();
 
                 ReadGtr2MemoryBuffers();
@@ -91,14 +91,14 @@ namespace Gtr2MemOpsTool.Models
         //    return Gtr2Scoring;
         //}
 
-        private void CreateGtr2MemoryStructs()
-        {
-            Gtr2Telemetry = new Gtr2Telemetry();
-            Gtr2Scoring = new Gtr2Scoring();
-            Gtr2Extended = new Gtr2Extended();
-        }
+        //private void CreateGtr2MemoryStructs()
+        //{
+        //    Gtr2Telemetry = new Gtr2Telemetry();
+        //    Gtr2Scoring = new Gtr2Scoring();
+        //    Gtr2Extended = new Gtr2Extended();
+        //}
 
-        private void ConnectGtr2MemoryBuffers()
+        public void ConnectGtr2MemoryBuffers()
         {
             // Extended buffer is the last one constructed, so it is an indicator GTR2SM is ready.
             ExtendedBuffer.Connect();
@@ -106,7 +106,7 @@ namespace Gtr2MemOpsTool.Models
             ScoringBuffer.Connect();
         }
 
-        private void DisconnectGtr2MemoryBuffers()
+        public void DisconnectGtr2MemoryBuffers()
         {
             ExtendedBuffer.Disconnect();
             TelemetryBuffer.Disconnect();
@@ -114,7 +114,7 @@ namespace Gtr2MemOpsTool.Models
         }
 
         // This reads the byte data into buffers. The buffers will then be parsed into the Gtr2Telemetry, Gtr2Scoring, and Gtr2Extended structs by the caller.
-        private void ReadGtr2MemoryBuffers()
+        public void ReadGtr2MemoryBuffers()
         {
             ExtendedBuffer.GetMappedData(ref Gtr2Extended);
             ScoringBuffer.GetMappedData(ref Gtr2Scoring);

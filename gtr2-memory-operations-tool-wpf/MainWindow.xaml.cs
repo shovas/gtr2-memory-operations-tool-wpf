@@ -184,5 +184,33 @@ namespace Gtr2MemOpsTool
             Properties.Settings.Default.WindowLeft = Left;
             Properties.Settings.Default.Save();
         }
+
+        private void TabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (e.Source is TabControl) // guard against child controls bubbling up
+            {
+                //var selected = ((TabControl)sender).SelectedItem;
+
+                if (e.AddedItems.Count > 0)
+                {
+                    var focusingTab = e.AddedItems[0] as TabItem;
+                    // e.g. validate or save state for leavingTab
+                    if (focusingTab == AutomaticAiTab)
+                    {
+                        AutomaticAiView.OnGainFocus(sender, e);
+                    }
+                }
+
+                if (e.RemovedItems.Count > 0)
+                {
+                    var unfocusingTab = e.RemovedItems[0] as TabItem;
+                    // e.g. validate or save state for leavingTab
+                    if (unfocusingTab == AutomaticAiTab)
+                    {
+                        AutomaticAiView.OnLostFocus(sender, e);
+                    }
+                }
+            }
+        }
     }
 }

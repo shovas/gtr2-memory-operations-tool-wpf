@@ -28,39 +28,26 @@ namespace Gtr2MemOpsTool.Views
     {
         public BulkObservableCollection<AaiDriver> AaiDrivers { get; set; } = [];
         public BulkObservableCollection<LogItem> LogItems { get; set; } = [];
-        private DispatcherTimer? _refreshTimer;
+        private DispatcherTimer? _driversRefreshTimer;
+        private DispatcherTimer? _sharedMemoryRefreshTimer;
+        private readonly Gtr2SharMemOps _gtr2SharMemOps = new();
         public AutomaticAiView()
         {
             InitializeComponent();
             DataContext = this;
             AddLogItem("Automatic AI tab starting...", Logger.LogLevel.Info);
-            AddLogItem("Automatic AI tab started.", Logger.LogLevel.Info);
+            
             if ( Gtr2ProgMemOps.IsGtr2ProcessRunning())
             {
                 AddLogItem("GTR2 process detected. Loading drivers...", Logger.LogLevel.Info);
-                RefreshDrivers();
-                StartRefreshTimer();
+                Activate();
             }
             else
             {
                 AddLogItem("GTR2 process not detected. Please start GTR2 to load drivers.", Logger.LogLevel.Warning);
             }
-        }
 
-        private void StartRefreshTimer()
-        {
-            int refreshTime = int.TryParse(App.Config.IniData.Sections["AutomaticAiView"]["RefreshDriversTime"], out int result) ? result : 1;
-            _refreshTimer = new DispatcherTimer
-            {
-                Interval = TimeSpan.FromSeconds(refreshTime)
-            };
-            _refreshTimer.Tick += OnRefreshTimerTick;
-            _refreshTimer.Start();
-        }
-
-        private void OnRefreshTimerTick(object? sender, EventArgs e)
-        {
-            RefreshDrivers();
+            AddLogItem("Automatic AI tab started.", Logger.LogLevel.Info);
         }
 
         private async void RefreshButton_Click(object sender, RoutedEventArgs e)
@@ -75,14 +62,26 @@ namespace Gtr2MemOpsTool.Views
             await Task.Run(() => Reset());
         }
 
-        private void ActivateButton_Click(object sender, RoutedEventArgs e)
+        private async void ActivateButton_Click(object sender, RoutedEventArgs e)
         {
-
+            await Task.Run(() => Activate());
         }
 
-        private void DeactivateButton_Click(object sender, RoutedEventArgs e)
+        private async void DeactivateButton_Click(object sender, RoutedEventArgs e)
         {
+            await Task.Run(() => Deactivate());
+        }
 
+        public async void OnGainFocus(object sender, RoutedEventArgs e)
+        {
+            //AddLogItem("Automatic AI tab gained focus. Activating...", Logger.LogLevel.Info);
+            //Activate();
+        }
+
+        public async void OnLostFocus(object sender, RoutedEventArgs e)
+        {
+            AddLogItem("Automatic AI tab lost focus. Deactivating...", Logger.LogLevel.Info);
+            Deactivate();
         }
 
         private void AddLogItem(string message, Logger.LogLevel logLevel)
@@ -91,24 +90,168 @@ namespace Gtr2MemOpsTool.Views
             Application.Current.Dispatcher.Invoke(() =>
             {
                 LogItems.Add(logItem);
+                LogListView.ScrollIntoView(LogItems.Last());
             });
         }
 
         private async void Reset()
         {
+            AddLogItem("Reset()", Logger.LogLevel.Debug);
             Application.Current.Dispatcher.Invoke(() =>
             {
                 AaiDrivers.Clear();
             });
         }
 
+        private async void Activate()
+        {
+            AddLogItem("Activate()", Logger.LogLevel.Debug);
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                StartSharedMemoryRefreshTimer();
+                StartDriversRefreshTimer();
+            });
+        }
+
+        private async void Deactivate()
+        {
+            AddLogItem("Deactivate()", Logger.LogLevel.Debug);
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                StopDriversRefreshTimer();
+                StopSharedMemoryRefreshTimer();
+            });
+        }
+
+        private void StartSharedMemoryRefreshTimer()
+        {
+            AddLogItem("Starting shared memory refresh timer...", Logger.LogLevel.Debug);
+            
+            // Enable existing timer
+            if (_sharedMemoryRefreshTimer is not null)
+            {
+                if (_sharedMemoryRefreshTimer.IsEnabled)
+                {
+                    AddLogItem("Shared memory refresh timer already started", Logger.LogLevel.Debug);
+                }
+                else
+                {
+                    _sharedMemoryRefreshTimer.IsEnabled = true;
+
+                }
+                return;
+            }
+
+            // Setup new timer
+            int refreshTime = int.TryParse(App.Config.IniData.Sections["AutomaticAiView"]["RefreshSharedMemoryTime"], out int result) ? result : 1;
+            _sharedMemoryRefreshTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromSeconds(refreshTime)
+            };
+            _sharedMemoryRefreshTimer.Tick += OnSharedMemoryRefreshTimerTick;
+            RefreshSharedMemory(); // Immediate refresh on start
+            _sharedMemoryRefreshTimer.Start();
+        }
+
+        private void StopSharedMemoryRefreshTimer()
+        {
+            AddLogItem("Stopping shared memory refresh timer...", Logger.LogLevel.Debug);
+            if (_sharedMemoryRefreshTimer is not null)
+            {
+                _sharedMemoryRefreshTimer.IsEnabled = false;
+                //_sharedMemoryRefreshTimer.Stop();
+                //_sharedMemoryRefreshTimer.Tick -= OnSharedMemoryRefreshTimerTick;
+                //_sharedMemoryRefreshTimer = null;
+            }
+            ActivateButton.IsEnabled = true;
+            DeactivateButton.IsEnabled = false;
+        }
+
+        private void OnSharedMemoryRefreshTimerTick(object? sender, EventArgs e)
+        {
+            AddLogItem("Handling shared memory refresh timer tick...", Logger.LogLevel.Debug);
+            RefreshSharedMemory();
+        }
+
+        private async void RefreshSharedMemory()
+        {
+            AddLogItem("RefreshSharedMemory()", Logger.LogLevel.Debug);
+            await Task.Run(() => LoadGtr2SharedMemory());
+        }
+
+        private void LoadGtr2SharedMemory()
+        {
+            //public int mSession;                                         // current session (0=testday 1-4=practice 5-8=qual 9=warmup 10-13=race)
+            //_gtr2SharMemOps.FetchGtr2SharedMemoryStructs();
+            AddLogItem("LoadGtr2SharedMemory(): Start connect and read", Logger.LogLevel.Debug);
+            _gtr2SharMemOps.ConnectGtr2MemoryBuffers();
+            _gtr2SharMemOps.ReadGtr2MemoryBuffers();
+            AddLogItem("LoadGtr2SharedMemory(): End connect and read", Logger.LogLevel.Debug);
+            //gtr2SharMemOps.Gtr2Scoring.mScoringInfo.mSession ;
+        }
+
+        private void StartDriversRefreshTimer()
+        {
+            AddLogItem("Starting refresh timer...", Logger.LogLevel.Debug);
+            ActivateButton.IsEnabled = false;
+            DeactivateButton.IsEnabled = true;
+
+            // Enable existing timer
+            if (_driversRefreshTimer is not null)
+            {
+                if (_driversRefreshTimer.IsEnabled)
+                {
+                    AddLogItem("Drivers refresh timer already started", Logger.LogLevel.Debug);
+                }
+                else
+                {
+                    _driversRefreshTimer.IsEnabled = true;
+
+                }
+                return;
+            }
+
+            // Start new timer
+            int refreshTime = int.TryParse(App.Config.IniData.Sections["AutomaticAiView"]["RefreshDriversTime"], out int result) ? result : 1;
+            _driversRefreshTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromSeconds(refreshTime)
+            };
+            _driversRefreshTimer.Tick += OnDriversRefreshTimerTick;
+            RefreshDrivers(); // Immediate refresh on start
+            _driversRefreshTimer.Start();
+        }
+
+        private void StopDriversRefreshTimer()
+        {
+            AddLogItem("Stopping drivers refresh timer...", Logger.LogLevel.Debug);
+            if (_driversRefreshTimer is not null)
+            {
+                _driversRefreshTimer.Stop();
+                _driversRefreshTimer.Tick -= OnDriversRefreshTimerTick;
+                _driversRefreshTimer = null;
+            }
+            ActivateButton.IsEnabled = true;
+            DeactivateButton.IsEnabled = false;
+        }
+
+        private void OnDriversRefreshTimerTick(object? sender, EventArgs e)
+        {
+            AddLogItem("Handling drivers refresh timer tick...", Logger.LogLevel.Debug);
+            RefreshDrivers();
+        }
+
         private async void RefreshDrivers()
         {
+            AddLogItem("RefreshDrivers()", Logger.LogLevel.Debug);
             await Task.Run(() => LoadDrivers());
         }
 
+        
+
         private void LoadDrivers()
         {
+            AddLogItem("LoadDrivers()", Logger.LogLevel.Debug);
             // Overview:
             // 1. Open the GT2 process with Gtr2MemOps functions.
             // 2. Read the Grid Slots in as AaiDriver objects.
@@ -118,24 +261,30 @@ namespace Gtr2MemOpsTool.Views
             try
             {
                 // Read grid drivers
-                App.Log.AddDebug("LoadDrivers(): Start Gtr2MemOps.ReadGtr2GridDrivers()");
+                AddLogItem("LoadDrivers(): Start Gtr2MemOps.ReadGtr2GridDrivers()", Logger.LogLevel.Debug);
                 Gtr2GridDrivers gtr2GridDrivers = Gtr2ProgMemOps.ReadGtr2GridDrivers() ?? throw new Exception("Failed reading GTR2 grid.");
-                App.Log.AddDebug("LoadDrivers(): End Gtr2MemOps.ReadGtr2GridDrivers()");
+                AddLogItem("LoadDrivers(): End Gtr2MemOps.ReadGtr2GridDrivers()", Logger.LogLevel.Debug);
 
                 // Get drivers from shared memory (SM) to match against drivers from program memory (PM) to determine active driver ie. driver one or two in each slot
                 // - SM mDriver is currently active driver. The name we pick from PM should match SM mDriver.
-                Gtr2SharMemOps gtr2SharMemOps = new();
-                gtr2SharMemOps.FetchGtr2SharedMemoryStructs();
-                Gtr2Scoring scoring = gtr2SharMemOps.Gtr2Scoring;
+                //Gtr2SharMemOps gtr2SharMemOps = new();
+                //gtr2SharMemOps.FetchGtr2SharedMemoryStructs();
+                //Gtr2Scoring scoring = gtr2SharMemOps.Gtr2Scoring;
                 //var mDriverNameTmp = MemUtils.GetStringFromBytes(scoring.mVehicles[0].mDriverName, Encoding.GetEncoding(Gtr2ProgMemOps.GTR2_ENCODING_CODEPAGE));
                 //AddLogItem($"mDriverNameTmp={mDriverNameTmp}", Logger.LogLevel.Debug);
+
+                // Check for shared memory vehicles present
+                if ( _gtr2SharMemOps.Gtr2Scoring.mVehicles is null || _gtr2SharMemOps.Gtr2Scoring.mVehicles.Length == 0)
+                {
+                    throw new Exception("No vehicles found in shared memory.");
+                }
 
                 // Convert Gtr2GridDrivers to AaiDriver list
                 List<AaiDriver> newAaiDrivers = [];
                 //foreach (var gridDriver in gtr2GridDrivers.Drivers)
                 for (int i = 0; i < gtr2GridDrivers.Drivers.Count; i++)
                 {
-                    var mVehicle = scoring.mVehicles[i];
+                    var mVehicle = _gtr2SharMemOps.Gtr2Scoring.mVehicles[i];
                     var mDriverName = MemUtils.GetStringFromBytes(mVehicle.mDriverName, Encoding.GetEncoding(Gtr2ProgMemOps.GTR2_ENCODING_CODEPAGE));
                     //AddLogItem($"mDriverName={mDriverName}", Logger.LogLevel.Debug);
                     var gridDriver = gtr2GridDrivers.Drivers[i];
@@ -195,9 +344,10 @@ namespace Gtr2MemOpsTool.Views
                     {
                         AaiDrivers.AddRange(newAaiDrivers);
                     }
+
+                    // Old heavy way:
                     //AaiDrivers.Clear();
                     //AaiDrivers.AddRange(newAaiDrivers);
-                    LogListView.ScrollIntoView(LogItems.Last());
                 });
             }
             catch (Exception ex)

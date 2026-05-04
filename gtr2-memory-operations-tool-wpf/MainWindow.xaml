@@ -41,7 +41,7 @@
                 <MenuItem Header="Support My Work via SimWiki.net" Click="MenuItem_Help_SupportMyWork_Click"/>
             </MenuItem>
         </Menu>
-        <TabControl x:Name="MainTabControl" Grid.Row="1" Grid.Column="0">
+        <TabControl x:Name="MainTabControl" Grid.Row="1" Grid.Column="0" SelectionChanged="TabControl_SelectionChanged">
             <TabItem x:Name="AutomaticAiTab"  Header="Automatic AI">
                 <views:AutomaticAiView x:Name="AutomaticAiView"/>
             </TabItem>
