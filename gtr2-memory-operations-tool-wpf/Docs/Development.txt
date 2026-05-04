@@ -9,6 +9,10 @@ Reminders
 
 Todo
 
+- Gtr2SharMemOps could watch shared memory itself and fire events that callers can listen for
+  - eg. Session start/end, driver completes new lap, driver new best laptime, etc.
+  - This would make things easier by building up small useful pieces to build something bigger
+
 - Consider: Converting Gtr2GridVehicleSlot to a struct should be much faster.
   - If I can get away without the fancy class logic then it'll be a win.
 
@@ -17,17 +21,20 @@ Todo
 Doing
 
 - Implement Automatic AI tab
-  - Todo: Add new tab for Automatic AI adjustments
-    - Todo: Button bar: Refresh, Reset, Activate, Deactivate
-      - Todo: Reset: Set all AI adjustment values back to original values in memory and update display
-      - Todo: Activate: Start the automatic adjustment algorithm that will adjust AI values in memory based on player performance and other factors
-      - Todo: Deactivate: Stop the automatic adjustment algorithm and leave AI values as they are in memory
-      - Done: Refresh: Re-read memory and update UI list of drivers from grid vehicle slots
-      - Done: Xaml interface 
     - Todo: List of Drivers and their current AI adjustment values
-      - Todo: Display current AI adjustment for each driver
       - Todo: Run an AI adjustment calculation every refresh and record adjustment with each driver
-        - Reminder this AI adjustment is a weight penalty adjustment: +0.3s for every 1kg added.
+        - Note: Reminder this AI adjustment is a weight penalty adjustment: +0.3s for every 1kg added.
+        - Todo: Activate: Start the automatic adjustment algorithm
+        - Todo: Deactivate: Stop the automatic adjustment algorithm
+        - Todo: Display current AI adjustment for each driver (at least a holder for now)
+        - Todo: Once drivers have at least N laptimes recorded, compare to player and calculate either a player weight penalty (too fast vs ai) or an ai driver weight penalty (too fast vs player)
+          ^ Player and AI must have at least N laptimes recorded for this to work
+          ^ Start with 3 laptimes to make this a little easier. Make it configurable.
+>       - Todo: Need to collect laptimes for each driver so I can calculate an average laptime for them eg. last N laps
+      - Done: Deactivate: Stop drivers/shared memory refresh timers
+      - Done: Activate: Start drivers/shared memory refresh timers
+      - Done: Reset: Clear Drivers list
+      - Done: Refresh button: Re-read memory and update UI list of drivers from grid vehicle slots
       - Done: Driver names are the current driver in the car so you can't always match up with GTR2's Timing screen. 
         - Done: Select first mDriverName (first Gtr2VehicleScoring) in shared memory and compare to NameFull_One and NameFull_Two from Program Memory to determine who is currently in the car.
         - Will this be a problem for Automatic AI? I don't think so since the adjustment will be against the car not the driver.
@@ -44,6 +51,13 @@ Doing
         - Reading the whole Slot's bytes at once (22624) and parsing fields out of that takes 30sec
         - So, solution is probably just reading the fields we need
     - Done: ListView logging adjustments as they happen
+      - Done: Xaml interface 
+  - Done: Add new tab for Automatic AI adjustments
+    - Done: Button bar: Refresh, Reset, Activate, Deactivate
+      - Done: Reset button
+      - Done: Activate button
+      - Done: Deactivate button
+      - Done: Refresh button
       - Done: Xaml interface 
 
 Done
