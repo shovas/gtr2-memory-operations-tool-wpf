@@ -19,5 +19,6 @@ namespace Gtr2MemOpsTool.Models
                 return ret;
             }
         }
+        public List<float> Laptimes { get; set; } = [];
     }
 }

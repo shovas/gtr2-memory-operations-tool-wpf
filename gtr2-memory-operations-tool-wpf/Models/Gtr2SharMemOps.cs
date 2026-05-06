@@ -7,19 +7,30 @@ namespace Gtr2MemOpsTool.Models
 {
     public class Gtr2SharMemOps
     {
+        private readonly MappedBuffer<Gtr2Extended> ExtendedBuffer = new(Gtr2Constants.MM_EXTENDED_FILE_NAME, false /*partial*/, true /*skipUnchanged*/);
         private readonly MappedBuffer<Gtr2Telemetry> TelemetryBuffer = new(Gtr2Constants.MM_TELEMETRY_FILE_NAME, false /*partial*/, true /*skipUnchanged*/);
         private readonly MappedBuffer<Gtr2Scoring> ScoringBuffer = new(Gtr2Constants.MM_SCORING_FILE_NAME, true  /*partial*/, true /*skipUnchanged*/);
-        private readonly MappedBuffer<Gtr2Extended> ExtendedBuffer = new(Gtr2Constants.MM_EXTENDED_FILE_NAME, false /*partial*/, true /*skipUnchanged*/);
-        
+
+        // These structs are always the latest data
+        public Gtr2Extended Gtr2Extended;
         public Gtr2Telemetry Gtr2Telemetry;
         public Gtr2Scoring Gtr2Scoring;
-        public Gtr2Extended Gtr2Extended;
+
+
+        // These structs are the previous data, so you can compare old vs new to see what has changed.
+        public Gtr2Extended OldGtr2Extended;
+        public Gtr2Telemetry OldGtr2Telemetry;
+        public Gtr2Scoring OldGtr2Scoring;
 
         public Gtr2SharMemOps()
         {
+            Gtr2Extended = new Gtr2Extended();
             Gtr2Telemetry = new Gtr2Telemetry();
             Gtr2Scoring = new Gtr2Scoring();
-            Gtr2Extended = new Gtr2Extended();
+
+            OldGtr2Extended = new Gtr2Extended();
+            OldGtr2Telemetry = new Gtr2Telemetry();
+            OldGtr2Scoring = new Gtr2Scoring();
         }
 
         public void FetchGtr2SharedMemoryStructs()
@@ -93,9 +104,9 @@ namespace Gtr2MemOpsTool.Models
 
         //private void CreateGtr2MemoryStructs()
         //{
+        //    Gtr2Extended = new Gtr2Extended();
         //    Gtr2Telemetry = new Gtr2Telemetry();
         //    Gtr2Scoring = new Gtr2Scoring();
-        //    Gtr2Extended = new Gtr2Extended();
         //}
 
         public void ConnectGtr2MemoryBuffers()
@@ -110,15 +121,20 @@ namespace Gtr2MemOpsTool.Models
         {
             ExtendedBuffer.Disconnect();
             TelemetryBuffer.Disconnect();
-            ScoringBuffer.Disconnect(); ;
+            ScoringBuffer.Disconnect();
         }
 
         // This reads the byte data into buffers. The buffers will then be parsed into the Gtr2Telemetry, Gtr2Scoring, and Gtr2Extended structs by the caller.
+        // Old data is saved to the OldGtr2Telemetry, OldGtr2Scoring, and OldGtr2Extended structs before the new data is read, so you can compare old vs new to see what has changed.
         public void ReadGtr2MemoryBuffers()
         {
+            OldGtr2Extended = Gtr2Extended;
+            OldGtr2Telemetry = Gtr2Telemetry;
+            OldGtr2Scoring = Gtr2Scoring;
+
             ExtendedBuffer.GetMappedData(ref Gtr2Extended);
-            ScoringBuffer.GetMappedData(ref Gtr2Scoring);
             TelemetryBuffer.GetMappedData(ref Gtr2Telemetry);
+            ScoringBuffer.GetMappedData(ref Gtr2Scoring);
         }
     }
 }

@@ -21,16 +21,19 @@ Todo
 Doing
 
 - Implement Automatic AI tab
+    - Bug: Sometimes Automatic AI tab Last Lap column never updates if started before drivers have laptimes in even after they start putting in laptimes. A reset will usually start displaying the new laptimes correctly. But it should work from the start.
     - Todo: List of Drivers and their current AI adjustment values
       - Todo: Run an AI adjustment calculation every refresh and record adjustment with each driver
         - Note: Reminder this AI adjustment is a weight penalty adjustment: +0.3s for every 1kg added.
         - Todo: Activate: Start the automatic adjustment algorithm
         - Todo: Deactivate: Stop the automatic adjustment algorithm
         - Todo: Display current AI adjustment for each driver (at least a holder for now)
-        - Todo: Once drivers have at least N laptimes recorded, compare to player and calculate either a player weight penalty (too fast vs ai) or an ai driver weight penalty (too fast vs player)
+>       - Todo: Once drivers have at least N laptimes recorded, compare to player and calculate either a player weight penalty (too fast vs ai) or an ai driver weight penalty (too fast vs player)
           ^ Player and AI must have at least N laptimes recorded for this to work
           ^ Start with 3 laptimes to make this a little easier. Make it configurable.
->       - Todo: Need to collect laptimes for each driver so I can calculate an average laptime for them eg. last N laps
+        - Done: Need to collect laptimes for each driver so I can calculate an average laptime for them eg. last N laps
+         - Done: Listen for new laptimes for each driver and track laptimes in an array myself for later Automatic AI calculations
+          - Done: Gtr2SharMemOps or a new class should fire events for what I need to watch for eg. when new laptimes are recorded
       - Done: Deactivate: Stop drivers/shared memory refresh timers
       - Done: Activate: Start drivers/shared memory refresh timers
       - Done: Reset: Clear Drivers list
