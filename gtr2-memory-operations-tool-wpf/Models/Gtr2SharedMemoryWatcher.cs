@@ -9,6 +9,14 @@ namespace Gtr2MemOpsTool.Models
 {
     public class Gtr2SharedMemoryWatcher
     {
+        public event EventHandler<SessionChangedEventArgs>? SessionChanged;
+        protected virtual void OnSessionChanged(SessionChangedEventArgs e)
+        => SessionChanged?.Invoke(this, e);
+
+        public event EventHandler<GamePhaseChangedEventArgs>? GamePhaseChanged;
+        protected virtual void OnGamePhaseChanged(GamePhaseChangedEventArgs e)
+        => GamePhaseChanged?.Invoke(this, e);
+
         public event EventHandler<LaptimeChangedEventArgs>? LaptimeChanged;
         protected virtual void OnLaptimeChanged(LaptimeChangedEventArgs e)
         => LaptimeChanged?.Invoke(this, e);
@@ -139,15 +147,39 @@ namespace Gtr2MemOpsTool.Models
         {
             App.Log.AddDebug("ProcessGtr2SharedMemoryChanges(): Start processing changes");
 
-            // Watch for laptime changes
+            // Session change
+            int curSession = Gtr2SharMemOps.Gtr2Scoring.mScoringInfo.mSession; // current session (0=testday 1-4=practice 5-8=qual 9=warmup 10-13=race)
+            int oldSession = Gtr2SharMemOps.OldGtr2Scoring.mScoringInfo.mSession;
+            if (curSession != oldSession)
+            {
+                App.Log.AddInfo($"Session change detected: {oldSession} -> {curSession}");
+                OnSessionChanged(new SessionChangedEventArgs
+                {
+                    Session = curSession
+                });
+            }
+
+            // Game Phase change
+            int curGamePhase = Gtr2SharMemOps.Gtr2Scoring.mScoringInfo.mGamePhase;
+            int oldGamePhase = Gtr2SharMemOps.OldGtr2Scoring.mScoringInfo.mGamePhase;
+            if (curGamePhase != oldGamePhase)
+            {
+                App.Log.AddInfo($"Game phase change detected: {oldGamePhase} -> {curGamePhase}");
+                OnGamePhaseChanged(new GamePhaseChangedEventArgs
+                {
+                    GamePhase = curGamePhase
+                });
+            }
+
+            // Vehicle changes
             for (int i = 0; i < Gtr2SharMemOps.Gtr2Scoring.mVehicles.Length; i++)
             {
                 Gtr2VehicleScoring curVehicle = Gtr2SharMemOps.Gtr2Scoring.mVehicles[i];
                 Gtr2VehicleScoring oldVehicle = Gtr2SharMemOps.OldGtr2Scoring.mVehicles[i];
 
+                // Lap time change
                 float curLapTime = curVehicle.mLastLapTime;
                 float oldLapTime = oldVehicle.mLastLapTime;
-
                 if (curLapTime != oldLapTime)
                 {
                     Encoding encoding = Encoding.GetEncoding(Gtr2ProgMemOps.GTR2_ENCODING_CODEPAGE);
@@ -174,5 +206,52 @@ namespace Gtr2MemOpsTool.Models
         public string VehicleName { get; set; } = String.Empty;
         public float OldLapTime { get; set; } = 0.0f;
         public float NewLapTime { get; set; } = 0.0f;
+    }
+
+    public class SessionChangedEventArgs : EventArgs
+    {
+        public int Session { get; set; } = 0;
+        public string SessionName
+        {
+            get
+            {
+                return Session switch
+                {
+                    0 => "Test Day",
+                    1 => "Practice 1",
+                    2 => "Practice 2",
+                    3 => "Qualifying 1",
+                    4 => "Qualifying 2",
+                    5 => "Warmup",
+                    6 => "Race",
+                    _ => throw new NotImplementedException()
+                };
+            }
+        }
+    }
+
+    public class GamePhaseChangedEventArgs : EventArgs
+    {
+        public int GamePhase { get; set; } = 0;
+        public string GamePhaseName
+        {
+            get
+            {
+                // current game phase (0=unknown 1=pre-session 2=in-session 3=post-session)
+                return GamePhase switch
+                {
+                    0 => "Garage",
+                    1 => "WarmUp",
+                    2 => "GridWalk",
+                    3 => "Formation",
+                    4 => "Countdown",
+                    5 => "GreenFlag",
+                    6 => "FullCourseYellow",
+                    7 => "SessionStopped",
+                    8 => "SessionOver",
+                    _ => throw new NotImplementedException()
+                };
+            }
+        }
     }
 }

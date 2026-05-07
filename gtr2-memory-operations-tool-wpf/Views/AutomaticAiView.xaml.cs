@@ -117,6 +117,8 @@ namespace Gtr2MemOpsTool.Views
                 //_gtr2SharedMemoryWatcher.LaptimeChanged += (sender, e) => {
                 //    Console.WriteLine(e.DriverName);
                 //};
+                _gtr2SharedMemoryWatcher.SessionChanged += OnSessionChanged;
+                _gtr2SharedMemoryWatcher.GamePhaseChanged += OnGamePhaseChanged;
                 _gtr2SharedMemoryWatcher.LaptimeChanged += OnLaptimeChanged;
 
                 StartDriversRefreshTimer();
@@ -134,15 +136,22 @@ namespace Gtr2MemOpsTool.Views
             });
         }
 
+        private void OnSessionChanged(object? sender, SessionChangedEventArgs e)
+        {
+            AddLogItem($"Session changed: {e.SessionName}", Logger.LogLevel.Info);
+        }
+
+        private void OnGamePhaseChanged(object? sender, GamePhaseChangedEventArgs e)
+        {
+            AddLogItem($"Game phase changed: {e.GamePhase}={e.GamePhaseName}", Logger.LogLevel.Info);
+        }
+
         private void OnLaptimeChanged(object? sender, LaptimeChangedEventArgs e)
         {
             AddLogItem($"Laptime changed for driver {e.DriverName}: {e.NewLapTime}", Logger.LogLevel.Info);
             // Here you can add code to update the UI or perform other actions based on the laptime change.
             var driver = _aaiDrivers.FirstOrDefault(d => d.Name == e.DriverName);
-            if (driver != null)
-            {
-                driver.Laptimes.Add(e.NewLapTime);
-            }
+            driver?.Laptimes.Add(e.NewLapTime);
         }
 
         //private void StartSharedMemoryRefreshTimer()

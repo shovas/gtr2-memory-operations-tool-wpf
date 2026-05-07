@@ -9,11 +9,16 @@ See: MainForm.MainUpdate for sample on how to marshall from native in memory str
 
 Authors: The Iron Wolf, The Sparten
 Website: thecrewchief.org
+
+Much or all of this comes from The Iron Wolf's rF2SharedMemoryMapPlugin rF2State.h -Shovas
+^ https://github.com/TheIronWolfModding/rF2SharedMemoryMapPlugin/blob/master/Include/rF2State.h
 */
 using Newtonsoft.Json;
 using System;
 using System.Runtime.InteropServices;
+using System.Timers;
 using System.Xml.Serialization;
+using static System.Net.Mime.MediaTypeNames;
 
 // CC specific: Mark more common unused members with JsonIgnore for reduced trace sizes.
 
@@ -374,7 +379,9 @@ namespace Gtr2MemOpsTool.Models
     {
       [MarshalAsAttribute(UnmanagedType.ByValArray, SizeConst = 64)]
       public byte[] mTrackName;                                    // current track name
-      public int mSession;                                         // current session (0=testday 1-4=practice 5-8=qual 9=warmup 10-13=race)
+      public int mSession;                                         // rF2: current session (0=testday 1-4=practice 5-8=qual 9=warmup 10-13=race)
+                                                                   // rF1(?)/GTR2: 0=Test Day/Open Practice/Time Trial, 1=Practice 1, 2=Practice 2, 3=Qualifying 1, 4=Qualifying 2, 5=Warmup, 6=Race  
+                                                                   // ^ GTR2 Confirmed (260506)
       public float mCurrentET;                                    // current time
       public float mEndET;                                        // ending time
       public int mMaxLaps;                                         // maximum laps
