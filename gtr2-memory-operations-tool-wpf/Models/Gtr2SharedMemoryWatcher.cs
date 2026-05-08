@@ -17,6 +17,10 @@ namespace Gtr2MemOpsTool.Models
         protected virtual void OnGamePhaseChanged(GamePhaseChangedEventArgs e)
         => GamePhaseChanged?.Invoke(this, e);
 
+        public event EventHandler<PlaceChangedEventArgs>? PlaceChanged;
+        protected virtual void OnPlaceChanged(PlaceChangedEventArgs e)
+        => PlaceChanged?.Invoke(this, e);
+
         public event EventHandler<LaptimeChangedEventArgs>? LaptimeChanged;
         protected virtual void OnLaptimeChanged(LaptimeChangedEventArgs e)
         => LaptimeChanged?.Invoke(this, e);
@@ -177,6 +181,21 @@ namespace Gtr2MemOpsTool.Models
                 Gtr2VehicleScoring curVehicle = Gtr2SharMemOps.Gtr2Scoring.mVehicles[i];
                 Gtr2VehicleScoring oldVehicle = Gtr2SharMemOps.OldGtr2Scoring.mVehicles[i];
 
+                // Place change
+                int curPlace = curVehicle.mPlace;
+                int oldPlace = oldVehicle.mPlace;
+                if (curPlace != oldPlace)
+                {
+                    Encoding encoding = Encoding.GetEncoding(Gtr2ProgMemOps.GTR2_ENCODING_CODEPAGE);
+                    string driverName = MemUtils.GetStringFromBytes(curVehicle.mDriverName, encoding);
+                    App.Log.AddInfo($"Place change detected for {driverName}: {oldPlace} -> {curPlace}");
+                    OnPlaceChanged(new PlaceChangedEventArgs
+                    {
+                        DriverName = driverName,
+                        Place = curPlace
+                    });
+                }
+
                 // Lap time change
                 float curLapTime = curVehicle.mLastLapTime;
                 float oldLapTime = oldVehicle.mLastLapTime;
@@ -200,13 +219,7 @@ namespace Gtr2MemOpsTool.Models
         }
     }
 
-    public class LaptimeChangedEventArgs : EventArgs
-    {
-        public string DriverName { get; set; } = string.Empty;
-        public string VehicleName { get; set; } = String.Empty;
-        public float OldLapTime { get; set; } = 0.0f;
-        public float NewLapTime { get; set; } = 0.0f;
-    }
+    
 
     public class SessionChangedEventArgs : EventArgs
     {
@@ -253,5 +266,18 @@ namespace Gtr2MemOpsTool.Models
                 };
             }
         }
+    }
+
+    public class PlaceChangedEventArgs : EventArgs
+    {
+        public string DriverName { get; set; } = string.Empty;
+        public int Place { get; set; } = 0.0f;
+    }
+    public class LaptimeChangedEventArgs : EventArgs
+    {
+        public string DriverName { get; set; } = string.Empty;
+        public string VehicleName { get; set; } = String.Empty;
+        public float OldLapTime { get; set; } = 0.0f;
+        public float NewLapTime { get; set; } = 0.0f;
     }
 }

@@ -119,6 +119,7 @@ namespace Gtr2MemOpsTool.Views
                 //};
                 _gtr2SharedMemoryWatcher.SessionChanged += OnSessionChanged;
                 _gtr2SharedMemoryWatcher.GamePhaseChanged += OnGamePhaseChanged;
+                _gtr2SharedMemoryWatcher.PlaceChanged += OnPlaceChanged;
                 _gtr2SharedMemoryWatcher.LaptimeChanged += OnLaptimeChanged;
 
                 StartDriversRefreshTimer();
@@ -146,14 +147,113 @@ namespace Gtr2MemOpsTool.Views
             AddLogItem($"Game phase changed: {e.GamePhase}={e.GamePhaseName}", Logger.LogLevel.Info);
         }
 
+        private void OnPlaceChanged(object? sender, PlaceChangedEventArgs e)
+        {
+            AddLogItem($"Place changed for driver {e.DriverName}: {e.Place}", Logger.LogLevel.Info);
+            RecordDriverPlace(e.DriverName, e.Place);
+        }
+
         private void OnLaptimeChanged(object? sender, LaptimeChangedEventArgs e)
         {
             AddLogItem($"Laptime changed for driver {e.DriverName}: {e.NewLapTime}", Logger.LogLevel.Info);
-            // Here you can add code to update the UI or perform other actions based on the laptime change.
-            var driver = _aaiDrivers.FirstOrDefault(d => d.Name == e.DriverName);
-            driver?.Laptimes.Add(e.NewLapTime);
+            RecordDriverLaptime(e.DriverName, e.NewLapTime);
+            UpdateDriverWeightPenalty(e.DriverName);
         }
 
+        private void RecordDriverPlace(string driverName, int newPlace)
+        {
+            var driver = _aaiDrivers.FirstOrDefault(d => d.Name == driverName);
+            if (driver is not null)
+            {
+                driver.Place = newPlace;
+            }
+        }
+
+        private void RecordDriverLaptime(string driverName, float newLapTime)
+        {
+            var driver = _aaiDrivers.FirstOrDefault(d => d.Name == driverName);
+            driver?.Laptimes.Add(newLapTime);
+        }
+
+        private void UpdateDriverWeightPenalty(string driverName)
+        {
+            var driver = _aaiDrivers.FirstOrDefault(d => d.Name == driverName);
+            if (driver is null)
+            {
+                AddLogItem($"Failed to find driver {driverName} to update weight penalty.", Logger.LogLevel.Warning);
+                return;
+            }
+            driver.WeightPenalty = CalculateWeightPenalty(driver);
+        }
+
+        private float CalculateWeightPenalty(AaiDriver driver)
+        {
+            int minLaptimes = int.TryParse(App.Config.IniData.Sections["AutomaticAi"]["MinLaptimes"], out int result) ? result : 1;
+            if (driver.Laptimes.Count < minLaptimes)
+            {
+                return 0;
+            }
+            float weightPenaltyPerSecond = float.TryParse(App.Config.IniData.Sections["AutomaticAi"]["WeightPenaltyPerSecond"], out float result) ? result : 33.333333f;
+            AaiDriver playerDriver = _aaiDrivers[0]; // Driver 0 is always the player driver as that's the first grid slot and the player is always in the first grid slot
+            List<AaiDriver> aiDrivers = _aaiDrivers.Slice(1, _aaiDrivers.Count-1);
+            float playerBestLaptime = playerDriver.Laptimes.Min();
+            if ( driver.Name == playerDriver.Name)
+            {
+                if ( driver.Place == 1)
+                {
+                    // First reduce any AI weight penalties
+                    // - Calculate AI laptime saved by the reduction to determine if we still need to add a weight penalty to the player after adjusting AI
+                    var aiDriversByPlace = aiDrivers.OrderBy(d => d.Place);
+                    foreach (var aiDriver in aiDriversByPlace)
+                    {
+                        if (aiDriver.WeightPenalty <= 0)
+                        {
+                            continue;
+                        }
+
+                        // Determine best laptime and delta to player best laptime
+                        float aiBestLaptime = aiDriver.Laptimes.Min();
+                        float aiBestLaptimeDelta = aiBestLaptime - playerBestLaptime;
+                            
+                        float newAiWeightPenaltyReduction = aiBestLaptimeDelta * weightPenaltyPerSecond;
+                        float newAiWeightPenaltySeconds = newAiWeightPenaltyReduction / weightPenaltyPerSecond;
+
+                        // If the new weight penalty reduction is more than the current weight penalty then we need to zero the AI weight penalty and adjust the player's weight penalty instead
+                        if (newAiWeightPenaltyReduction >= aiDriver.WeightPenalty)
+                        {
+                            aiDriver.WeightPenalty = 0;
+                        } else
+                        {
+                            aiDriver.WeightPenalty -= newAiWeightPenaltyReduction;
+                        }
+
+                        // Calculate new AI laptime with weight penalty adjustment taken into account
+                        aiDriver.BopLaptime = aiBestLaptime - newAiWeightPenaltySeconds;
+                    }
+
+                    // If any AI weight penalties are zero it means we couldn't adjust AI enough to catch up to the player so we need to adjust player weight penalty
+                    if ( aiDrivers.Any(d => d.WeightPenalty == 0))
+                    {
+                        AaiDriver fastestAiDriver = aiDrivers.Where(d => d.WeightPenalty == 0).MinBy(d => d.Laptimes.Min()) ?? throw new Exception("Failed to find fastest AI driver with zero weight penalty.");
+
+                        float aiLaptimeDelta = fastestAiDriver.BopLaptime - playerBestLaptime;
+                        float playerWeightPenaltyIncrease = aiLaptimeDelta * weightPenaltyPerSecond;
+
+                        playerDriver.WeightPenalty += playerWeightPenaltyIncrease;
+                    }
+
+                }
+
+
+            }
+            else
+            {
+
+            }
+            float WeightPenaltyPerSecond = float.TryParse(App.Config.IniData.Sections["AutomaticAi"]["WeightPenaltyPerSecond"], out float result) ? result : 0.03f;
+
+            return 0;
+        }
         //private void StartSharedMemoryRefreshTimer()
         //{
         //    AddLogItem("Starting shared memory refresh timer...", Logger.LogLevel.Debug);

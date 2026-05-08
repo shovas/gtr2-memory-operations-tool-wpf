@@ -17,6 +17,7 @@ Todo
   - If I can get away without the fancy class logic then it'll be a win.
 
 - Could Gtr2MemOps.ReadGtr2GridData() just read all memory right through instead of in a loop which is probably slower?
+  - The solution is probably to read it like the shared memory implementation where it reads whole structs right in
 
 Doing
 
@@ -24,7 +25,7 @@ Doing
     - Bug: Sometimes Automatic AI tab Last Lap column never updates if started before drivers have laptimes in even after they start putting in laptimes. A reset will usually start displaying the new laptimes correctly. But it should work from the start.
     - Todo: List of Drivers and their current AI adjustment values
       - Todo: Run an AI adjustment calculation every refresh and record adjustment with each driver
-        - Note: Reminder this AI adjustment is a weight penalty adjustment: +0.3s for every 1kg added.
+        - Note: Reminder this AI adjustment is a weight penalty adjustment: +0.03s for every 1kg added.
         - Todo: Activate: Start the automatic adjustment algorithm
         - Todo: Deactivate: Stop the automatic adjustment algorithm
         - Todo: Display current AI adjustment for each driver (at least a holder for now)
