@@ -22,6 +22,6 @@ namespace Gtr2MemOpsTool.Models
         }
         public List<float> Laptimes { get; set; } = [];
         public float WeightPenalty { get; set; } = 0;
-        public float BopLaptime { get; set; } = 0;
+        public float BopProjectedLaptime { get; set; } = 0;
     }
 }

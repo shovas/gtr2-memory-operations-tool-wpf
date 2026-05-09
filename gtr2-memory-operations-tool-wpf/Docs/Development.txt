@@ -29,6 +29,7 @@ Doing
         - Todo: Activate: Start the automatic adjustment algorithm
         - Todo: Deactivate: Stop the automatic adjustment algorithm
         - Todo: Display current AI adjustment for each driver (at least a holder for now)
+        - Todo: AddLogItem() should log to file for easier review.
 >       - Todo: Once drivers have at least N laptimes recorded, compare to player and calculate either a player weight penalty (too fast vs ai) or an ai driver weight penalty (too fast vs player)
           ^ Player and AI must have at least N laptimes recorded for this to work
           ^ Start with 3 laptimes to make this a little easier. Make it configurable.
