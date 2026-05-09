@@ -202,17 +202,22 @@ namespace Gtr2MemOpsTool.Views
                 return;
             }
 
-            // Get all AI drivers excluding the player driver
+            // Get all AI drivers excluding the player driver which is always the first
             List<AaiDriver> aiDrivers = _aaiDrivers.Slice(1, _aaiDrivers.Count-1);
 
             // We only need to calculate weight penalties against the player
+            // - If player is in first place then we need AI to catch up and possibly we need to slow down the player if the AI can't catch up enough by just reducing their weight penalties
             float playerBestLaptime = playerDriver.Laptimes.Min();
             float weightPenaltyPerSecond = float.TryParse(App.Config.IniData.Sections["AutomaticAi"]["WeightPenaltyPerSecond"], out float weightPenaltyPerSecondResult) ? weightPenaltyPerSecondResult : 33.333333f;
             AddLogItem($"Adjusting weight penalties against player driver {playerDriver.Name} in place {playerDriver.Place} with best laptime {playerBestLaptime}.", Logger.LogLevel.Info);
-            // If player is in first place then we need AI to catch up and possibly we need to slow down the AI
             if ( playerDriver.Place == 1)
             {
-                
+
+                // Overview:
+                // 1. Reduce P2 AI weight penaly
+                // 2. Reduce weight penalties for the rest of the AI based on the percentage improvement of the first AI so they all maintain their relative gaps but also keep up to the driver ahead of them
+                // 3. If P2 still isn't as fast as the player, add player weight penalty
+
                 // Problem: We're applying weight penalties vs the player for all ai drivers which means they'll all end up competing against the player instead of in their relative positions
                 // - Fix: Adjust the next placed AI driver by a calculated delta but the rest of the AI by a relative percentage so they maintain their relative performance gaps but all get closer to the player
                 // - AI1 calculates weight penalty based on laptime delta to player and gets a weight penalty reduction based on that delta
@@ -229,45 +234,50 @@ namespace Gtr2MemOpsTool.Views
 
                 // Calculate new AI weight penalty reduction
                 float newP2AiWeightPenaltyReduction = p2AiBestLaptimeDelta * weightPenaltyPerSecond;
+                // Bug?
+                float newP2AiWeightPenaltyLaptimeSaved = (newP2AiWeightPenaltyReduction - p2AiDriver.WeightPenalty) / weightPenaltyPerSecond;
 
                 // If the new weight penalty reduction is more than the current weight penalty then we need to zero the AI weight penalty and adjust the player's weight penalty instead
-                float newP2AiWeightPenaltySeconds;
                 float newP2AiWeightPenalty;
                 if (newP2AiWeightPenaltyReduction >= p2AiDriver.WeightPenalty)
                 {
-                    newP2AiWeightPenaltySeconds = (newP2AiWeightPenaltyReduction - p2AiDriver.WeightPenalty) / weightPenaltyPerSecond;
                     newP2AiWeightPenalty = 0;
                 }
                 else
                 {
-                    newP2AiWeightPenaltySeconds = newP2AiWeightPenaltyReduction / weightPenaltyPerSecond;
                     newP2AiWeightPenalty = p2AiDriver.WeightPenalty - newP2AiWeightPenaltyReduction;
                 }
 
                 // Log and apply new AI weight penalty
-                AddLogItem($"Decreasing weight penalty for driver {p2AiDriver.Name} in place {p2AiDriver.Place} with best laptime {p2AiDriver.Laptimes.Min()} from {p2AiDriver.WeightPenalty} by {newP2AiWeightPenaltyReduction} to {newP2AiWeightPenalty} saving {newP2AiWeightPenaltySeconds} seconds/lap.", Logger.LogLevel.Info);
+                AddLogItem($"Decreasing weight penalty for driver {p2AiDriver.Name} in place {p2AiDriver.Place} with best laptime {p2AiBestLaptime} from {p2AiDriver.WeightPenalty} by {newP2AiWeightPenaltyReduction} to {newP2AiWeightPenalty} saving {newP2AiWeightPenaltyLaptimeSaved} seconds/lap.", Logger.LogLevel.Info);
                 p2AiDriver.WeightPenalty = newP2AiWeightPenalty;
 
                 // Calculate new AI laptime with weight penalty adjustment taken into account
-                p2AiDriver.BopProjectedLaptime = p2AiBestLaptime - newP2AiWeightPenaltySeconds;
+                p2AiDriver.BopProjectedLaptime = p2AiBestLaptime - newP2AiWeightPenaltyLaptimeSaved;
 
                 // Calculate relative performance improvement percentage of the first AI so we can apply that percentage improvement to the rest of the AI to maintain their relative gaps but also keep up to the driver ahead of them
-                float p2AiLaptimeImprovementPct = newP2AiWeightPenaltySeconds / p2AiBestLaptime;
+                float p2AiLaptimeImprovementFactor = newP2AiWeightPenaltyLaptimeSaved / p2AiBestLaptime;
 
                 // Apply a relative performance improvement to the rest of the AI based on the percentage improvement of the first AI so they all maintain their relative gaps but also keep up to the driver ahead of them
-                List<AaiDriver> restAiDrivers = aiDrivers.Slice(1, aiDrivers.Count - 1);
-                foreach (var aiDriver in restAiDrivers)
+                List<AaiDriver> otherAiDrivers = aiDrivers.Slice(1, aiDrivers.Count - 1);
+                foreach (var aiDriver in otherAiDrivers)
                 {
-                    if (aiDriver.WeightPenalty > 0)
-                    {
-                        continue;
-                    }
                     float aiDriverBestLaptime = aiDriver.Laptimes.Min();
-                    float newAiWeightPenaltySeconds = aiDriverBestLaptime * p2AiLaptimeImprovementPct;
-                    float newAiWeightPenaltyReduction = newAiWeightPenaltySeconds * weightPenaltyPerSecond;
-                    AddLogItem($"Decreasing weight penalty for driver {aiDriver.Name} in place {aiDriver.Place} with best laptime {aiDriver.Laptimes.Min()} from {aiDriver.WeightPenalty} by {newAiWeightPenaltyReduction} ({p2AiLaptimeImprovementPct * 100}%) to {aiDriver.WeightPenalty - newAiWeightPenaltyReduction} saving {newAiWeightPenaltySeconds} seconds/lap.", Logger.LogLevel.Info);
-                    aiDriver.WeightPenalty -= newAiWeightPenaltyReduction;
-                    aiDriver.BopProjectedLaptime = aiDriverBestLaptime - newAiWeightPenaltySeconds;
+                    float newAiWeightPenaltyLaptimeSaved = aiDriverBestLaptime * p2AiLaptimeImprovementFactor; // Seconds saved per lap eg. 0.5 seconds/lap
+                    float newAiWeightPenaltyReduction = newAiWeightPenaltyLaptimeSaved * weightPenaltyPerSecond; // Convert seconds saved to weight penalty reduction eg. 16.666667 weight penalty reduction
+                    float newAiWeightPenalty;
+                    if (newAiWeightPenaltyReduction >= aiDriver.WeightPenalty)
+                    {
+                        newAiWeightPenalty = 0;
+                    }
+                    else
+                    {
+                        newAiWeightPenalty = aiDriver.WeightPenalty - newAiWeightPenaltyReduction;
+                    }
+
+                    AddLogItem($"Decreasing weight penalty for driver {aiDriver.Name} in place {aiDriver.Place} with best laptime {aiDriverBestLaptime} from {aiDriver.WeightPenalty} by {newAiWeightPenaltyReduction} ({p2AiLaptimeImprovementFactor * 100}%) to {newAiWeightPenalty} saving {newAiWeightPenaltyLaptimeSaved} seconds/lap.", Logger.LogLevel.Info);
+                    aiDriver.WeightPenalty = newAiWeightPenalty;
+                    aiDriver.BopProjectedLaptime = aiDriverBestLaptime - newAiWeightPenaltyLaptimeSaved;
                 }
 
                 // If any AI weight penalties are zero it almost certainly means we couldn't adjust AI enough to catch up to the player so we need to adjust player weight penalty for the remaining laptime delta
@@ -277,8 +287,9 @@ namespace Gtr2MemOpsTool.Views
 
                     float aiLaptimeDelta = fastestAiDriver.BopProjectedLaptime - playerBestLaptime;
                     float playerWeightPenaltyIncrease = aiLaptimeDelta * weightPenaltyPerSecond;
-                    AddLogItem($"Increasing weight penalty for player {playerDriver.Name} in place {playerDriver.Place} with best laptime {playerDriver.Laptimes.Min()} from {playerDriver.WeightPenalty} by {playerWeightPenaltyIncrease} to {playerDriver.WeightPenalty + playerWeightPenaltyIncrease} adding {aiLaptimeDelta} seconds/lap.", Logger.LogLevel.Info);
-                    playerDriver.WeightPenalty += playerWeightPenaltyIncrease;
+                    float newPlayerWeightPenalty = playerDriver.WeightPenalty + playerWeightPenaltyIncrease;
+                    AddLogItem($"Increasing weight penalty for player {playerDriver.Name} in place {playerDriver.Place} with best laptime {playerBestLaptime} from {playerDriver.WeightPenalty} by {playerWeightPenaltyIncrease} to {newPlayerWeightPenalty} adding {aiLaptimeDelta} seconds/lap.", Logger.LogLevel.Info);
+                    playerDriver.WeightPenalty = newPlayerWeightPenalty;
                 }
 
             }
