@@ -32,8 +32,6 @@ namespace Gtr2MemOpsTool.Views
         private readonly List<AaiDriver> _aaiDrivers = [];
 
         private DispatcherTimer? _driversRefreshTimer;
-        //private DispatcherTimer? _sharedMemoryRefreshTimer;
-        //private readonly Gtr2SharMemOps _gtr2SharMemOps = new();
         private readonly Gtr2SharedMemoryWatcher _gtr2SharedMemoryWatcher = new();
         public AutomaticAiView()
         {
@@ -112,11 +110,7 @@ namespace Gtr2MemOpsTool.Views
             AddLogItem("Activate()", Logger.LogLevel.Debug);
             Application.Current.Dispatcher.Invoke(() =>
             {
-                //StartSharedMemoryRefreshTimer();
                 _gtr2SharedMemoryWatcher.WatchGtr2SharedMemory();
-                //_gtr2SharedMemoryWatcher.LaptimeChanged += (sender, e) => {
-                //    Console.WriteLine(e.DriverName);
-                //};
                 _gtr2SharedMemoryWatcher.SessionChanged += OnSessionChanged;
                 _gtr2SharedMemoryWatcher.GamePhaseChanged += OnGamePhaseChanged;
                 _gtr2SharedMemoryWatcher.PlaceChanged += OnPlaceChanged;
@@ -133,7 +127,6 @@ namespace Gtr2MemOpsTool.Views
             {
                 StopDriversRefreshTimer();
                 _gtr2SharedMemoryWatcher.UnwatchGtr2SharedMemory();
-                //StopSharedMemoryRefreshTimer();
             });
         }
 
@@ -223,7 +216,7 @@ namespace Gtr2MemOpsTool.Views
             {
 
                 // Overview:
-                // 1. Reduce P2 AI weight penaly
+                // 1. Reduce P2 AI weight penalty
                 // 2. Reduce weight penalties for the rest of the AI based on the percentage improvement of the first AI so they all maintain their relative gaps but also keep up to the driver ahead of them
                 // 3. If P2 still isn't as fast as the player, add player weight penalty
 
@@ -392,76 +385,10 @@ namespace Gtr2MemOpsTool.Views
                         aiDriver.WeightPenalty = newAiWeightPenalty;
                         aiDriver.BopProjectedLaptime = aiDriverBestLaptime + newAiWeightPenaltyLaptimeIncrease;
                     }
+
                 }
             }
         }
-
-        //private void StartSharedMemoryRefreshTimer()
-        //{
-        //    AddLogItem("Starting shared memory refresh timer...", Logger.LogLevel.Debug);
-
-        //    // Enable existing timer
-        //    if (_sharedMemoryRefreshTimer is not null)
-        //    {
-        //        if (_sharedMemoryRefreshTimer.IsEnabled)
-        //        {
-        //            AddLogItem("Shared memory refresh timer already started", Logger.LogLevel.Debug);
-        //        }
-        //        else
-        //        {
-        //            _sharedMemoryRefreshTimer.IsEnabled = true;
-
-        //        }
-        //        return;
-        //    }
-
-        //    // Setup new timer
-        //    int refreshTime = int.TryParse(App.Config.IniData.Sections["AutomaticAiView"]["RefreshSharedMemoryTime"], out int result) ? result : 1;
-        //    _sharedMemoryRefreshTimer = new DispatcherTimer
-        //    {
-        //        Interval = TimeSpan.FromSeconds(refreshTime)
-        //    };
-        //    _sharedMemoryRefreshTimer.Tick += OnSharedMemoryRefreshTimerTick;
-        //    RefreshSharedMemory(); // Immediate refresh on start
-        //    _sharedMemoryRefreshTimer.Start();
-        //}
-
-        //private void StopSharedMemoryRefreshTimer()
-        //{
-        //    AddLogItem("Stopping shared memory refresh timer...", Logger.LogLevel.Debug);
-        //    if (_sharedMemoryRefreshTimer is not null)
-        //    {
-        //        _sharedMemoryRefreshTimer.IsEnabled = false;
-        //        //_sharedMemoryRefreshTimer.Stop();
-        //        //_sharedMemoryRefreshTimer.Tick -= OnSharedMemoryRefreshTimerTick;
-        //        //_sharedMemoryRefreshTimer = null;
-        //    }
-        //    ActivateButton.IsEnabled = true;
-        //    DeactivateButton.IsEnabled = false;
-        //}
-
-        //private void OnSharedMemoryRefreshTimerTick(object? sender, EventArgs e)
-        //{
-        //    AddLogItem("Handling shared memory refresh timer tick...", Logger.LogLevel.Debug);
-        //    RefreshSharedMemory();
-        //}
-
-        //private async void RefreshSharedMemory()
-        //{
-        //    AddLogItem("RefreshSharedMemory()", Logger.LogLevel.Debug);
-        //    await Task.Run(() => LoadGtr2SharedMemory());
-        //}
-
-        //private void LoadGtr2SharedMemory()
-        //{
-        //    //public int mSession;                                         // current session (0=testday 1-4=practice 5-8=qual 9=warmup 10-13=race)
-        //    //_gtr2SharMemOps.FetchGtr2SharedMemoryStructs();
-        //    AddLogItem("LoadGtr2SharedMemory(): Start connect and read", Logger.LogLevel.Debug);
-        //    _gtr2SharMemOps.ConnectGtr2MemoryBuffers();
-        //    _gtr2SharMemOps.ReadGtr2MemoryBuffers();
-        //    AddLogItem("LoadGtr2SharedMemory(): End connect and read", Logger.LogLevel.Debug);
-        //    //gtr2SharMemOps.Gtr2Scoring.mScoringInfo.mSession ;
-        //}
 
         private void StartDriversRefreshTimer()
         {
@@ -538,20 +465,7 @@ namespace Gtr2MemOpsTool.Views
                 Gtr2GridDrivers gtr2GridDrivers = Gtr2ProgMemOps.ReadGtr2GridDrivers() ?? throw new Exception("Failed reading GTR2 grid.");
                 AddLogItem("LoadDrivers(): End Gtr2MemOps.ReadGtr2GridDrivers()", Logger.LogLevel.Debug);
 
-                // Get drivers from shared memory (SM) to match against drivers from program memory (PM) to determine active driver ie. driver one or two in each slot
-                // - SM mDriver is currently active driver. The name we pick from PM should match SM mDriver.
-                //Gtr2SharMemOps gtr2SharMemOps = new();
-                //gtr2SharMemOps.FetchGtr2SharedMemoryStructs();
-                //Gtr2Scoring scoring = gtr2SharMemOps.Gtr2Scoring;
-                //var mDriverNameTmp = MemUtils.GetStringFromBytes(scoring.mVehicles[0].mDriverName, Encoding.GetEncoding(Gtr2ProgMemOps.GTR2_ENCODING_CODEPAGE));
-                //AddLogItem($"mDriverNameTmp={mDriverNameTmp}", Logger.LogLevel.Debug);
-
                 // Check for shared memory vehicles present
-                //if ( _gtr2SharMemOps.Gtr2Scoring.mVehicles is null || _gtr2SharMemOps.Gtr2Scoring.mVehicles.Length == 0)
-                //{
-                //    throw new Exception("No vehicles found in shared memory.");
-                //}
-                //Gtr2VehicleScoring[] smVehicles = _gtr2SharMemOps.Gtr2Scoring.mVehicles;
                 if ( _gtr2SharedMemoryWatcher.Gtr2SharMemOps.Gtr2Scoring.mVehicles is null || _gtr2SharedMemoryWatcher.Gtr2SharMemOps.Gtr2Scoring.mVehicles.Length == 0)
                 {
                     throw new Exception("No vehicles found in shared memory.");
@@ -560,7 +474,6 @@ namespace Gtr2MemOpsTool.Views
 
                 // Convert Gtr2GridDrivers to AaiDriver list
                 List<AaiDriver> newAaiDrivers = [];
-                //foreach (var gridDriver in gtr2GridDrivers.Drivers)
                 for (int i = 0; i < gtr2GridDrivers.Drivers.Count; i++)
                 {
                     Gtr2VehicleScoring smVehicle = smVehicles[i];
@@ -574,7 +487,7 @@ namespace Gtr2MemOpsTool.Views
                     var vehicleSlotId = vehicleSlotIdMemoryItem.ValueAsInt32;
 
                     // Determine active driver
-                    // XXX: This is unnecessary as mDriverName already gives us the active driver name for each slot, but I'm doing it to learn.
+                    // - This is unnecessary as mDriverName already gives us the active driver name for each slot, but I'm doing it to learn.
                     MemoryItem pmDriverNameOneMemoryItem = pmGridDriver.GetMemoryItemByName("NameFull_One") ?? throw new Exception($"Failed reading driver name memory item for driver at grid slot {i}.");
                     MemoryItem pmDriverNameTwoMemoryItem = pmGridDriver.GetMemoryItemByName("NameFull_Two") ?? throw new Exception($"Failed reading driver name memory item for driver at grid slot {i}.");
                     string pmDriverNameOne = pmDriverNameOneMemoryItem.ValueAsString;
@@ -608,7 +521,7 @@ namespace Gtr2MemOpsTool.Views
                 // Update UI
                 Application.Current.Dispatcher.Invoke(() =>
                 {
-                    // This is a manual update of each row rather than a clear and re-add of a whole list as that seems too heavy for smooth UX
+                    // This is a manual update of each row rather than a clear and re-add of the whole list as that seems too heavy for smooth UX
                     if (AaiDrivers.Count > 0)
                     {
                         for (int i = 0; i < AaiDrivers.Count; i++)
