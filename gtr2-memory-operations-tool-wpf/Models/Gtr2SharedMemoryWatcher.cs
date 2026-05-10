@@ -271,7 +271,7 @@ namespace Gtr2MemOpsTool.Models
     public class PlaceChangedEventArgs : EventArgs
     {
         public string DriverName { get; set; } = string.Empty;
-        public int Place { get; set; } = 0.0f;
+        public int Place { get; set; } = 0;
     }
     public class LaptimeChangedEventArgs : EventArgs
     {
