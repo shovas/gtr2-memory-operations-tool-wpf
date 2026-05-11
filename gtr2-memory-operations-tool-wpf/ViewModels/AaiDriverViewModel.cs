@@ -10,8 +10,8 @@ namespace Gtr2MemOpsTool.ViewModels
     {
         public ObservableCollection<AaiDriver> AaiDrivers { get; } =
             [
-                new AaiDriver { Name = "Alpha", Value = "1" },
-                new AaiDriver { Name = "Beta",  Value = "2" },
+                new AaiDriver { Name = "Alpha" },
+                new AaiDriver { Name = "Beta" },
             ];
     }
 }

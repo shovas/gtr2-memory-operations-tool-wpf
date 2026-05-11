@@ -180,8 +180,10 @@ namespace Gtr2MemOpsTool.Models
             {
                 Gtr2VehicleScoring curVehicle = Gtr2SharMemOps.Gtr2Scoring.mVehicles[i];
                 Gtr2VehicleScoring oldVehicle = Gtr2SharMemOps.OldGtr2Scoring.mVehicles[i];
+                int vehicleSlotId = curVehicle.mID;
 
                 // Place change
+
                 int curPlace = curVehicle.mPlace;
                 int oldPlace = oldVehicle.mPlace;
                 if (curPlace != oldPlace)
@@ -191,6 +193,7 @@ namespace Gtr2MemOpsTool.Models
                     App.Log.AddInfo($"Place change detected for {driverName}: {oldPlace} -> {curPlace}");
                     OnPlaceChanged(new PlaceChangedEventArgs
                     {
+                        VehicleSlotId = vehicleSlotId,
                         DriverName = driverName,
                         Place = curPlace
                     });
@@ -207,6 +210,7 @@ namespace Gtr2MemOpsTool.Models
                     App.Log.AddInfo($"Lap time change detected for {driverName} in {vehicleName}: {oldLapTime} -> {curLapTime}");
                     OnLaptimeChanged(new LaptimeChangedEventArgs
                     {
+                        VehicleSlotId = vehicleSlotId,
                         DriverName = driverName,
                         VehicleName = vehicleName,
                         OldLapTime = oldLapTime,
@@ -270,11 +274,13 @@ namespace Gtr2MemOpsTool.Models
 
     public class PlaceChangedEventArgs : EventArgs
     {
+        public int VehicleSlotId { get; set; } = 0;
         public string DriverName { get; set; } = string.Empty;
         public int Place { get; set; } = 0;
     }
     public class LaptimeChangedEventArgs : EventArgs
     {
+        public int VehicleSlotId { get; set; } = 0;
         public string DriverName { get; set; } = string.Empty;
         public string VehicleName { get; set; } = String.Empty;
         public float OldLapTime { get; set; } = 0.0f;

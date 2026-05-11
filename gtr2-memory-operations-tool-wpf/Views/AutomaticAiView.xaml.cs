@@ -5,6 +5,7 @@ using Gtr2MemOpsTool.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Numerics;
 using System.Runtime.ConstrainedExecution;
 using System.Text;
 using System.Timers;
@@ -26,10 +27,10 @@ namespace Gtr2MemOpsTool.Views
     /// </summary>
     public partial class AutomaticAiView : UserControl
     {
-        public BulkObservableCollection<AaiDriver> AaiDrivers { get; set; } = [];
+        public BulkObservableCollection<AaiDriver> AaiDrivers { get; set; } = []; // For now this needs to be in PM/SM Grid Vehicles order (player is first)
         public BulkObservableCollection<LogItem> LogItems { get; set; } = [];
 
-        private readonly List<AaiDriver> _aaiDrivers = [];
+        //private readonly List<AaiDriver> _aaiDrivers = [];
 
         private DispatcherTimer? _driversRefreshTimer;
         private readonly Gtr2SharedMemoryWatcher _gtr2SharedMemoryWatcher = new();
@@ -49,7 +50,7 @@ namespace Gtr2MemOpsTool.Views
                 AddLogItem("GTR2 process not detected. Please start GTR2 to load drivers.", Logger.LogLevel.Warning);
             }
 
-            AddLogItem("Automatic AI tab started.", Logger.LogLevel.Info);
+            //AddLogItem("Automatic AI tab started.", Logger.LogLevel.Info);
         }
 
         private async void RefreshButton_Click(object sender, RoutedEventArgs e)
@@ -92,7 +93,7 @@ namespace Gtr2MemOpsTool.Views
             Application.Current.Dispatcher.Invoke(() =>
             {
                 LogItems.Add(logItem);
-                LogListView.ScrollIntoView(LogItems.Last());
+                //LogListView.ScrollIntoView(LogItems.Last());
             });
         }
 
@@ -102,12 +103,15 @@ namespace Gtr2MemOpsTool.Views
             Application.Current.Dispatcher.Invoke(() =>
             {
                 AaiDrivers.Clear();
+                LogItems.Clear();
+                Deactivate();
+                Activate();
             });
         }
 
         private async void Activate()
         {
-            AddLogItem("Activate()", Logger.LogLevel.Debug);
+            //AddLogItem("Activate()", Logger.LogLevel.Debug);
             Application.Current.Dispatcher.Invoke(() =>
             {
                 _gtr2SharedMemoryWatcher.WatchGtr2SharedMemory();
@@ -143,35 +147,51 @@ namespace Gtr2MemOpsTool.Views
         private void OnPlaceChanged(object? sender, PlaceChangedEventArgs e)
         {
             AddLogItem($"Place changed for driver {e.DriverName}: {e.Place}", Logger.LogLevel.Info);
-            RecordDriverPlace(e.DriverName, e.Place);
+            RecordDriverPlace(e.VehicleSlotId, e.DriverName, e.Place);
         }
 
         private void OnLaptimeChanged(object? sender, LaptimeChangedEventArgs e)
         {
             AddLogItem($"Laptime changed for driver {e.DriverName}: {e.NewLapTime}", Logger.LogLevel.Info);
-            RecordDriverLaptime(e.DriverName, e.NewLapTime);
-            UpdateDriverWeightPenalty(e.DriverName);
+            RecordDriverLaptime(e.VehicleSlotId, e.DriverName, e.NewLapTime);
+            UpdateDriverWeightPenalty(e.VehicleSlotId, e.DriverName);
         }
 
-        private void RecordDriverPlace(string driverName, int newPlace)
+        private void RecordDriverPlace(int vehicleSlotId, string driverName, int newPlace)
         {
-            var driver = _aaiDrivers.FirstOrDefault(d => d.Name == driverName);
-            if (driver is not null)
+            var driver = AaiDrivers.FirstOrDefault(d => d.VehicleSlotId == vehicleSlotId);
+            //var driver = AaiDrivers.FirstOrDefault(d => d.Name == driverName);
+            if (driver is null)
+            {
+                AddLogItem($"RecordDriverPlace(): driver is null (vehicleSlotId: {vehicleSlotId}, driver name: {driverName})", Logger.LogLevel.Debug);
+            }
+            if ( driver is not null)
             {
                 driver.Place = newPlace;
             }
         }
 
-        private void RecordDriverLaptime(string driverName, float newLapTime)
+        private void RecordDriverLaptime(int vehicleSlotId, string driverName, float newLapTime)
         {
-            var driver = _aaiDrivers.FirstOrDefault(d => d.Name == driverName);
+            var driver = AaiDrivers.FirstOrDefault(d => d.VehicleSlotId == vehicleSlotId);
+            //var driver = AaiDrivers.FirstOrDefault(d => d.Name == driverName);
+            if (driver is null)
+            {
+                AddLogItem($"RecordDriverLaptime(): driver is null (vehicleSlotId: {vehicleSlotId}, driver name: {driverName})", Logger.LogLevel.Debug);
+            }
             driver?.Laptimes.Add(newLapTime);
         }
 
-        private void UpdateDriverWeightPenalty(string driverName)
+        private void UpdateDriverWeightPenalty(int vehicleSlotId, string driverName)
         {
-            AaiDriver playerDriver = _aaiDrivers[0]; // Driver 0 is always the player driver as that's the first grid slot and the player is always in the first grid slot
-            var targetDriver = _aaiDrivers.FirstOrDefault(d => d.Name == driverName);
+            AddLogItem("UpdateDriverWeightPenalty()", Logger.LogLevel.Debug);
+            if (AaiDrivers.Count == 0)
+            {
+                AddLogItem($"UpdateDriverWeightPenalty(): No drivers found", Logger.LogLevel.Debug);
+            }
+            AaiDriver playerDriver = AaiDrivers[0]; // Driver 0 is always the player driver as that's the first grid slot and the player is always in the first grid slot
+            var targetDriver = AaiDrivers.FirstOrDefault(d => d.VehicleSlotId == vehicleSlotId);
+            //var targetDriver = AaiDrivers.FirstOrDefault(d => d.Name == driverName);
             if (targetDriver is null)
             {
                 AddLogItem($"Failed to find driver {driverName} to update weight penalty.", Logger.LogLevel.Warning);
@@ -188,21 +208,24 @@ namespace Gtr2MemOpsTool.Views
 
         private void CalculateWeightPenaltiesVsPlayer(AaiDriver playerDriver)
         {
+            AddLogItem("CalculateWeightPenaltiesVsPlayer()", Logger.LogLevel.Debug);
             // Continue only if we have enough laptimes recorded
             int minLaptimeCount = int.TryParse(App.Config.IniData.Sections["AutomaticAi"]["MinLaptimeCount"], out int minLaptimeCountResult) ? minLaptimeCountResult : 1;
             if (playerDriver.Laptimes.Count < minLaptimeCount)
             {
+                AddLogItem($"CalculateWeightPenaltiesVsPlayer(): Player has less than required laptimes (has: {playerDriver.Laptimes.Count}, needs: {minLaptimeCount})", Logger.LogLevel.Debug);
                 return;
             }
 
-            // Get all AI drivers excluding the player driver which is always the first
-            List<AaiDriver> aiDrivers = _aaiDrivers[1..];
+            // Get all AI drivers excluding the player driver (always first)
+            List<AaiDriver> aiDrivers = AaiDrivers.ToList()[1..]; // Or AaiDrivers.Skip(1).ToList()
 
             // Skip until all AI drivers have enough laptimes otherwise calculations will be off
             foreach (var aiDriver in aiDrivers)
             {
                 if (aiDriver.Laptimes.Count < minLaptimeCount)
                 {
+                    AddLogItem($"CalculateWeightPenaltiesVsPlayer(): AI driver ({aiDriver.Name}) has less than required laptimes (has: {aiDriver.Laptimes.Count}, needs: {minLaptimeCount})", Logger.LogLevel.Debug);
                     return;
                 }
             }
@@ -443,15 +466,13 @@ namespace Gtr2MemOpsTool.Views
 
         private async void RefreshDrivers()
         {
-            AddLogItem("RefreshDrivers()", Logger.LogLevel.Debug);
+            //AddLogItem("RefreshDrivers()", Logger.LogLevel.Debug);
             await Task.Run(() => LoadDrivers());
         }
 
-        
-
         private void LoadDrivers()
         {
-            AddLogItem("LoadDrivers()", Logger.LogLevel.Debug);
+            //AddLogItem("LoadDrivers()", Logger.LogLevel.Debug);
             // Overview:
             // 1. Open the GT2 process with Gtr2MemOps functions.
             // 2. Read the Grid Slots in as AaiDriver objects.
@@ -461,9 +482,9 @@ namespace Gtr2MemOpsTool.Views
             try
             {
                 // Read grid drivers
-                AddLogItem("LoadDrivers(): Start Gtr2MemOps.ReadGtr2GridDrivers()", Logger.LogLevel.Debug);
+                //AddLogItem("LoadDrivers(): Start Gtr2MemOps.ReadGtr2GridDrivers()", Logger.LogLevel.Debug);
                 Gtr2GridDrivers gtr2GridDrivers = Gtr2ProgMemOps.ReadGtr2GridDrivers() ?? throw new Exception("Failed reading GTR2 grid.");
-                AddLogItem("LoadDrivers(): End Gtr2MemOps.ReadGtr2GridDrivers()", Logger.LogLevel.Debug);
+                //AddLogItem("LoadDrivers(): End Gtr2MemOps.ReadGtr2GridDrivers()", Logger.LogLevel.Debug);
 
                 // Check for shared memory vehicles present
                 if ( _gtr2SharedMemoryWatcher.Gtr2SharMemOps.Gtr2Scoring.mVehicles is null || _gtr2SharedMemoryWatcher.Gtr2SharMemOps.Gtr2Scoring.mVehicles.Length == 0)
@@ -476,11 +497,23 @@ namespace Gtr2MemOpsTool.Views
                 List<AaiDriver> newAaiDrivers = [];
                 for (int i = 0; i < gtr2GridDrivers.Drivers.Count; i++)
                 {
+                    // Get shared memory vehicle
                     Gtr2VehicleScoring smVehicle = smVehicles[i];
+
+                    // Get isPlayer
+                    bool isPlayer = ( smVehicle.mIsPlayer != 0 );
+
+                    // Get driver name
                     var smDriverName = MemUtils.GetStringFromBytes(smVehicle.mDriverName, Encoding.GetEncoding(Gtr2ProgMemOps.GTR2_ENCODING_CODEPAGE));
                     //AddLogItem($"smDriverName={smDriverName}", Logger.LogLevel.Debug);
                     List<Gtr2GridDriver> pmGridDrivers = gtr2GridDrivers.Drivers;
                     Gtr2GridDriver pmGridDriver = pmGridDrivers[i];
+
+                    // Get Place
+                    var place = (int)smVehicle.mPlace;
+
+                    // Get TotalLaps
+                    int totalLaps = smVehicle.mTotalLaps;
 
                     // Vehicle Slot Id is our unique id for each data grid row for now
                     var vehicleSlotIdMemoryItem = pmGridDriver.GetMemoryItemByName("slot_id") ?? throw new Exception($"Failed reading vehicle slot id memory item for driver at grid slot {i}.");
@@ -508,14 +541,26 @@ namespace Gtr2MemOpsTool.Views
                     MemoryItem lastLaptimeMemoryItem = pmGridDriver.GetMemoryItemByName("Timing_Laptime_A") ?? throw new Exception($"Failed reading laptime memory item for driver {driverName}.");
                     float lastLaptime = lastLaptimeMemoryItem.ValueAsFloat;
 
-                    // Add new AaiDriver to list
-                    AaiDriver driver = new()
+                    // Setup new/updated AaiDriver details
+                    AaiDriver newDriver = new()
                     {
                         VehicleSlotId = vehicleSlotId,
+                        IsPlayer = isPlayer,
                         Name = driverName,
+                        Place = place,
+                        TotalLaps = totalLaps,
                         LastLaptime = lastLaptime
                     };
-                    newAaiDrivers.Add(driver);
+
+                    // Carry over temporal recorded current data
+                    var curAaiDriver = AaiDrivers.FirstOrDefault(d => d.VehicleSlotId == vehicleSlotId);
+                    if ( curAaiDriver is not null)
+                    {
+                        newDriver.Laptimes = curAaiDriver.Laptimes;
+                        newDriver.BopProjectedLaptime = curAaiDriver.BopProjectedLaptime;
+                    }
+
+                    newAaiDrivers.Add(newDriver);
                 }
                 
                 // Update UI
@@ -524,14 +569,31 @@ namespace Gtr2MemOpsTool.Views
                     // This is a manual update of each row rather than a clear and re-add of the whole list as that seems too heavy for smooth UX
                     if (AaiDrivers.Count > 0)
                     {
+                        // DataGrid will only update if the whole object changes not if just properties/fields change on the object
+
+                        //for (int i = 0; i < newAaiDrivers.Count; i++)
+                        //{
+                        //    var newAaiDriver = newAaiDrivers[i];
+                        //    var updateAaiDriver = AaiDrivers .First(d => d.VehicleSlotId == newAaiDriver.VehicleSlotId);
+                        //    updateAaiDriver.Place = newAaiDriver.Place;
+                        //    updateAaiDriver.TotalLaps = newAaiDriver.TotalLaps;
+                        //    updateAaiDriver.LastLaptime = newAaiDriver.LastLaptime;
+                        //    //updateAaiDriver.WeightPenalty = newAaiDriver.WeightPenalty; // Unmcomment when we start writing to memory
+                        //}
                         for (int i = 0; i < AaiDrivers.Count; i++)
                         {
-                            var aaiDriver = AaiDrivers[i];
-                            var newAaiDriver = newAaiDrivers[i];
-                            aaiDriver.VehicleSlotId = newAaiDriver.VehicleSlotId;
-                            aaiDriver.Name = newAaiDriver.Name;
-                            aaiDriver.LastLaptime = newAaiDriver.LastLaptime;
+                            var newAaiDriver = newAaiDrivers.First(d => d.VehicleSlotId == AaiDrivers[i].VehicleSlotId);
+                            AaiDrivers[i] = newAaiDriver;
                         }
+                        //for (int i = 0; i < AaiDrivers.Count; i++)
+                        //{
+                        //    // This is bad because I forget to add new fields that I might want later
+                        //    //var aaiDriver = ;
+                        //    //var newAaiDriver = newAaiDrivers[i];
+                        //    //aaiDriver.VehicleSlotId = newAaiDriver.VehicleSlotId;
+                        //    //aaiDriver.Name = newAaiDriver.Name;
+                        //    //aaiDriver.LastLaptime = newAaiDriver.LastLaptime;
+                        //}
                     }
                     else
                     {

@@ -505,7 +505,7 @@ namespace Gtr2MemOpsTool.Models
       public Gtr2Vec3 mLocalRot;      // rotation (radians/sec) in local vehicle coordinates
       public Gtr2Vec3 mLocalRotAccel; // rotational acceleration (radians/sec^2) in local vehicle coordinates
 
-      public int mID;
+      public int mID; // Same as Grid Vehicle Slot Id in Program Memory(?) -Shovas
       [MarshalAsAttribute(UnmanagedType.ByValArray, SizeConst = 124)]
       [JsonIgnore] public byte[] mExpansion;                                    // for future use
     };

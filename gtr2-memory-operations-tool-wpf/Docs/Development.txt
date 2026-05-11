@@ -31,7 +31,8 @@ Doing
         - Todo: Display current AI adjustment for each driver (at least a holder for now)
         - Todo: AddLogItem() should log to file for easier review.
 >       - Todo: Once drivers have at least N laptimes recorded, compare to player and calculate either a player weight penalty (too fast vs ai) or an ai driver weight penalty (too fast vs player)
-          ^ Player and AI must have at least N laptimes recorded for this to work
+          ^ Player and comparison AI must have at least N laptimes recorded for this to work
+            - Comparison AI is P2 AI when Player is P1 and P1 when player is any other position
           ^ Start with 3 laptimes to make this a little easier. Make it configurable.
         - Done: Need to collect laptimes for each driver so I can calculate an average laptime for them eg. last N laps
          - Done: Listen for new laptimes for each driver and track laptimes in an array myself for later Automatic AI calculations

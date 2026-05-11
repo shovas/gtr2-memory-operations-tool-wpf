@@ -7,9 +7,11 @@ namespace Gtr2MemOpsTool.Models
     public class AaiDriver
     {
         public int VehicleSlotId { get; set; } = -1;
+        public bool IsPlayer { get; set; } = false;
         public string Name { get; set; } = "";
-        public string Value { get; set; } = "";
+        //public string Value { get; set; } = "";
         public int Place { get; set; } = 0;
+        public int TotalLaps { get; set; } = 0; // Laps completed
         public float LastLaptime { get; set; } = 0; // Watch out for -1 (no lap time yet). This is why right now they show up as 00:01:00 in the UI instead of 00:00:000.
         public string LastLaptimeFormatted {
             get
