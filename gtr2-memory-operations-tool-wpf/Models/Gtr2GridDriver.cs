@@ -14,6 +14,7 @@ namespace Gtr2MemOpsTool.Models
         public uint GridOffset { get; set; } // Offset from Grid Address. Grid Address + Grid Offset = Vehicle Slot Address
         public List<MemoryItem> MemoryItems { get; set; } = [
             new MemoryItem("slot_id", typeof(Int32), 1, 0x0004), // 4 (0x0004)
+            new MemoryItem("WeightPenalty", typeof(float), 1, 0x3ED4, false), // 16084 (0x3ED4)
             new MemoryItem("Timing_Laptime_A", typeof(float), 1, 0x4B68), // 19304 (0x4B68)
             new MemoryItem("NameFull_One", typeof(byte), 64, 0x5448, true), // 21576 (0x5448)
             new MemoryItem("NameFull_Two", typeof(byte), 64, 0x54B4, true), // 21684 (0x54B4)

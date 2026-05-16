@@ -27,7 +27,7 @@ namespace Gtr2MemOpsTool.Views
     /// </summary>
     public partial class AutomaticAiView : UserControl
     {
-        public BulkObservableCollection<AaiDriver> AaiDrivers { get; set; } = []; // For now this needs to be in PM/SM Grid Vehicles order (player is first)
+        public BulkObservableCollection<AaiDriver> AaiDrivers { get; set; } = []; // For now this needs to be in PM/SM Grid Vehicles sorting order (player is first)
         public BulkObservableCollection<LogItem> LogItems { get; set; } = [];
 
         //private readonly List<AaiDriver> _aaiDrivers = [];
@@ -152,6 +152,10 @@ namespace Gtr2MemOpsTool.Views
 
         private void OnLaptimeChanged(object? sender, LaptimeChangedEventArgs e)
         {
+            if(e.NewLapTime < 0)
+            {
+                return;
+            }
             AddLogItem($"Laptime changed for driver {e.DriverName}: {e.NewLapTime}", Logger.LogLevel.Info);
             RecordDriverLaptime(e.VehicleSlotId, e.DriverName, e.NewLapTime);
             UpdateDriverWeightPenalty(e.VehicleSlotId, e.DriverName);
@@ -189,7 +193,7 @@ namespace Gtr2MemOpsTool.Views
             {
                 AddLogItem($"UpdateDriverWeightPenalty(): No drivers found", Logger.LogLevel.Debug);
             }
-            AaiDriver playerDriver = AaiDrivers[0]; // Driver 0 is always the player driver as that's the first grid slot and the player is always in the first grid slot
+            AaiDriver playerDriver = AaiDrivers[AaiDriver.PlayerVehicleSlotId];
             var targetDriver = AaiDrivers.FirstOrDefault(d => d.VehicleSlotId == vehicleSlotId);
             //var targetDriver = AaiDrivers.FirstOrDefault(d => d.Name == driverName);
             if (targetDriver is null)
@@ -199,7 +203,8 @@ namespace Gtr2MemOpsTool.Views
             }
 
             // Calculate new weight penalties relative to the player
-            if (targetDriver.Name == playerDriver.Name)
+            //if (targetDriver.Name == playerDriver.Name)
+            if(vehicleSlotId == AaiDriver.PlayerVehicleSlotId)
             {
                 CalculateWeightPenaltiesVsPlayer(targetDriver);
             }
@@ -211,9 +216,10 @@ namespace Gtr2MemOpsTool.Views
             AddLogItem("CalculateWeightPenaltiesVsPlayer()", Logger.LogLevel.Debug);
             // Continue only if we have enough laptimes recorded
             int minLaptimeCount = int.TryParse(App.Config.IniData.Sections["AutomaticAi"]["MinLaptimeCount"], out int minLaptimeCountResult) ? minLaptimeCountResult : 1;
-            if (playerDriver.Laptimes.Count < minLaptimeCount)
+            //if (playerDriver.Laptimes.Count < minLaptimeCount)
+            if (playerDriver.TotalLaps < minLaptimeCount)
             {
-                AddLogItem($"CalculateWeightPenaltiesVsPlayer(): Player has less than required laptimes (has: {playerDriver.Laptimes.Count}, needs: {minLaptimeCount})", Logger.LogLevel.Debug);
+                AddLogItem($"CalculateWeightPenaltiesVsPlayer(): Player has less than required laptimes (has: {playerDriver.TotalLaps}, needs: {minLaptimeCount})", Logger.LogLevel.Debug);
                 return;
             }
 
@@ -223,16 +229,17 @@ namespace Gtr2MemOpsTool.Views
             // Skip until all AI drivers have enough laptimes otherwise calculations will be off
             foreach (var aiDriver in aiDrivers)
             {
-                if (aiDriver.Laptimes.Count < minLaptimeCount)
+                //if (aiDriver.Laptimes.Count < minLaptimeCount)
+                if (aiDriver.TotalLaps < minLaptimeCount)
                 {
-                    AddLogItem($"CalculateWeightPenaltiesVsPlayer(): AI driver ({aiDriver.Name}) has less than required laptimes (has: {aiDriver.Laptimes.Count}, needs: {minLaptimeCount})", Logger.LogLevel.Debug);
+                    AddLogItem($"CalculateWeightPenaltiesVsPlayer(): AI driver ({aiDriver.Name}) has less than required laptimes (has: {aiDriver.TotalLaps}, needs: {minLaptimeCount})", Logger.LogLevel.Debug);
                     return;
                 }
             }
 
             // We only need to calculate weight penalties against the player
             // - If player is in first place then we need AI to catch up and possibly we need to slow down the player if the AI can't catch up enough by just reducing their weight penalties
-            float playerBestLaptime = playerDriver.Laptimes.Min();
+            float playerBestLaptime = playerDriver.BestLaptime; //playerDriver.Laptimes.Min();
             float weightPenaltyPerSecond = float.TryParse(App.Config.IniData.Sections["AutomaticAi"]["WeightPenaltyPerSecond"], out float weightPenaltyPerSecondResult) ? weightPenaltyPerSecondResult : 33.333333f;
             AddLogItem($"Adjusting weight penalties vs player driver {playerDriver.Name} in place {playerDriver.Place} with best laptime {playerBestLaptime}.", Logger.LogLevel.Info);
             if ( playerDriver.Place == 1)
@@ -253,13 +260,14 @@ namespace Gtr2MemOpsTool.Views
                 AaiDriver p2AiDriver = aiDriversByPlace.First();
 
                 // Skip if P2 AI driver doesn't have enough laptimes recorded
-                if ( p2AiDriver.Laptimes.Count < minLaptimeCount)
+                //if ( p2AiDriver.Laptimes.Count < minLaptimeCount)
+                if (p2AiDriver.TotalLaps < minLaptimeCount)
                 {
                     return;
                 }
 
                 // Determine best laptime and delta to player best laptime
-                float p2AiBestLaptime = p2AiDriver.Laptimes.Min();
+                float p2AiBestLaptime = p2AiDriver.BestLaptime; //p2AiDriver.Laptimes.Min();
                 float p2AiBestLaptimeDelta = p2AiBestLaptime - playerBestLaptime;
 
                 // Calculate new AI weight penalty reduction
@@ -295,7 +303,7 @@ namespace Gtr2MemOpsTool.Views
                 List<AaiDriver> otherAiDrivers = [.. aiDriversByPlace.Skip(1)];
                 foreach (var aiDriver in otherAiDrivers)
                 {
-                    float aiDriverBestLaptime = aiDriver.Laptimes.Min();
+                    float aiDriverBestLaptime = aiDriver.BestLaptime; // aiDriver.Laptimes.Min();
                     float newAiWeightPenaltyLaptimeSaved = aiDriverBestLaptime * p2AiLaptimeDecreaseFactor; // Seconds saved per lap eg. 0.5 seconds/lap
                     float newAiWeightPenaltyReduction = newAiWeightPenaltyLaptimeSaved * weightPenaltyPerSecond; // Convert seconds saved to weight penalty reduction eg. 16.666667 weight penalty reduction
                     float newAiWeightPenalty;
@@ -320,7 +328,7 @@ namespace Gtr2MemOpsTool.Views
                 // Adjust ai weight penalties if the fastest ai is still slower than the player
                 if (p2AiDriver.BopProjectedLaptime > playerBestLaptime)
                 {
-                    AaiDriver fastestAiDriver = aiDrivers.Where(d => d.WeightPenalty == 0).MinBy(d => d.Laptimes.Min()) ?? throw new Exception("Failed to find fastest AI driver with zero weight penalty.");
+                    AaiDriver fastestAiDriver = aiDrivers.Where(d => d.WeightPenalty == 0).MinBy(d => d.BestLaptime) ?? throw new Exception("Failed to find fastest AI driver with zero weight penalty.");
                     float aiLaptimeDelta = fastestAiDriver.BopProjectedLaptime - playerBestLaptime;
                     float playerWeightPenaltyIncrease = aiLaptimeDelta * weightPenaltyPerSecond;
                     float newPlayerWeightPenalty = playerDriver.WeightPenalty + playerWeightPenaltyIncrease;
@@ -343,10 +351,11 @@ namespace Gtr2MemOpsTool.Views
 
                 var aiDriversByPlace = aiDrivers.OrderBy(d => d.Place);
                 AaiDriver leaderDriver = aiDriversByPlace.First();
-                float leaderBestLaptime = leaderDriver.Laptimes.Min();
+                float leaderBestLaptime = leaderDriver.BestLaptime; //leaderDriver.Laptimes.Min();
 
                 // Skip if leader driver doesn't have enough laptimes recorded
-                if (leaderDriver.Laptimes.Count < minLaptimeCount)
+                //if (leaderDriver.Laptimes.Count < minLaptimeCount)
+                if (leaderDriver.TotalLaps < minLaptimeCount)
                 {
                     return;
                 }
@@ -400,7 +409,7 @@ namespace Gtr2MemOpsTool.Views
                     List<AaiDriver> otherAiDrivers = [.. aiDriversByPlace.Skip(1)];
                     foreach (var aiDriver in otherAiDrivers)
                     {
-                        float aiDriverBestLaptime = aiDriver.Laptimes.Min();
+                        float aiDriverBestLaptime = aiDriver.BestLaptime; //aiDriver.Laptimes.Min();
                         float newAiWeightPenaltyLaptimeIncrease = aiDriverBestLaptime * leaderLaptimePenaltyFactor; // Seconds saved per lap eg. 0.5 seconds/lap
                         float newAiWeightPenaltyIncrease = newAiWeightPenaltyLaptimeIncrease * weightPenaltyPerSecond; // Convert seconds saved to weight penalty reduction eg. 16.666667 weight penalty reduction
                         float newAiWeightPenalty = aiDriver.WeightPenalty + newAiWeightPenaltyIncrease;
@@ -410,6 +419,47 @@ namespace Gtr2MemOpsTool.Views
                     }
 
                 }
+            }
+
+            // Write new weight penalties to program memory
+            Gtr2GridDrivers? gridDrivers = GetGtr2GridDrivers();
+            if (gridDrivers is not null)
+            {
+                AddLogItem("Saving new weight penalties to program memory", Logger.LogLevel.Info);
+                foreach(AaiDriver aaiDriver in AaiDrivers)
+                {
+                    AddLogItem($"Saving new weight penalty for {aaiDriver.Name}: {aaiDriver.WeightPenalty}", Logger.LogLevel.Debug);
+                    var gridDriver = gridDrivers.Drivers.FirstOrDefault(
+                        gd => gd.GetMemoryItemByName("slot_id")?.ValueAsFloat == aaiDriver.VehicleSlotId
+                    );
+                    // FIXME: gridDriver is null so my sketchy FirstOrDefault lookup is bad
+                    if (gridDriver is null)
+                    {
+                        
+                        AddLogItem("gridDriver is null", Logger.LogLevel.Debug);
+                        continue;
+                    }
+                    var weightPenaltyMemoryItem = gridDriver.GetMemoryItemByName("WeightPenalty");
+                    if(weightPenaltyMemoryItem is null)
+                    {
+                        AddLogItem("weightPenaltyMemoryItem is null", Logger.LogLevel.Debug);
+                        continue;
+                    }
+                    var success = weightPenaltyMemoryItem.Save(aaiDriver.WeightPenalty.ToString());
+                    if (success)
+                    {
+                        AddLogItem("Successfully saved new weight penalty", Logger.LogLevel.Debug);
+                    }
+                    else
+                    {
+                        AddLogItem("Failed saving new weight penalty", Logger.LogLevel.Debug);
+                    }
+
+                }
+            }
+            else
+            {
+                AddLogItem("Cannot save new weight penalties to program memory: gridDrivers is null", Logger.LogLevel.Error);
             }
         }
 
@@ -538,6 +588,9 @@ namespace Gtr2MemOpsTool.Views
                     //string driverName = gridDriver.GetFirstDriverName();
 
                     // Get last laptime
+                    float bestLaptime = smVehicle.mBestLapTime;
+
+                    // Get last laptime
                     MemoryItem lastLaptimeMemoryItem = pmGridDriver.GetMemoryItemByName("Timing_Laptime_A") ?? throw new Exception($"Failed reading laptime memory item for driver {driverName}.");
                     float lastLaptime = lastLaptimeMemoryItem.ValueAsFloat;
 
@@ -549,10 +602,11 @@ namespace Gtr2MemOpsTool.Views
                         Name = driverName,
                         Place = place,
                         TotalLaps = totalLaps,
+                        BestLaptime = bestLaptime,
                         LastLaptime = lastLaptime
                     };
 
-                    // Carry over temporal recorded current data
+                    // Carry over current temporal data
                     var curAaiDriver = AaiDrivers.FirstOrDefault(d => d.VehicleSlotId == vehicleSlotId);
                     if ( curAaiDriver is not null)
                     {
@@ -618,5 +672,9 @@ namespace Gtr2MemOpsTool.Views
             }
         }
 
+        private Gtr2GridDrivers? GetGtr2GridDrivers()
+        {
+            return Gtr2ProgMemOps.ReadGtr2GridDrivers();
+        }
     }
 }

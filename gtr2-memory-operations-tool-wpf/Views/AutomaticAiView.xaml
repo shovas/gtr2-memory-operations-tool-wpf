@@ -35,6 +35,7 @@
                     <DataGridTextColumn Header="Place" Binding="{Binding Place}"  Width="Auto"/>
                     <DataGridTextColumn Header="Name" Binding="{Binding Name}"  Width="Auto"/>
                     <DataGridTextColumn Header="Total Laps" Binding="{Binding TotalLaps}"  Width="Auto"/>
+                    <DataGridTextColumn Header="Best Lap" Binding="{Binding BestLaptimeFormatted}" Width="Auto"/>
                     <DataGridTextColumn Header="Last Lap" Binding="{Binding LastLaptimeFormatted}" Width="Auto"/>
                     <DataGridTextColumn Header="Weight Penalty" Binding="{Binding WeightPenalty}" Width="Auto"/>
                 </DataGrid.Columns>

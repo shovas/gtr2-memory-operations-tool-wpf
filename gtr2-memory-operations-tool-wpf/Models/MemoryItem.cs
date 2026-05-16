@@ -235,6 +235,7 @@ namespace Gtr2MemOpsTool.Models
             }
         }
 
+        // (string) -> bool success
         public bool Save( string newValue )
         {
             bool success = false;
@@ -268,12 +269,12 @@ namespace Gtr2MemOpsTool.Models
                     {
                         throw new Exception("Failed to write float to memory");
                     }
-                    if (!Read())
+                    if (!Read()) // Read the memory back into the item's data buffer
                     {
                         throw new Exception("Failed to read back float from memory after writing");
                     }
                     float newReadFloat = ValueToSingle() ?? 0.0f;
-                    if (floatValue != newReadFloat)
+                    if (floatValue != newReadFloat) // Verify newly read value
                     {
                         throw new Exception($"Float verification failed after writing. Expected: {floatValue}, Read Back: {newReadFloat}");
                     }
@@ -331,6 +332,7 @@ namespace Gtr2MemOpsTool.Models
             return success;
         }
 
+        // Reads the memory into the item's Data buffer
         private bool Read()
         {
             uint heldTypeSize = (uint)Marshal.SizeOf(HeldType);
