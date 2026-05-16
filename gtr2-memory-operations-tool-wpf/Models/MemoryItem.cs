@@ -332,6 +332,78 @@ namespace Gtr2MemOpsTool.Models
             return success;
         }
 
+        public bool Save(Int32 newValue)
+        {
+            bool success = false;
+            try
+            {
+                nint? gtr2ProcessPointer = Gtr2ProgMemOps.GetGtr2ProcessPointer() ?? throw new Exception("GTR2 process not found");
+                if (HeldType == typeof(Int32))
+                {
+                    App.Log.AddDebug($"Write new Int32 to memory: {newValue}");
+                    if (!Gtr2ProgMemOps.WriteInt32((nint)gtr2ProcessPointer, Address, newValue))
+                    {
+                        throw new Exception("Failed to write Int32 to memory");
+                    }
+                    if (!Read())
+                    {
+                        throw new Exception("Failed to read back Int32 from memory after writing");
+                    }
+                    Int32 newReadInt32 = ValueToInt32() ?? 0;
+                    if (newValue != newReadInt32)
+                    {
+                        throw new Exception($"Int32 verification failed after writing. Expected: {newValue}, Read Back: {newReadInt32}");
+                    }
+                    success = true;
+                }
+                else
+                {
+                    throw new Exception($"Unsupported HeldType for saving: {HeldType.Name}");
+                }
+            }
+            catch (Exception ex)
+            {
+                App.Log.AddDebug($"Exception saving MemoryItem: {ex.Message}");
+            }
+            return success;
+        }
+
+        public bool Save(float newValue)
+        {
+            bool success = false;
+            try
+            {
+                nint? gtr2ProcessPointer = Gtr2ProgMemOps.GetGtr2ProcessPointer() ?? throw new Exception("GTR2 process not found");
+                if (HeldType == typeof(float))
+                {
+                    App.Log.AddDebug($"Write new float to memory: {newValue}");
+                    if (!Gtr2ProgMemOps.WriteFloat((nint)gtr2ProcessPointer, Address, newValue))
+                    {
+                        throw new Exception("Failed to write float to memory");
+                    }
+                    if (!Read()) // Read the memory back into the item's data buffer
+                    {
+                        throw new Exception("Failed to read back float from memory after writing");
+                    }
+                    float newReadFloat = ValueToSingle() ?? 0.0f;
+                    if (newValue != newReadFloat) // Verify newly read value
+                    {
+                        throw new Exception($"Float verification failed after writing. Expected: {newValue}, Read Back: {newReadFloat}");
+                    }
+                    success = true;
+                }
+                else
+                {
+                    throw new Exception($"Unsupported HeldType for saving: {HeldType.Name}");
+                }
+            }
+            catch (Exception ex)
+            {
+                App.Log.AddDebug($"Exception saving MemoryItem: {ex.Message}");
+            }
+            return success;
+        }
+
         // Reads the memory into the item's Data buffer
         private bool Read()
         {
