@@ -19,10 +19,11 @@ namespace Gtr2MemOpsTool.Models
         public string LastLaptimeFormatted { get { return FormatLaptime(LastLaptime); } }
         public List<float> Laptimes { get; set; } = [];
         public float WeightPenalty { get; set; } = 0;
+        public int BopLap { get; set; } = 0; // The lap bop was last done
         public float BopProjectedLaptime { get; set; } = 0;
         public static string FormatLaptime(float laptime)
         {
-            laptime = (float)Math.Round(laptime, 3, MidpointRounding.ToEven); // Kind of surprised it's not ToPositiveInfinity but ToEven seems to match GTR2's Timing screen.
+            laptime = (float)Math.Round(laptime, 3, MidpointRounding.ToEven); // Kind of surprised it's not ToPositiveInfinity (ie. half up) but ToEven seems to match GTR2's Timing screen.
             var tsLaptime = TimeSpan.FromSeconds(laptime);
             var formattedLaptime = tsLaptime.ToString(@"mm\:ss\.fff");
             return formattedLaptime;

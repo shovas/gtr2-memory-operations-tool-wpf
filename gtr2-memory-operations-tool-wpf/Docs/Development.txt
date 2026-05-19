@@ -32,11 +32,20 @@ Doing
         - Todo: AddLogItem() should log to file for easier review.
         - Bug: Updating program memory grid vehicle slots parameters eg. WeightPenalty persists across session restarts (ESC > Restart)
           - Zero out manually on session restart?
-          - Workaround: Start new session from main menu
->       - Todo: Once drivers have at least N laptimes recorded, compare to player and calculate either a player weight penalty (too fast vs ai) or an ai driver weight penalty (too fast vs player)
+          - Scratch: Workaround: Start new session from main menu
+            ^ Starting a new race weekend from the main menu still had weight penalties applied.
+          - I guess I need to zero out the grid's weight penalties, maybe I can watch for an event like green flag
+        - Todo: Once drivers have at least N laptimes recorded, compare to player and calculate either a player weight penalty (too fast vs ai) or an ai driver weight penalty (too fast vs player)
           ^ Player and comparison AI must have at least N laptimes recorded for this to work
             - Comparison AI is P2 AI when Player is P1 and P1 when player is any other position
           ^ Start with 3 laptimes to make this a little easier. Make it configurable.
+          - Todo: +0.03s/kg needs tuning, it's very far off the mark right now
+          - Bug: When player is in first, weight penalty keeps increasing even though player laps since the weight penalty are slower than some AI's best laptimes.
+            - Theory: I'm doubling up on weight penalties, I think, not taking into account what's already there
+              ^ No, doesn't seem to be.
+            - Theory: I'm always comparing against the player's best laptime *before* weight penalties were applied. So the player always looks faster than they now are.
+              - So, I need to compare the best laptime since the last weight penalty adjustment.
+>             - Todo: Track laptimes and exclude all laps prior to the lap that received the weight penalty adjustment
         - Done: Need to collect laptimes for each driver so I can calculate an average laptime for them eg. last N laps
          - Done: Listen for new laptimes for each driver and track laptimes in an array myself for later Automatic AI calculations
           - Done: Gtr2SharMemOps or a new class should fire events for what I need to watch for eg. when new laptimes are recorded
