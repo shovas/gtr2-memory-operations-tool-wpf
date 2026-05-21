@@ -4,6 +4,8 @@ DEVELOPMENT
 
 Reminders
 
+- A DLL in the future will make some things much more automatic. Won't have to startup the app every time you start GTR2. So a lot of the annoyances aren't permanent.
+
 - Session > Timing > Sector has Weight Penalty, Sector 1 Laptime, Sector 2 Laptime, Laptime, Split Time
   - **Split Time**
 
@@ -45,7 +47,8 @@ Doing
               ^ No, doesn't seem to be.
             - Theory: I'm always comparing against the player's best laptime *before* weight penalties were applied. So the player always looks faster than they now are.
               - So, I need to compare the best laptime since the last weight penalty adjustment.
->             - Todo: Track laptimes and exclude all laps prior to the lap that received the weight penalty adjustment
+              - Todo: Track laptimes and exclude all laps prior to the lap that received the weight penalty adjustment
+>               - Bug: Race condition with LaodDrivers recreating AaiDrivers(?)
         - Done: Need to collect laptimes for each driver so I can calculate an average laptime for them eg. last N laps
          - Done: Listen for new laptimes for each driver and track laptimes in an array myself for later Automatic AI calculations
           - Done: Gtr2SharMemOps or a new class should fire events for what I need to watch for eg. when new laptimes are recorded

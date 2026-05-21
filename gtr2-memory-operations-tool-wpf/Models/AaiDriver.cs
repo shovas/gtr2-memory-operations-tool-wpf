@@ -20,6 +20,7 @@ namespace Gtr2MemOpsTool.Models
         public List<float> Laptimes { get; set; } = [];
         public float WeightPenalty { get; set; } = 0;
         public int BopLap { get; set; } = 0; // The lap bop was last done
+        public float BopBestLaptime { get; set; } = 0; // Best laptime after the last BOP
         public float BopProjectedLaptime { get; set; } = 0;
         public static string FormatLaptime(float laptime)
         {
