@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Gtr2MemOpsTool.Helpers;
 
 namespace Gtr2MemOpsTool.Models
 {
-    public class AaiDriver
+    public class AaiDriver : ObservableObject
     {
         public static readonly int PlayerVehicleSlotId = 0; // Driver 0 is always the player driver as that's the first grid slot and the player is always in the first grid slot
         public int VehicleSlotId { get; set; } = -1;
@@ -28,6 +29,10 @@ namespace Gtr2MemOpsTool.Models
             var tsLaptime = TimeSpan.FromSeconds(laptime);
             var formattedLaptime = tsLaptime.ToString(@"mm\:ss\.fff");
             return formattedLaptime;
+        }
+        public void RefreshBindings()
+        {
+            OnPropertyChanged(string.Empty); // empty string = "all properties changed"
         }
     }
 }

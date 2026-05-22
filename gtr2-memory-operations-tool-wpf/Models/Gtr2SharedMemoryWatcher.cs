@@ -200,14 +200,17 @@ namespace Gtr2MemOpsTool.Models
                 }
 
                 // Lap time change
-                float curLapTime = curVehicle.mLastLapTime;
-                float oldLapTime = oldVehicle.mLastLapTime;
-                if (curLapTime != oldLapTime)
+                // - Needs to be based on 'lap change' as multiple laps might record the same laptime and this logic wouldn't trigger ie. if (curLapTime != oldLapTime). So, based it on mTotalLaps being different and record the new laptime whatever it is.
+                int curLap = curVehicle.mTotalLaps;
+                int oldLap = oldVehicle.mTotalLaps;
+                if (curLap != oldLap)
                 {
+                    float curLapTime = curVehicle.mLastLapTime;
+                    float oldLapTime = oldVehicle.mLastLapTime;
                     Encoding encoding = Encoding.GetEncoding(Gtr2ProgMemOps.GTR2_ENCODING_CODEPAGE);
                     string driverName = MemUtils.GetStringFromBytes(curVehicle.mDriverName, encoding);
                     string vehicleName = MemUtils.GetStringFromBytes(curVehicle.mVehicleName, encoding);
-                    App.Log.AddInfo($"Lap time change detected for {driverName} in {vehicleName}: {oldLapTime} -> {curLapTime}");
+                    App.Log.AddInfo($"Lap time change detected for {driverName} in {vehicleName}: {oldLapTime} (Lap {oldLap}) -> {curLapTime} (Lap {curLap}). Note: Identical laptimes across laps can happen.");
                     OnLaptimeChanged(new LaptimeChangedEventArgs
                     {
                         VehicleSlotId = vehicleSlotId,

@@ -21,6 +21,11 @@ Todo
 - Could Gtr2MemOps.ReadGtr2GridData() just read all memory right through instead of in a loop which is probably slower?
   - The solution is probably to read it like the shared memory implementation where it reads whole structs right in
 
+- Session Restart = Game Phase Change to 5=GreenFlag twice?
+
+- Update weight calculations whenever any driver posts a new laptime, not just the player, to have finer grained BOP
+  ^ This will be needed for when the driver is still behind but stopped driving eg. AI does this in practice sometimes
+
 Doing
 
 - Implement Automatic AI tab
@@ -41,14 +46,24 @@ Doing
           ^ Player and comparison AI must have at least N laptimes recorded for this to work
             - Comparison AI is P2 AI when Player is P1 and P1 when player is any other position
           ^ Start with 3 laptimes to make this a little easier. Make it configurable.
-          - Todo: +0.03s/kg needs tuning, it's very far off the mark right now
+          - Todo: +0.03s/kg needs tuning, it's very far off the mark right now...[days later]...maybe not now that the algo is working better. Let's see.
+          - Todo: Update weight calculations whenever any driver posts a new laptime, not just the player, to have finer grained BOP
+            ^ This will be needed for when the driver is still behind but stopped driving eg. AI does this in practice sometimes
+          - Bug: Sometimes when loading into a track the grid only loads in partially eg. some names are missing or all of them are missing.
+            - Not getting a full complete read until fully into the session?
           - Bug: When player is in first, weight penalty keeps increasing even though player laps since the weight penalty are slower than some AI's best laptimes.
             - Theory: I'm doubling up on weight penalties, I think, not taking into account what's already there
               ^ No, doesn't seem to be.
             - Theory: I'm always comparing against the player's best laptime *before* weight penalties were applied. So the player always looks faster than they now are.
               - So, I need to compare the best laptime since the last weight penalty adjustment.
               - Todo: Track laptimes and exclude all laps prior to the lap that received the weight penalty adjustment
->               - Bug: Race condition with LaodDrivers recreating AaiDrivers(?)
+>               - Todo: In the "Not adjusting AI driver weight penalties...player not slower than leader" (player still not P1), AI still need to have weight penalty reduced not increased to keep competitive with player.
+                - Fixed: Driver laptimes are sometimes 'dropping' laps (or something) and then BopLap can end up greater than laptimes recorded.
+                  ^ Fix: Laptime changed event now based on changing laps not a difference in laptimes which was probably getting missed because (1) small chance two laps can have the same laptime or more likely (2) old vs new snapshot were the same (not old lap vs new lap) and so never triggered.
+                  - "Error: Aborting weight penalty calculations. Player driver laptimes count (8) less than BopLap (10)."
+                  - Laptime Changed even triggers based off shared memory changes. Are we missing laptime changes somehow?
+                - Fixed: Race condition with LoadDrivers recreating AaiDrivers
+                  ^ Fix: Reuse existing AaiDrivers instead of recreating them each refresh.
         - Done: Need to collect laptimes for each driver so I can calculate an average laptime for them eg. last N laps
          - Done: Listen for new laptimes for each driver and track laptimes in an array myself for later Automatic AI calculations
           - Done: Gtr2SharMemOps or a new class should fire events for what I need to watch for eg. when new laptimes are recorded

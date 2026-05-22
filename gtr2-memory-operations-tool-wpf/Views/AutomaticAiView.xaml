@@ -24,7 +24,7 @@
             </StackPanel>
         </Grid>
         <Grid Grid.Row="1" Grid.Column="0">
-            <DataGrid ItemsSource="{Binding AaiDrivers}"
+            <DataGrid x:Name="DriversDataGrid" ItemsSource="{Binding AaiDrivers}"
               AutoGenerateColumns="False"
               IsReadOnly="True"
               CanUserAddRows="False"
