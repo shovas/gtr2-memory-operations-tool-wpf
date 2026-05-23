@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using Gtr2MemOpsTool.Helpers;
+using Gtr2MemOpsTool.Models;
 
 namespace Gtr2MemOpsTool.Models
 {
@@ -18,10 +19,11 @@ namespace Gtr2MemOpsTool.Models
         public string BestLaptimeFormatted { get { return FormatLaptime(BestLaptime); } }
         public float LastLaptime { get; set; } = 0; // Watch out for -1 (no lap time yet). This is why right now they show up as 00:01:00 in the UI instead of 00:00:000.
         public string LastLaptimeFormatted { get { return FormatLaptime(LastLaptime); } }
-        public List<float> Laptimes { get; set; } = [];
+        public List<Gtr2Lap> Laptimes { get; set; } = [];
         public float WeightPenalty { get; set; } = 0;
         public int BopLap { get; set; } = 0; // The lap bop was last done
         public float BopBestLaptime { get; set; } = 0; // Best laptime after the last BOP
+        public string BopBestLaptimeFormatted {  get { return FormatLaptime(BopBestLaptime);  } }
         public float BopProjectedLaptime { get; set; } = 0;
         public static string FormatLaptime(float laptime)
         {

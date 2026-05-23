@@ -200,7 +200,7 @@ namespace Gtr2MemOpsTool.Models
                 }
 
                 // Lap time change
-                // - Needs to be based on 'lap change' as multiple laps might record the same laptime and this logic wouldn't trigger ie. if (curLapTime != oldLapTime). So, based it on mTotalLaps being different and record the new laptime whatever it is.
+                // - Needs to be based on *lap* change as multiple laps might record the same laptime and this logic wouldn't trigger ie. if (curLapTime != oldLapTime). So, base it on mTotalLaps being different and record the new laptime whatever it is.
                 int curLap = curVehicle.mTotalLaps;
                 int oldLap = oldVehicle.mTotalLaps;
                 if (curLap != oldLap)
@@ -216,8 +216,10 @@ namespace Gtr2MemOpsTool.Models
                         VehicleSlotId = vehicleSlotId,
                         DriverName = driverName,
                         VehicleName = vehicleName,
+                        OldLap = oldLap,
+                        CurLap = curLap,
                         OldLapTime = oldLapTime,
-                        NewLapTime = curLapTime
+                        CurLapTime = curLapTime
                     });
                 }
             }
@@ -286,7 +288,9 @@ namespace Gtr2MemOpsTool.Models
         public int VehicleSlotId { get; set; } = 0;
         public string DriverName { get; set; } = string.Empty;
         public string VehicleName { get; set; } = String.Empty;
+        public int OldLap { get; set; } = 0;
+        public int CurLap { get; set; } = 0;
         public float OldLapTime { get; set; } = 0.0f;
-        public float NewLapTime { get; set; } = 0.0f;
+        public float CurLapTime { get; set; } = 0.0f;
     }
 }
