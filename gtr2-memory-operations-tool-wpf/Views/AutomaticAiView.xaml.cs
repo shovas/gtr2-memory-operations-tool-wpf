@@ -146,7 +146,7 @@ namespace Gtr2MemOpsTool.Views
 
         private void OnPlaceChanged(object? sender, PlaceChangedEventArgs e)
         {
-            AddLogItem($"Place changed for driver {e.DriverName}: {e.Place}", Logger.LogLevel.Info);
+            //AddLogItem($"Place changed for driver {e.DriverName}: {e.Place}", Logger.LogLevel.Info);
             RecordDriverPlace(e.VehicleSlotId, e.DriverName, e.Place);
         }
 
@@ -157,7 +157,7 @@ namespace Gtr2MemOpsTool.Views
             {
                 return;
             }
-            AddLogItem($"Laptime changed for driver {e.DriverName}: {e.CurLapTime}", Logger.LogLevel.Info);
+            //AddLogItem($"Laptime changed for driver {e.DriverName}: {e.CurLapTime}", Logger.LogLevel.Info);
             RecordDriverLaptime(e.VehicleSlotId, e.DriverName, e.CurLap, e.CurLapTime);
             UpdateDriverWeightPenalty(e.VehicleSlotId, e.DriverName);
         }
@@ -192,7 +192,7 @@ namespace Gtr2MemOpsTool.Views
 
         private void UpdateDriverWeightPenalty(int vehicleSlotId, string driverName)
         {
-            AddLogItem("UpdateDriverWeightPenalty()", Logger.LogLevel.Debug);
+            //AddLogItem("UpdateDriverWeightPenalty()", Logger.LogLevel.Debug);
             if (AaiDrivers.Count == 0)
             {
                 AddLogItem($"UpdateDriverWeightPenalty(): No drivers found", Logger.LogLevel.Debug);
@@ -217,7 +217,7 @@ namespace Gtr2MemOpsTool.Views
 
         private void CalculateWeightPenaltiesVsPlayer(AaiDriver playerDriver)
         {
-            AddLogItem("CalculateWeightPenaltiesVsPlayer()", Logger.LogLevel.Debug);
+            //AddLogItem("CalculateWeightPenaltiesVsPlayer()", Logger.LogLevel.Debug);
 
             // Continue only if we have enough laptimes recorded
             int minLaptimeCount = int.TryParse(App.Config.IniData.Sections["AutomaticAi"]["MinLaptimeCount"], out int minLaptimeCountResult) ? minLaptimeCountResult : 1;

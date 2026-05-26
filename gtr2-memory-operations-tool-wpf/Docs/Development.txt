@@ -57,16 +57,18 @@ Doing
             - Theory: I'm always comparing against the player's best laptime *before* weight penalties were applied. So the player always looks faster than they now are.
               - So, I need to compare the best laptime since the last weight penalty adjustment.
               - Todo: Track laptimes and exclude all laps prior to the lap that received the weight penalty adjustment
+>               - Todo: Review this logic and move on. I think the logic is okay, just need to review.
                 - Scratched: In the "Not adjusting AI driver weight penalties...player not slower than leader" (player still not P1), AI still need to have weight penalty reduced not increased to keep competitive with player.
                   ^ Scratch: This was in the player-not-in-first condition so the player needs to catch up to P1 before we consider reducing AI weight penalty.
->               - Bug: Driver laptimes are sometimes 'dropping' laps (or something) and then BopLap can end up greater than laptimes recorded.
+               - Fixed: Driver laptimes are sometimes 'dropping' laps (or something) and then BopLap can end up greater than laptimes recorded.
                   - Note: Related: "Error: Aborting weight penalty calculations. Player driver laptimes count (8) less than BopLap (10)."
                   - Note: Laptime Changed event triggers based off shared memory changes. Are we missing laptime changes somehow?
-                  - Reopened: Still happening. Saw "P2 AI driver laptimes count (6) less than BopLap(8).
-                  - Fix: Laptime changed event now based on changing laps not a difference in laptimes which was probably getting missed because (1) small chance two laps can have the same laptime or more likely (2) old vs new snapshot were the same (not old lap vs new lap) and so never triggered.
+                  - Fixed: Still happening. Saw "P2 AI driver laptimes count (6) less than BopLap(8).
+                    ^ Missed updating settings.ini Gtr2SharedMemoryWatcher.WatchSharedMemoryTime from 5 to 2 in the previous fix. This might be why lap tracking was missing some laps.
+                  - Fixed: Laptime changed event now based on changing laps not a difference in laptimes which was probably getting missed because (1) small chance two laps can have the same laptime or more likely (2) old vs new snapshot were the same (not old lap vs new lap) and so never triggered.
                     - Update: Actually this was probably the 5sec interval to refresh program memory and shared memory that entire laps were missed under time acceleration because laps went by so fast.
-                - Fixed: Race condition with LoadDrivers recreating AaiDrivers
-                  ^ Fix: Reuse existing AaiDrivers instead of recreating them each refresh.
+                - Fixed: Race condition with LoadDrivers recreating AaiDrivers.
+                  ^ Now reusing existing AaiDrivers instead of recreating them each refresh.
         - Done: Need to collect laptimes for each driver so I can calculate an average laptime for them eg. last N laps
          - Done: Listen for new laptimes for each driver and track laptimes in an array myself for later Automatic AI calculations
           - Done: Gtr2SharMemOps or a new class should fire events for what I need to watch for eg. when new laptimes are recorded
