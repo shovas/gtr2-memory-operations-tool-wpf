@@ -215,6 +215,20 @@ namespace Gtr2MemOpsTool.Views
 
         }
 
+        private void CalculateWeightPenaltiesVsPlayerNew(AaiDriver playerDriver)
+        {
+            // Checks
+
+            // Get drivers
+
+            // Calculate weight penalties...
+            // Branch A. ...when player is in first place
+            // Branch B. ...when player is not in first place
+
+            // Write new weight penalties to memory
+
+        }
+
         private void CalculateWeightPenaltiesVsPlayer(AaiDriver playerDriver)
         {
             //AddLogItem("CalculateWeightPenaltiesVsPlayer()", Logger.LogLevel.Debug);
@@ -350,7 +364,7 @@ namespace Gtr2MemOpsTool.Views
                         var newAiDriverBestLaptime = aiDriver.Laptimes.Where(lap => lap.Lap > aiDriver.BopLap).Min(lap => lap.Laptime);
                         if (aiDriverBestLaptime != newAiDriverBestLaptime)
                         {
-                            AddLogItem($"Found new best laptime for ai driver {aiDriver.Name} (P{aiDriver.Place}): BopLap={p2AiDriver.BopLap}, old best={aiDriverBestLaptime}, new best={newAiDriverBestLaptime}", Logger.LogLevel.Debug);
+                            AddLogItem($"Found new best laptime for ai driver {aiDriver.Name} (P{aiDriver.Place}): BopLap={aiDriver.BopLap}, old best={aiDriverBestLaptime}, new best={newAiDriverBestLaptime}", Logger.LogLevel.Debug);
                             aiDriverBestLaptime = newAiDriverBestLaptime;
                             aiDriver.BopBestLaptime = aiDriverBestLaptime;
                         }
