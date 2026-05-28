@@ -49,15 +49,18 @@ Doing
           - Todo: +0.03s/kg needs tuning, it's very far off the mark right now...[days later]...maybe not now that the algo is working better. Let's see.
           - Todo: Update weight calculations whenever any driver posts a new laptime, not just the player, to have finer grained BOP
             ^ This will be needed for when the driver is still behind but stopped driving eg. AI does this in practice sometimes
-          - Bug: Sometimes when loading into a track the grid only loads in partially eg. some names are missing or all of them are missing.
+>         - Bug: Sometimes when loading into a track the grid only loads in partially eg. some names are missing or all of them are missing.
             - Not getting a full complete read until fully into the session?
-          - Bug: When player is in first, weight penalty keeps increasing even though player laps since the weight penalty are slower than some AI's best laptimes.
-            - Theory: I'm doubling up on weight penalties, I think, not taking into account what's already there
+            - Doesn't even fix the blank cells in AAI tab data grid when refreshing program/shared memory.
+            - Todo: I need an event I can wait for: Session change,d Game phase changed, etc., some combination
+          - Fixed: When player is in first, weight penalty keeps increasing even though player laps since the weight penalty are slower than some AI's best laptimes.
+            - Scratch: I'm doubling up on weight penalties, I think, not taking into account what's already there
               ^ No, doesn't seem to be.
-            - Theory: I'm always comparing against the player's best laptime *before* weight penalties were applied. So the player always looks faster than they now are.
+            - Done: I'm always comparing against the player's best laptime *before* weight penalties were applied. So the player always looks faster than they now are.
               - So, I need to compare the best laptime since the last weight penalty adjustment.
-              - Todo: Track laptimes and exclude all laps prior to the lap that received the weight penalty adjustment
->               - Todo: Review this logic and move on. I think the logic is okay, just need to review.
+              - Done: Track laptimes and exclude all laps prior to the lap that received the weight penalty adjustment
+                - Done: Review this logic and move on. I think the logic is okay, just need to review.
+                - Fixed: BopLap didn't match Total Laps (last completed lap).
                 - Scratched: In the "Not adjusting AI driver weight penalties...player not slower than leader" (player still not P1), AI still need to have weight penalty reduced not increased to keep competitive with player.
                   ^ Scratch: This was in the player-not-in-first condition so the player needs to catch up to P1 before we consider reducing AI weight penalty.
                - Fixed: Driver laptimes are sometimes 'dropping' laps (or something) and then BopLap can end up greater than laptimes recorded.
