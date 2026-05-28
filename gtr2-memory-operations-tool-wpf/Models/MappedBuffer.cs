@@ -132,7 +132,6 @@ namespace Gtr2MemOpsTool.Models
                 ?? throw new InvalidOperationException("Failed to marshal shared memory to structure.");
             handleBufferHeader.Free();
         }
-
         public void GetMappedData(ref MappedBufferT mappedData)
         {
             // This method tries to ensure we read consistent buffer view in three steps.

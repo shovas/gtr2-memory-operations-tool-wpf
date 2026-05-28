@@ -126,15 +126,24 @@ namespace Gtr2MemOpsTool.Models
 
         // This reads the byte data into buffers. The buffers will then be parsed into the Gtr2Telemetry, Gtr2Scoring, and Gtr2Extended structs by the caller.
         // Old data is saved to the OldGtr2Telemetry, OldGtr2Scoring, and OldGtr2Extended structs before the new data is read, so you can compare old vs new to see what has changed.
-        public void ReadGtr2MemoryBuffers()
+        public bool ReadGtr2MemoryBuffers()
         {
             OldGtr2Extended = Gtr2Extended;
             OldGtr2Telemetry = Gtr2Telemetry;
             OldGtr2Scoring = Gtr2Scoring;
 
-            ExtendedBuffer.GetMappedData(ref Gtr2Extended);
-            TelemetryBuffer.GetMappedData(ref Gtr2Telemetry);
-            ScoringBuffer.GetMappedData(ref Gtr2Scoring);
+            try
+            {
+                ExtendedBuffer.GetMappedData(ref Gtr2Extended);
+                TelemetryBuffer.GetMappedData(ref Gtr2Telemetry);
+                ScoringBuffer.GetMappedData(ref Gtr2Scoring);
+            }
+            catch ( Exception ex )
+            {
+                App.Log.AddError($"Exception getting shared memory: {ex.Message}");
+                return false;
+            }
+            return true;
         }
     }
 }

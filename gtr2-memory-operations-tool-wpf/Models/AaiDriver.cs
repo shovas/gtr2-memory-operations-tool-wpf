@@ -14,6 +14,10 @@ namespace Gtr2MemOpsTool.Models
         public string Name { get; set; } = "";
         //public string Value { get; set; } = "";
         public int Place { get; set; } = 0;
+        /// <summary>
+        /// Gets or sets the number of completed laps. When lap count changes, Total Laps is the lap number of the lap just completed.
+        /// </summary>
+        /// <remarks>Non-negative count of completed laps. Defaults to 0.</remarks>
         public int TotalLaps { get; set; } = 0; // Laps completed
         public float BestLaptime { get; set; } = 0;
         public string BestLaptimeFormatted { get { return FormatLaptime(BestLaptime); } }
@@ -22,7 +26,7 @@ namespace Gtr2MemOpsTool.Models
         public List<Gtr2Lap> Laptimes { get; set; } = [];
         public float WeightPenalty { get; set; } = 0;
         /// <summary>
-        /// The lap BOP was last done 
+        /// The completed lap BOP was last done for. Should match Total Laps at time of BOP.
         /// </summary>
         /// <remarks>Defaults to 0 if no BOP done yet.</remarks>
         public int BopLap { get; set; } = 0;

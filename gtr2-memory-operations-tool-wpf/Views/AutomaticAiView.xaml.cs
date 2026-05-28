@@ -83,8 +83,8 @@ namespace Gtr2MemOpsTool.Views
 
         public async void OnLostFocus(object sender, RoutedEventArgs e)
         {
-            AddLogItem("Automatic AI tab lost focus. Deactivating...", Logger.LogLevel.Info);
-            Deactivate();
+            //AddLogItem("Automatic AI tab lost focus. Deactivating...", Logger.LogLevel.Info);
+            //Deactivate();
         }
 
         private void AddLogItem(string message, Logger.LogLevel logLevel)
@@ -342,7 +342,7 @@ namespace Gtr2MemOpsTool.Views
                 // Log and apply new AI weight penalty
                 AddLogItem($"Decreasing weight penalty for P2 AI driver {p2AiDriver.Name} (P{p2AiDriver.Place}) with best laptime {p2AiBestLaptime} from {p2AiDriver.WeightPenalty} to {newP2AiWeightPenalty} (-{newP2AiWeightPenaltyActualReduction:0.##}) saving {newP2AiWeightPenaltyLaptimeDecrease} seconds/lap.", Logger.LogLevel.Info);
                 p2AiDriver.WeightPenalty = newP2AiWeightPenalty;
-                p2AiDriver.BopLap = p2AiDriver.TotalLaps - 1;
+                p2AiDriver.BopLap = p2AiDriver.TotalLaps;
 
                 // Calculate new AI laptime with weight penalty adjustment taken into account
                 p2AiDriver.BopProjectedLaptime = p2AiBestLaptime - newP2AiWeightPenaltyLaptimeDecrease;
@@ -383,7 +383,7 @@ namespace Gtr2MemOpsTool.Views
 
                     AddLogItem($"Decreasing weight penalty for AI driver {aiDriver.Name} (P{aiDriver.Place}) with best laptime {aiDriverBestLaptime} from {aiDriver.WeightPenalty} to {newAiWeightPenalty} (-{newAiWeightPenaltyReduction:0.##} / {p2AiLaptimeDecreaseFactor * 100}%) saving {newAiWeightPenaltyLaptimeSaved} seconds/lap.", Logger.LogLevel.Info);
                     aiDriver.WeightPenalty = newAiWeightPenalty;
-                    aiDriver.BopLap = aiDriver.TotalLaps - 1;
+                    aiDriver.BopLap = aiDriver.TotalLaps;
                     aiDriver.BopProjectedLaptime = aiDriverBestLaptime - newAiWeightPenaltyLaptimeSaved;
                 }
 
@@ -400,7 +400,7 @@ namespace Gtr2MemOpsTool.Views
                     float newPlayerWeightPenalty = playerDriver.WeightPenalty + playerWeightPenaltyIncrease;
                     AddLogItem($"Increasing weight penalty for player driver {playerDriver.Name} (P{playerDriver.Place}) with best laptime {playerBestLaptime} from {playerDriver.WeightPenalty} to {newPlayerWeightPenalty} (+{playerWeightPenaltyIncrease:0.##}) adding {aiLaptimeDelta} seconds/lap.", Logger.LogLevel.Info);
                     playerDriver.WeightPenalty = newPlayerWeightPenalty;
-                    playerDriver.BopLap = playerDriver.TotalLaps - 1;
+                    playerDriver.BopLap = playerDriver.TotalLaps;
                 }
 
             }
@@ -463,7 +463,7 @@ namespace Gtr2MemOpsTool.Views
                 // Log and apply new player weight penalty
                 AddLogItem($"Decreasing weight penalty for player driver {playerDriver.Name} (P{playerDriver.Place}) with best laptime {playerBestLaptime} from {playerDriver.WeightPenalty} to {newPlayerWeightPenalty} (-{newPlayerWeightPenaltyActualReduction:0.##}) saving {newPlayerWeightPenaltyLaptimeDecrease} seconds/lap.", Logger.LogLevel.Info);
                 playerDriver.WeightPenalty = newPlayerWeightPenalty;
-                playerDriver.BopLap = playerDriver.TotalLaps - 1;
+                playerDriver.BopLap = playerDriver.TotalLaps;
 
                 // Calculate new laptime with weight penalty adjustment taken into account
                 playerDriver.BopProjectedLaptime = playerBestLaptime - newPlayerWeightPenaltyLaptimeDecrease;
@@ -483,7 +483,7 @@ namespace Gtr2MemOpsTool.Views
                     float newLeaderWeightPenalty = leaderDriver.WeightPenalty + leaderWeightPenaltyIncrease;
                     AddLogItem($"Increasing weight penalty for leader AI driver {leaderDriver.Name} (P{leaderDriver.Place}) with best laptime {leaderBestLaptime} from {leaderDriver.WeightPenalty} to {newLeaderWeightPenalty} (+{leaderWeightPenaltyIncrease:0.##}) adding {playerToLeaderLaptimeDelta} seconds/lap.", Logger.LogLevel.Info);
                     leaderDriver.WeightPenalty = newLeaderWeightPenalty;
-                    leaderDriver.BopLap = leaderDriver.TotalLaps - 1;
+                    leaderDriver.BopLap = leaderDriver.TotalLaps;
                     leaderDriver.BopProjectedLaptime = leaderBestLaptime + playerToLeaderLaptimeDelta;
                     float leaderLaptimePenaltyFactor = (leaderDriver.BopProjectedLaptime - leaderBestLaptime) / leaderBestLaptime;
 
@@ -511,7 +511,7 @@ namespace Gtr2MemOpsTool.Views
                         float newAiWeightPenalty = aiDriver.WeightPenalty + newAiWeightPenaltyIncrease;
                         AddLogItem($"Increasing weight penalty for AI driver {aiDriver.Name} (P{aiDriver.Place}) with best laptime {aiDriverBestLaptime} from {aiDriver.WeightPenalty} to {newAiWeightPenalty} (+{newAiWeightPenaltyIncrease:0.##} / {leaderLaptimePenaltyFactor * 100}%) adding {newAiWeightPenaltyLaptimeIncrease} seconds/lap.", Logger.LogLevel.Info);
                         aiDriver.WeightPenalty = newAiWeightPenalty;
-                        aiDriver.BopLap = aiDriver.TotalLaps - 1;
+                        aiDriver.BopLap = aiDriver.TotalLaps;
                         aiDriver.BopProjectedLaptime = aiDriverBestLaptime + newAiWeightPenaltyLaptimeIncrease;
                     }
                 }

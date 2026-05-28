@@ -126,7 +126,12 @@ namespace Gtr2MemOpsTool.Models
         private async void RefreshWatchSharedMemory()
         {
             App.Log.AddDebug("RefreshWatchSharedMemory()");
-            ReadGtr2SharedMemory();
+            bool readSuccess = ReadGtr2SharedMemory();
+            if (!readSuccess)
+            {
+                App.Log.AddDebug("Failed reading GTR2 Shared Memory");
+                return;
+            }
             ProcessGtr2SharedMemoryChanges();
         }
 
@@ -140,11 +145,12 @@ namespace Gtr2MemOpsTool.Models
             Gtr2SharMemOps.DisconnectGtr2MemoryBuffers();
         }
 
-        private void ReadGtr2SharedMemory()
+        private bool ReadGtr2SharedMemory()
         {
             App.Log.AddDebug("ReadGtr2SharedMemory(): Start read");
-            Gtr2SharMemOps.ReadGtr2MemoryBuffers();
+            bool readSuccess = Gtr2SharMemOps.ReadGtr2MemoryBuffers();
             App.Log.AddDebug("ReadGtr2SharedMemory(): End read");
+            return readSuccess;
         }
 
         private void ProcessGtr2SharedMemoryChanges()
