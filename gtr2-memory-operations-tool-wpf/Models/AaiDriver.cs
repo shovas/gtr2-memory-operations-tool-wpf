@@ -21,8 +21,16 @@ namespace Gtr2MemOpsTool.Models
         public string LastLaptimeFormatted { get { return FormatLaptime(LastLaptime); } }
         public List<Gtr2Lap> Laptimes { get; set; } = [];
         public float WeightPenalty { get; set; } = 0;
-        public int BopLap { get; set; } = 0; // The lap bop was last done
-        public float BopBestLaptime { get; set; } = 0; // Best laptime after the last BOP
+        /// <summary>
+        /// The lap BOP was last done 
+        /// </summary>
+        /// <remarks>Defaults to 0 if no BOP done yet.</remarks>
+        public int BopLap { get; set; } = 0;
+        /// <summary>
+        /// Best lap time, in seconds, recorded after the most recent balance-of-performance (BOP) adjustment.
+        /// </summary>
+        /// <remarks>Defaults to 0 if no lap has been recorded since the last BOP.</remarks>
+        public float BopBestLaptime { get; set; } = 0; 
         public string BopBestLaptimeFormatted {  get { return FormatLaptime(BopBestLaptime);  } }
         public float BopProjectedLaptime { get; set; } = 0;
         public static string FormatLaptime(float laptime)
