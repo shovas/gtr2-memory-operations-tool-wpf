@@ -30,23 +30,28 @@ Todo
   - Todo: +0.03s/kg needs tuning, it's very far off the mark right now...[days later]...maybe not now that the algo is working better. Let's see.
   - Todo: Update weight calculations whenever any driver posts a new laptime, not just the player, to have finer grained BOP
     ^ This will be needed for when the driver is still behind but stopped driving eg. AI does this in practice sometimes
+  - Todo: AddLogItem() should log to file for easier review.
 
 Doing
 
-- Implement Automatic AI tab
-    - Bug: Sometimes Automatic AI tab Last Lap column never updates if started before drivers have laptimes in even after they start putting in laptimes. A reset will usually start displaying the new laptimes correctly. But it should work from the start.
-    - Todo: List of Drivers and their current AI adjustment values
-      - Todo: Run an AI adjustment calculation every refresh and record adjustment with each driver
-        - Note: Reminder this AI adjustment is a weight penalty adjustment: +0.03s for every 1kg added.
-        - Todo: Activate: Start the automatic adjustment algorithm
-        - Todo: Deactivate: Stop the automatic adjustment algorithm
-        - Todo: Display current AI adjustment for each driver (at least a holder for now)
-        - Todo: AddLogItem() should log to file for easier review.
-        - Bug: Updating program memory grid vehicle slots parameters eg. WeightPenalty persists across session restarts (ESC > Restart)
+- Automatic AI Bugs
+  - Bug: WeightPenalty persists across session restarts (ESC > Restart)
+          - They're not persisting, that was my code, I think: What they're doing now is resetting to 0.1 when exiting a session back to the main menu.
           - Zero out manually on session restart?
           - Scratch: Workaround: Start new session from main menu
             ^ Starting a new race weekend from the main menu still had weight penalties applied.
           - I guess I need to zero out the grid's weight penalties, maybe I can watch for an event like green flag
+
+Done
+
+- Implement Automatic AI tab
+    - Fixed: Sometimes Automatic AI tab Last Lap column never updates if started before drivers have laptimes in even after they start putting in laptimes. A reset will usually start displaying the new laptimes correctly. But it should work from the start.
+      - Fix: Probably due to bad memory reads or bugs in drivers datagrid display/update. Haven't noticed it lately. Rebug if needed.
+    - Done: List of Drivers and their current AI adjustment values
+      - Done: Run an AI adjustment calculation every refresh and record adjustment with each driver
+        - Note: Reminder this AI adjustment is a weight penalty adjustment: +0.03s for every 1kg added.
+        
+        - Done: Display current AI adjustment ie. Weight Penalty for each driver. Displayed as a column in the Drivers DataGrid.
         - Done: Weight Penalty Algorithm
           - This is an ultra rough first pass but it is calculation weight penalties and applying them.
           - Once drivers have at least N laptimes recorded, compare to player and calculate either a player weight penalty (too fast vs ai) or an ai driver weight penalty (too fast vs player)
@@ -111,8 +116,6 @@ Doing
       - Done: Deactivate button
       - Done: Refresh button
       - Done: Xaml interface 
-
-Done
 
 - Window now remembers its size and position on screen between sessions
 
