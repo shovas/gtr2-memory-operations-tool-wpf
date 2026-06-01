@@ -49,10 +49,13 @@ Doing
           - Todo: +0.03s/kg needs tuning, it's very far off the mark right now...[days later]...maybe not now that the algo is working better. Let's see.
           - Todo: Update weight calculations whenever any driver posts a new laptime, not just the player, to have finer grained BOP
             ^ This will be needed for when the driver is still behind but stopped driving eg. AI does this in practice sometimes
->         - Bug: Sometimes when loading into a track the grid only loads in partially eg. some names are missing or all of them are missing.
+>         - Fixed: Sometimes when loading into a track the grid only loads in partially eg. some names are missing or all of them are missing.
             - Not getting a full complete read until fully into the session?
             - Doesn't even fix the blank cells in AAI tab data grid when refreshing program/shared memory.
-            - Todo: I need an event I can wait for: Session change,d Game phase changed, etc., some combination
+            - I need an event I can wait for: Session change, Game phase changed, etc., some combination. Green flag always fires.
+            - Done: Now waiting for Shared Memory mSessionStarted until refreshing drivers list.
+              - mSessionStarted guarantees any session has started.,
+              - mSessionStarted is not Game Phase Green Flag, it enables as soon as you enter the garage, so it's ideal for an event to wait for to read consistent shared memory.
           - Fixed: When player is in first, weight penalty keeps increasing even though player laps since the weight penalty are slower than some AI's best laptimes.
             - Scratch: I'm doubling up on weight penalties, I think, not taking into account what's already there
               ^ No, doesn't seem to be.

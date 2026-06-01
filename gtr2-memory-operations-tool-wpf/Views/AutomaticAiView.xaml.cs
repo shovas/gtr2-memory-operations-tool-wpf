@@ -42,12 +42,13 @@ namespace Gtr2MemOpsTool.Views
             
             if ( Gtr2ProgMemOps.IsGtr2ProcessRunning())
             {
-                AddLogItem("GTR2 process detected. Loading drivers...", Logger.LogLevel.Info);
-                Activate();
+                AddLogItem("GTR2 process detected. Setting up...", Logger.LogLevel.Info);
+                Setup();
+                Start();
             }
             else
             {
-                AddLogItem("GTR2 process not detected. Please start GTR2 to load drivers.", Logger.LogLevel.Warning);
+                AddLogItem("GTR2 process not detected. Please start GTR2 and click Activate.", Logger.LogLevel.Warning);
             }
 
             //AddLogItem("Automatic AI tab started.", Logger.LogLevel.Info);
@@ -67,12 +68,12 @@ namespace Gtr2MemOpsTool.Views
 
         private async void ActivateButton_Click(object sender, RoutedEventArgs e)
         {
-            await Task.Run(() => Activate());
+            await Task.Run(() => Start());
         }
 
         private async void DeactivateButton_Click(object sender, RoutedEventArgs e)
         {
-            await Task.Run(() => Deactivate());
+            await Task.Run(() => Stop());
         }
 
         public async void OnGainFocus(object sender, RoutedEventArgs e)
@@ -104,39 +105,96 @@ namespace Gtr2MemOpsTool.Views
             {
                 AaiDrivers.Clear();
                 LogItems.Clear();
-                Deactivate();
-                Activate();
+                Stop();
+                Start();
             });
         }
 
-        private async void Activate()
+        private void Setup()
         {
-            //AddLogItem("Activate()", Logger.LogLevel.Debug);
-            Application.Current.Dispatcher.Invoke(() =>
-            {
-                _gtr2SharedMemoryWatcher.WatchGtr2SharedMemory();
-                _gtr2SharedMemoryWatcher.SessionChanged += OnSessionChanged;
-                _gtr2SharedMemoryWatcher.GamePhaseChanged += OnGamePhaseChanged;
-                _gtr2SharedMemoryWatcher.PlaceChanged += OnPlaceChanged;
-                _gtr2SharedMemoryWatcher.LaptimeChanged += OnLaptimeChanged;
+            AddLogItem("Setup()", Logger.LogLevel.Debug);
 
-                StartDriversRefreshTimer();
-            });
+            // Watch shared memory    
+            SetupGtr2SharedMemoryWatcher();
         }
 
-        private async void Deactivate()
+        private void Unsetup()
+        {
+            AddLogItem("Unsetup()", Logger.LogLevel.Debug);
+            UnsetupGtr2SharedMemoryWatcher();
+        }
+
+        private async void Start()
+        {
+            AddLogItem("Activate()", Logger.LogLevel.Debug);
+
+            // Setup drivers refresh
+            StartDriversRefresh();
+            
+        }
+
+        private async void Stop()
         {
             AddLogItem("Deactivate()", Logger.LogLevel.Debug);
-            Application.Current.Dispatcher.Invoke(() =>
+            StopDriversRefreshTimer();
+            
+        }
+
+        private void SetupGtr2SharedMemoryWatcher()
+        {
+            AddLogItem("SetupGtr2SharedMemoryWatcher()", Logger.LogLevel.Debug);
+            // Watch shared memory
+            _gtr2SharedMemoryWatcher.WatchGtr2SharedMemory();
+
+            // Setup event handlers
+            // - First remove to avoid duplicate callbacks
+            _gtr2SharedMemoryWatcher.SessionChanged -= OnSessionChanged;
+            _gtr2SharedMemoryWatcher.SessionStartedChanged -= OnSessionStartedChanged;
+            _gtr2SharedMemoryWatcher.GamePhaseChanged -= OnGamePhaseChanged;
+            _gtr2SharedMemoryWatcher.PlaceChanged -= OnPlaceChanged;
+            _gtr2SharedMemoryWatcher.LaptimeChanged -= OnLaptimeChanged;
+            // - Add handlers cleanly after removing them
+            _gtr2SharedMemoryWatcher.SessionChanged += OnSessionChanged;
+            _gtr2SharedMemoryWatcher.SessionStartedChanged += OnSessionStartedChanged;
+            _gtr2SharedMemoryWatcher.GamePhaseChanged += OnGamePhaseChanged;
+            _gtr2SharedMemoryWatcher.PlaceChanged += OnPlaceChanged;
+            _gtr2SharedMemoryWatcher.LaptimeChanged += OnLaptimeChanged;
+        }
+
+        private void UnsetupGtr2SharedMemoryWatcher()
+        {
+            AddLogItem("UnsetupGtr2SharedMemoryWatcher()", Logger.LogLevel.Debug);
+            _gtr2SharedMemoryWatcher.UnwatchGtr2SharedMemory();
+        }
+
+        private void StartDriversRefresh()
+        {
+            AddLogItem("SetupDriversRefresh()", Logger.LogLevel.Debug);
+            // Start drivers refresh timer if session has started.
+            // - If not started here, the Session Started change event will start it when it triggers
+            if (_gtr2SharedMemoryWatcher.Gtr2SharMemOps.Gtr2Extended.mSessionStarted == 1)
             {
-                StopDriversRefreshTimer();
-                _gtr2SharedMemoryWatcher.UnwatchGtr2SharedMemory();
-            });
+                AddLogItem("Starting drivers refresh timer...", Logger.LogLevel.Info);
+                StartDriversRefreshTimer();
+            }
         }
 
         private void OnSessionChanged(object? sender, SessionChangedEventArgs e)
         {
             AddLogItem($"Session changed: {e.SessionName}", Logger.LogLevel.Info);
+        }
+
+        private void OnSessionStartedChanged(object? sender, SessionStartedChangedEventArgs e)
+        {
+            AddLogItem($"Session Started changed: {e.SessionStarted}", Logger.LogLevel.Info);
+            if (e.SessionStarted == 1)
+            {
+                Start();
+            }
+            else
+            {
+                Stop();
+            }
         }
 
         private void OnGamePhaseChanged(object? sender, GamePhaseChangedEventArgs e)
@@ -196,6 +254,7 @@ namespace Gtr2MemOpsTool.Views
             if (AaiDrivers.Count == 0)
             {
                 AddLogItem($"UpdateDriverWeightPenalty(): No drivers found", Logger.LogLevel.Debug);
+                return;
             }
             AaiDriver playerDriver = AaiDrivers[AaiDriver.PlayerVehicleSlotId];
             var targetDriver = AaiDrivers.FirstOrDefault(d => d.VehicleSlotId == vehicleSlotId);
@@ -215,19 +274,19 @@ namespace Gtr2MemOpsTool.Views
 
         }
 
-        private void CalculateWeightPenaltiesVsPlayerNew(AaiDriver playerDriver)
-        {
-            // Checks
+        //private void CalculateWeightPenaltiesVsPlayerNew(AaiDriver playerDriver)
+        //{
+        //    // Checks
 
-            // Get drivers
+        //    // Get drivers
 
-            // Calculate weight penalties...
-            // Branch A. ...when player is in first place
-            // Branch B. ...when player is not in first place
+        //    // Calculate weight penalties...
+        //    // Branch A. ...when player is in first place
+        //    // Branch B. ...when player is not in first place
 
-            // Write new weight penalties to memory
+        //    // Write new weight penalties to memory
 
-        }
+        //}
 
         private void CalculateWeightPenaltiesVsPlayer(AaiDriver playerDriver)
         {
@@ -569,7 +628,7 @@ namespace Gtr2MemOpsTool.Views
 
         private void StartDriversRefreshTimer()
         {
-            AddLogItem("Starting drivers refresh timer...", Logger.LogLevel.Debug);
+            //AddLogItem("Starting drivers refresh timer...", Logger.LogLevel.Debug);
             ActivateButton.IsEnabled = false;
             DeactivateButton.IsEnabled = true;
 
@@ -578,7 +637,7 @@ namespace Gtr2MemOpsTool.Views
             {
                 if (_driversRefreshTimer.IsEnabled)
                 {
-                    AddLogItem("Drivers refresh timer already started", Logger.LogLevel.Debug);
+                    //AddLogItem("Drivers refresh timer already started", Logger.LogLevel.Debug);
                 }
                 else
                 {
@@ -632,20 +691,31 @@ namespace Gtr2MemOpsTool.Views
             // 2. Read the Grid Slots in as AaiDriver objects.
             // 3. Add the AaiDriver objects to the AaiDrivers collection, which is bound to the UI.
 
+            // Check for shared memory session started to ensure a consistent read
+            if (_gtr2SharedMemoryWatcher.Gtr2SharMemOps.Gtr2Extended.mSessionStarted != 1)
+            {
+                AddLogItem("LoadDrivers(): Skipping: Session not started (Shared Memory).", Logger.LogLevel.Debug);
+                return;
+            }
+
+            // Check for shared memory vehicles present
+            if (_gtr2SharedMemoryWatcher.Gtr2SharMemOps.Gtr2Scoring.mVehicles is null || _gtr2SharedMemoryWatcher.Gtr2SharMemOps.Gtr2Scoring.mVehicles.Length == 0)
+            {
+                AddLogItem("LoadDrivers(): Skipping: Vehicles not present (Shared Memory).", Logger.LogLevel.Debug);
+                return;
+            }
+
             nint? gtr2ProcessPointer = null;
             try
             {
+
+                // Check for shared memory vehicles present
+                Gtr2VehicleScoring[] smVehicles = _gtr2SharedMemoryWatcher.Gtr2SharMemOps.Gtr2Scoring.mVehicles;
+
                 // Read grid drivers
                 //AddLogItem("LoadDrivers(): Start Gtr2MemOps.ReadGtr2GridDrivers()", Logger.LogLevel.Debug);
                 Gtr2GridDrivers gtr2GridDrivers = Gtr2ProgMemOps.ReadGtr2GridDrivers() ?? throw new Exception("Failed reading GTR2 grid.");
                 //AddLogItem("LoadDrivers(): End Gtr2MemOps.ReadGtr2GridDrivers()", Logger.LogLevel.Debug);
-
-                // Check for shared memory vehicles present
-                if ( _gtr2SharedMemoryWatcher.Gtr2SharMemOps.Gtr2Scoring.mVehicles is null || _gtr2SharedMemoryWatcher.Gtr2SharMemOps.Gtr2Scoring.mVehicles.Length == 0)
-                {
-                    throw new Exception("No vehicles found in shared memory.");
-                }
-                Gtr2VehicleScoring[] smVehicles = _gtr2SharedMemoryWatcher.Gtr2SharMemOps.Gtr2Scoring.mVehicles;
 
                 // Convert Gtr2GridDrivers to AaiDriver list
                 List<AaiDriver> newAaiDrivers = [];
@@ -722,6 +792,9 @@ namespace Gtr2MemOpsTool.Views
                     }
                     else
                     {
+                        // We're repeat some assignments in case we got partial data in a prior read
+                        curAaiDriver.IsPlayer = isPlayer;
+                        curAaiDriver.Name = driverName;
                         curAaiDriver.Place = place;
                         curAaiDriver.TotalLaps = totalLaps;
                         curAaiDriver.BestLaptime = bestLaptime;
@@ -734,28 +807,12 @@ namespace Gtr2MemOpsTool.Views
                 // Update UI
                 Application.Current.Dispatcher.Invoke(() =>
                 {
-                    // This is a manual update of each row rather than a clear and re-add of the whole list as that seems too heavy for smooth UX
-                    if (AaiDrivers.Count > 0)
-                    {
-                        // DataGrid will only update if the whole object changes not if just properties/fields change on the object
-
-                        //for (int i = 0; i < AaiDrivers.Count; i++)
-                        //{
-                        //    var newAaiDriver = newAaiDrivers.First(d => d.VehicleSlotId == AaiDrivers[i].VehicleSlotId);
-                        //    AaiDrivers[i] = newAaiDriver;
-                        //}
-
-                        foreach (var driver in AaiDrivers)
-                        {
-                            driver.RefreshBindings();
-                        }
-                    }
-                    else
+                    // Add any new AaiDrivers
+                    // - Reminder: Since AaiDriver implemented per-field notifies (260531), the DataGrid gets updated automatically without having to reset object references or manually notify
+                    if (newAaiDrivers.Count > 0)
                     {
                         AaiDrivers.AddRange(newAaiDrivers);
                     }
-
-                    
                 });
             }
             catch (Exception ex)

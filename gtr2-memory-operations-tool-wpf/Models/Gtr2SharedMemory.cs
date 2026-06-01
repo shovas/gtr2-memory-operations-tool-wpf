@@ -380,8 +380,7 @@ namespace Gtr2MemOpsTool.Models
       [MarshalAsAttribute(UnmanagedType.ByValArray, SizeConst = 64)]
       public byte[] mTrackName;                                    // current track name
       public int mSession;                                         // rF2: current session (0=testday 1-4=practice 5-8=qual 9=warmup 10-13=race)
-                                                                   // rF1(?)/GTR2: 0=Test Day/Open Practice/Time Trial, 1=Practice 1, 2=Practice 2, 3=Qualifying 1, 4=Qualifying 2, 5=Warmup, 6=Race  
-                                                                   // ^ GTR2 Confirmed (260506)
+                                                                   // rF1(?)/GTR2: 0=Test Day/Open Practice/Time Trial, 1=Practice 1, 2=Practice 2, 3=Qualifying 1, 4=Qualifying 2, 5=Warmup, 6=Race (GTR2 Confirmed 260506)
       public float mCurrentET;                                    // current time
       public float mEndET;                                        // ending time
       public int mMaxLaps;                                         // maximum laps

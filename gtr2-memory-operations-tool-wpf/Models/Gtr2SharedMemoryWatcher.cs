@@ -13,6 +13,10 @@ namespace Gtr2MemOpsTool.Models
         protected virtual void OnSessionChanged(SessionChangedEventArgs e)
         => SessionChanged?.Invoke(this, e);
 
+        public event EventHandler<SessionStartedChangedEventArgs>? SessionStartedChanged;
+        protected virtual void OnSessionStartedChanged(SessionStartedChangedEventArgs e)
+        => SessionStartedChanged?.Invoke(this, e);
+
         public event EventHandler<GamePhaseChangedEventArgs>? GamePhaseChanged;
         protected virtual void OnGamePhaseChanged(GamePhaseChangedEventArgs e)
         => GamePhaseChanged?.Invoke(this, e);
@@ -90,7 +94,6 @@ namespace Gtr2MemOpsTool.Models
                 else
                 {
                     _watchRefreshTimer.IsEnabled = true;
-
                 }
                 return;
             }
@@ -158,7 +161,7 @@ namespace Gtr2MemOpsTool.Models
             App.Log.AddDebug("ProcessGtr2SharedMemoryChanges(): Start processing changes");
 
             // Session change
-            int curSession = Gtr2SharMemOps.Gtr2Scoring.mScoringInfo.mSession; // current session (0=testday 1-4=practice 5-8=qual 9=warmup 10-13=race)
+            int curSession = Gtr2SharMemOps.Gtr2Scoring.mScoringInfo.mSession;
             int oldSession = Gtr2SharMemOps.OldGtr2Scoring.mScoringInfo.mSession;
             if (curSession != oldSession)
             {
@@ -166,6 +169,18 @@ namespace Gtr2MemOpsTool.Models
                 OnSessionChanged(new SessionChangedEventArgs
                 {
                     Session = curSession
+                });
+            }
+
+            // Session Started change
+            int curSessionStarted = Gtr2SharMemOps.Gtr2Extended.mSessionStarted;
+            int oldSessionStarted = Gtr2SharMemOps.OldGtr2Extended.mSessionStarted;
+            if (curSessionStarted != oldSessionStarted)
+            {
+                App.Log.AddInfo($"Session Started change detected: {oldSessionStarted} -> {curSessionStarted}");
+                OnSessionStartedChanged(new SessionStartedChangedEventArgs
+                {
+                    SessionStarted = curSessionStarted
                 });
             }
 
@@ -234,8 +249,6 @@ namespace Gtr2MemOpsTool.Models
         }
     }
 
-    
-
     public class SessionChangedEventArgs : EventArgs
     {
         public int Session { get; set; } = 0;
@@ -256,6 +269,11 @@ namespace Gtr2MemOpsTool.Models
                 };
             }
         }
+    }
+
+    public class SessionStartedChangedEventArgs : EventArgs
+    {
+        public int SessionStarted { get; set; } = 0;
     }
 
     public class GamePhaseChangedEventArgs : EventArgs
