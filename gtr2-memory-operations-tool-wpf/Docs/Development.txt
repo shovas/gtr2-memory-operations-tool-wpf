@@ -26,6 +26,11 @@ Todo
 - Update weight calculations whenever any driver posts a new laptime, not just the player, to have finer grained BOP
   ^ This will be needed for when the driver is still behind but stopped driving eg. AI does this in practice sometimes
 
+- Automatic AI Improvements
+  - Todo: +0.03s/kg needs tuning, it's very far off the mark right now...[days later]...maybe not now that the algo is working better. Let's see.
+  - Todo: Update weight calculations whenever any driver posts a new laptime, not just the player, to have finer grained BOP
+    ^ This will be needed for when the driver is still behind but stopped driving eg. AI does this in practice sometimes
+
 Doing
 
 - Implement Automatic AI tab
@@ -42,14 +47,14 @@ Doing
           - Scratch: Workaround: Start new session from main menu
             ^ Starting a new race weekend from the main menu still had weight penalties applied.
           - I guess I need to zero out the grid's weight penalties, maybe I can watch for an event like green flag
-        - Todo: Once drivers have at least N laptimes recorded, compare to player and calculate either a player weight penalty (too fast vs ai) or an ai driver weight penalty (too fast vs player)
-          ^ Player and comparison AI must have at least N laptimes recorded for this to work
+        - Done: Weight Penalty Algorithm
+          - This is an ultra rough first pass but it is calculation weight penalties and applying them.
+          - Once drivers have at least N laptimes recorded, compare to player and calculate either a player weight penalty (too fast vs ai) or an ai driver weight penalty (too fast vs player)
+            - Player and comparison AI must have at least N laptimes recorded for this to work
             - Comparison AI is P2 AI when Player is P1 and P1 when player is any other position
-          ^ Start with 3 laptimes to make this a little easier. Make it configurable.
-          - Todo: +0.03s/kg needs tuning, it's very far off the mark right now...[days later]...maybe not now that the algo is working better. Let's see.
-          - Todo: Update weight calculations whenever any driver posts a new laptime, not just the player, to have finer grained BOP
-            ^ This will be needed for when the driver is still behind but stopped driving eg. AI does this in practice sometimes
->         - Fixed: Sometimes when loading into a track the grid only loads in partially eg. some names are missing or all of them are missing.
+            - Start with 3 laptimes to make this a little easier. Make it configurable.
+            - Ended up just waiting for all players to have a best laptime recorded.
+          - Fixed: Sometimes when loading into a track the grid only loads in partially eg. some names are missing or all of them are missing.
             - Not getting a full complete read until fully into the session?
             - Doesn't even fix the blank cells in AAI tab data grid when refreshing program/shared memory.
             - I need an event I can wait for: Session change, Game phase changed, etc., some combination. Green flag always fires.
