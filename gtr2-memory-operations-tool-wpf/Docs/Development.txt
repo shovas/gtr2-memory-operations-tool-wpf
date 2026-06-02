@@ -36,13 +36,24 @@ Doing
 
 - Automatic AI Bugs
   - Bug: WeightPenalty persists across session restarts (ESC > Restart)
-          - They're not persisting, that was my code, I think: What they're doing now is resetting to 0.1 when exiting a session back to the main menu.
-          - Zero out manually on session restart?
-          - Scratch: Workaround: Start new session from main menu
-            ^ Starting a new race weekend from the main menu still had weight penalties applied.
-          - I guess I need to zero out the grid's weight penalties, maybe I can watch for an event like green flag
+    - They're not persisting, that was a bug in my code before, I think: What they're doing now is resetting to 0.1 when exiting a session back to the main menu.
+    - Zero out manually on session restart?
+    - Scratch: Workaround: Start new session from main menu
+      ^ Starting a new race weekend from the main menu still had weight penalties applied.
+    - I guess I need to zero out the grid's weight penalties, maybe I can watch for an event like green flag
 
 Done
+
+- Done: Determine if Weight Penalty is instant or makes the AI going in for a pit stop
+  - Confirmed: Live edits are affecting physics in realtime (260601)
+  - Observations:
+    - 1000kg: +30sec
+    - 10000kg: +60sec 
+    - 100000kg: glitches into the sky
+    ^ Deltas are not precise and should not be used in formulas.
+  - Maybe it's instant when applied in the garage (start of session) and a 'call' when out on track
+  - Watch memory going from eg. 0 to 1.234 to 12.345.
+    - See if any other fields lead or trail the one I know about
 
 - Implement Automatic AI tab
     - Fixed: Sometimes Automatic AI tab Last Lap column never updates if started before drivers have laptimes in even after they start putting in laptimes. A reset will usually start displaying the new laptimes correctly. But it should work from the start.
@@ -50,7 +61,6 @@ Done
     - Done: List of Drivers and their current AI adjustment values
       - Done: Run an AI adjustment calculation every refresh and record adjustment with each driver
         - Note: Reminder this AI adjustment is a weight penalty adjustment: +0.03s for every 1kg added.
-        
         - Done: Display current AI adjustment ie. Weight Penalty for each driver. Displayed as a column in the Drivers DataGrid.
         - Done: Weight Penalty Algorithm
           - This is an ultra rough first pass but it is calculation weight penalties and applying them.
