@@ -307,16 +307,6 @@ namespace Gtr2MemOpsTool.Views
                 AddLogItem($"CalculateWeightPenaltiesVsPlayer(): Skipping. Player driver ({playerDriver.Name}) does not have a best laptime yet", Logger.LogLevel.Debug);
                 return;
             }
-            if (playerDriver.BopLap > 0)
-            {
-                var newPlayerBestLaptime = playerDriver.Laptimes.Where(lap => lap.Lap > playerDriver.BopLap).Min(lap => lap.Laptime);
-                if (playerBestLaptime != newPlayerBestLaptime)
-                {
-                    AddLogItem($"Found new best laptime for player driver {playerDriver.Name} (P{playerDriver.Place}): BopLap={playerDriver.BopLap}, old best={playerBestLaptime}, new best={newPlayerBestLaptime}", Logger.LogLevel.Debug);
-                    playerBestLaptime = newPlayerBestLaptime;
-                    playerDriver.BopBestLaptime = playerBestLaptime;
-                }
-            }
 
             // Get all AI drivers excluding the player driver (always first)
             List<AaiDriver> aiDrivers = AaiDrivers.ToList()[1..]; // Or AaiDrivers.Skip(1).ToList()
@@ -367,19 +357,24 @@ namespace Gtr2MemOpsTool.Views
                 }
 
                 // Determine best laptime and delta to player best laptime
-                float p2AiBestLaptime = p2AiDriver.BestLaptime;
-                float oldP2AiBestLaptime = p2AiBestLaptime;
-                if ( p2AiDriver.BopLap > 0 )
-                {
-                    p2AiBestLaptime = p2AiDriver.BopBestLaptime;
-                    var newP2AiBestLaptime = p2AiDriver.Laptimes.Where(lap => lap.Lap > p2AiDriver.BopLap).Min(lap => lap.Laptime);
-                    if (p2AiBestLaptime != newP2AiBestLaptime)
-                    {
-                        AddLogItem($"Found new best laptime for P2 AI driver {p2AiDriver.Name} (P{p2AiDriver.Place}): BopLap={p2AiDriver.BopLap}, old best={p2AiBestLaptime}, new best={newP2AiBestLaptime}", Logger.LogLevel.Debug);
-                        p2AiBestLaptime = newP2AiBestLaptime;
-                        p2AiDriver.BopBestLaptime = p2AiBestLaptime;
-                    }
-                }
+               float p2AiBestLaptime = p2AiDriver.BestBopLaptime();
+                //float p2AiBestLaptime = p2AiDriver.BestLaptime;
+                //float oldP2AiBestLaptime = p2AiBestLaptime;
+                //if ( p2AiDriver.BopLap > 0 )
+                //{
+                //    p2AiBestLaptime = p2AiDriver.BopBestLaptime;
+                //    var p2AiBopLaptimes = p2AiDriver.Laptimes.Where(lap => lap.Lap > p2AiDriver.BopLap);
+                //    if (p2AiBopLaptimes.Any())
+                //    {
+                //        var newP2AiBestLaptime = p2AiBopLaptimes.Min(lap => lap.Laptime);
+                //        if (p2AiBestLaptime != newP2AiBestLaptime)
+                //        {
+                //            AddLogItem($"Found new best laptime for P2 AI driver {p2AiDriver.Name} (P{p2AiDriver.Place}): BopLap={p2AiDriver.BopLap}, old best={p2AiBestLaptime}, new best={newP2AiBestLaptime}", Logger.LogLevel.Debug);
+                //            p2AiBestLaptime = newP2AiBestLaptime;
+                //            p2AiDriver.BopBestLaptime = p2AiBestLaptime;
+                //        }
+                //    }
+                //}
                 float p2AiBestLaptimeDelta = Math.Abs(p2AiBestLaptime - playerBestLaptime);
 
                 // Calculate new AI weight penalty reduction
@@ -416,18 +411,23 @@ namespace Gtr2MemOpsTool.Views
                 List<AaiDriver> otherAiDrivers = [.. aiDriversByPlace.Skip(1)];
                 foreach (var aiDriver in otherAiDrivers)
                 {
-                    float aiDriverBestLaptime = aiDriver.BestLaptime;
-                    if (aiDriver.BopLap > 0)
-                    {
-                        aiDriverBestLaptime = aiDriver.BopBestLaptime;
-                        var newAiDriverBestLaptime = aiDriver.Laptimes.Where(lap => lap.Lap > aiDriver.BopLap).Min(lap => lap.Laptime);
-                        if (aiDriverBestLaptime != newAiDriverBestLaptime)
-                        {
-                            AddLogItem($"Found new best laptime for ai driver {aiDriver.Name} (P{aiDriver.Place}): BopLap={aiDriver.BopLap}, old best={aiDriverBestLaptime}, new best={newAiDriverBestLaptime}", Logger.LogLevel.Debug);
-                            aiDriverBestLaptime = newAiDriverBestLaptime;
-                            aiDriver.BopBestLaptime = aiDriverBestLaptime;
-                        }
-                    }
+                    float aiDriverBestLaptime = p2AiDriver.BestBopLaptime();
+                    //float aiDriverBestLaptime = aiDriver.BestLaptime;
+                    //if (aiDriver.BopLap > 0)
+                    //{
+                    //    aiDriverBestLaptime = aiDriver.BopBestLaptime;
+                    //    var aiDriverBopLaptimes = aiDriver.Laptimes.Where(lap => lap.Lap > aiDriver.BopLap);
+                    //    if (aiDriverBopLaptimes.Any())
+                    //    {
+                    //        var newAiDriverBestLaptime = aiDriverBopLaptimes.Min(lap => lap.Laptime);
+                    //        if (aiDriverBestLaptime != newAiDriverBestLaptime)
+                    //        {
+                    //            AddLogItem($"Found new best laptime for ai driver {aiDriver.Name} (P{aiDriver.Place}): BopLap={aiDriver.BopLap}, old best={aiDriverBestLaptime}, new best={newAiDriverBestLaptime}", Logger.LogLevel.Debug);
+                    //            aiDriverBestLaptime = newAiDriverBestLaptime;
+                    //            aiDriver.BopBestLaptime = aiDriverBestLaptime;
+                    //        }
+                    //    }
+                    //}
                     float newAiWeightPenaltyLaptimeSaved = aiDriverBestLaptime * p2AiLaptimeDecreaseFactor; // Seconds saved per lap eg. 0.5 seconds/lap
                     float newAiWeightPenaltyReduction = newAiWeightPenaltyLaptimeSaved * weightPenaltyPerSecond; // Convert seconds saved to weight penalty reduction eg. 16.666667 weight penalty reduction
                     float newAiWeightPenalty;
@@ -486,18 +486,23 @@ namespace Gtr2MemOpsTool.Views
                 }
 
                 // Determine leader best laptime
-                float leaderBestLaptime = leaderDriver.BestLaptime;
-                if (leaderDriver.BopLap > 0)
-                {
-                    leaderBestLaptime = leaderDriver.BopBestLaptime;
-                    var newLeaderBestLaptime = leaderDriver.Laptimes.Where(lap => lap.Lap > leaderDriver.BopLap).Min(lap => lap.Laptime);
-                    if (leaderBestLaptime != newLeaderBestLaptime)
-                    {
-                        AddLogItem($"Found new best laptime for leader ai driver {leaderDriver.Name} (P{leaderDriver.Place}): BopLap={leaderDriver.BopLap}, old best={leaderBestLaptime}, new best={newLeaderBestLaptime}", Logger.LogLevel.Debug);
-                        leaderBestLaptime = newLeaderBestLaptime;
-                        leaderDriver.BopBestLaptime = leaderBestLaptime;
-                    }
-                }
+                float leaderBestLaptime = leaderDriver.BestBopLaptime();
+                //float leaderBestLaptime = leaderDriver.BestLaptime;
+                //if (leaderDriver.BopLap > 0)
+                //{
+                //    leaderBestLaptime = leaderDriver.BopBestLaptime;
+                //    var leaderDriverBopLaps = leaderDriver.Laptimes.Where(lap => lap.Lap > leaderDriver.BopLap);
+                //    if (leaderDriverBopLaps.Any())
+                //    {
+                //        var newLeaderBestLaptime = leaderDriverBopLaps.Min(lap => lap.Laptime);
+                //        if (leaderBestLaptime != newLeaderBestLaptime)
+                //        {
+                //            AddLogItem($"Found new best laptime for leader ai driver {leaderDriver.Name} (P{leaderDriver.Place}): BopLap={leaderDriver.BopLap}, old best={leaderBestLaptime}, new best={newLeaderBestLaptime}", Logger.LogLevel.Debug);
+                //            leaderBestLaptime = newLeaderBestLaptime;
+                //            leaderDriver.BopBestLaptime = leaderBestLaptime;
+                //        }
+                //    }
+                //}
 
                 // Determine best laptime and delta to player best laptime
                 float playerBestLaptimeToLeaderDelta = Math.Abs(playerBestLaptime - leaderBestLaptime);
@@ -553,18 +558,23 @@ namespace Gtr2MemOpsTool.Views
                     List<AaiDriver> otherAiDrivers = [.. aiDriversByPlace.Skip(1)];
                     foreach (var aiDriver in otherAiDrivers)
                     {
-                        float aiDriverBestLaptime = aiDriver.BestLaptime;
-                        if (aiDriver.BopLap > 0)
-                        {
-                            aiDriverBestLaptime = aiDriver.BopBestLaptime;
-                            var newAiDriverBestLaptime = aiDriver.Laptimes.Where(lap => lap.Lap > aiDriver.BopLap).Min(lap => lap.Laptime);
-                            if (aiDriverBestLaptime != newAiDriverBestLaptime)
-                            {
-                                AddLogItem($"Found new best laptime for ai driver {aiDriver.Name} (P{aiDriver.Place}): BopLap={aiDriver.BopLap}, old best={aiDriverBestLaptime}, new best={newAiDriverBestLaptime}", Logger.LogLevel.Debug);
-                                aiDriverBestLaptime = newAiDriverBestLaptime;
-                                aiDriver.BopBestLaptime = aiDriverBestLaptime;
-                            }
-                        }
+                        float aiDriverBestLaptime = aiDriver.BestBopLaptime();
+                        //float aiDriverBestLaptime = aiDriver.BestLaptime;
+                        //if (aiDriver.BopLap > 0)
+                        //{
+                        //    aiDriverBestLaptime = aiDriver.BopBestLaptime;
+                        //    var aiDriverBopLaptimes = aiDriver.Laptimes.Where(lap => lap.Lap > aiDriver.BopLap);
+                        //    if (aiDriverBopLaptimes.Any())
+                        //    {
+                        //        var newAiDriverBestLaptime = aiDriverBopLaptimes.Min(lap => lap.Laptime);
+                        //        if (aiDriverBestLaptime != newAiDriverBestLaptime)
+                        //        {
+                        //            AddLogItem($"Found new best laptime for ai driver {aiDriver.Name} (P{aiDriver.Place}): BopLap={aiDriver.BopLap}, old best={aiDriverBestLaptime}, new best={newAiDriverBestLaptime}", Logger.LogLevel.Debug);
+                        //            aiDriverBestLaptime = newAiDriverBestLaptime;
+                        //            aiDriver.BopBestLaptime = aiDriverBestLaptime;
+                        //        }
+                        //    }
+                        //}
                         float newAiWeightPenaltyLaptimeIncrease = aiDriverBestLaptime * leaderLaptimePenaltyFactor; // Seconds saved per lap eg. 0.5 seconds/lap
                         float newAiWeightPenaltyIncrease = newAiWeightPenaltyLaptimeIncrease * weightPenaltyPerSecond; // Convert seconds saved to weight penalty reduction eg. 16.666667 weight penalty reduction
                         float newAiWeightPenalty = aiDriver.WeightPenalty + newAiWeightPenaltyIncrease;

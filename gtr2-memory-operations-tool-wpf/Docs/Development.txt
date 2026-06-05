@@ -28,6 +28,9 @@ Todo
 
 - Automatic AI Improvements
   - Todo: +0.03s/kg needs tuning, it's very far off the mark right now...[days later]...maybe not now that the algo is working better. Let's see.
+  - Every AI needs a custom adjustment and not the current percentage based on the leader ai's custom adjustment.
+    - This is critical as each car, damage, fuel level, tire twear, talent configuration, etc. affects performance so it constantly needs it's onwn adjustment
+    - The rest of the field will need an adjustment relative to the car in front of them to keep them in their relative orders.
   - Todo: Update weight calculations whenever any driver posts a new laptime, not just the player, to have finer grained BOP
     ^ This will be needed for when the driver is still behind but stopped driving eg. AI does this in practice sometimes
   - Todo: AddLogItem() should log to file for easier review.
@@ -35,12 +38,10 @@ Todo
 Doing
 
 - Automatic AI Bugs
-  - Bug: WeightPenalty persists across session restarts (ESC > Restart)
-    - They're not persisting, that was a bug in my code before, I think: What they're doing now is resetting to 0.1 when exiting a session back to the main menu.
-    - Zero out manually on session restart?
-    - Scratch: Workaround: Start new session from main menu
-      ^ Starting a new race weekend from the main menu still had weight penalties applied.
+  - Bug: WeightPenalty resets to 0.1 when exiting session back to main menu
     - I guess I need to zero out the grid's weight penalties, maybe I can watch for an event like green flag
+    - Do restarts (ESC > Restart) persist weight penalties or reset to 0.1?
+      - No, weight penalties persist restarts (Confirmed 260604).
 
 Done
 
