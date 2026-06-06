@@ -39,9 +39,9 @@ Doing
 
 - Automatic AI Bugs
   - Bug: WeightPenalty resets to 0.1 when exiting session back to main menu
-    - I guess I need to zero out the grid's weight penalties, maybe I can watch for an event like green flag
+>   - Todo: I guess I need to zero out the grid's weight penalties, maybe I can watch for an event like green flag
     - Do restarts (ESC > Restart) persist weight penalties or reset to 0.1?
-      - No, weight penalties persist restarts (Confirmed 260604).
+      - No, weight penalties persist restarts (Confirmed 260604) and this is good as it means I don't need logic to support multi-session race weekends.
 
 Done
 

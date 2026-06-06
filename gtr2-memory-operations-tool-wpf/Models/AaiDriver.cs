@@ -103,6 +103,7 @@ namespace Gtr2MemOpsTool.Models
             }
             if (BopLap > 0)
             {
+                BopBestLaptime = bestLaptime;
                 var bopLaptimes = Laptimes.Where(lap => lap.Lap > BopLap);
                 if (bopLaptimes.Any())
                 {
