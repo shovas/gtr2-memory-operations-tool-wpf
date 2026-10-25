@@ -2,6 +2,30 @@
 
 DEVELOPMENT
 
+Vision
+
+- Automatic AI
+  - An algorith that monitors sessions in a race weekend and BOPs the field lap-by-lap so that the Player or AI are always competitive with the leader
+  - Monitors a race weekend and tracks session-to-session progression
+    ^ Event-driven shared/program memory monitor algorithm to trigger session change events
+  - Monitors AI performance lap-by-lap vs player
+  - Applies BOP each lap so that the Player or AI is always competitive with the leader
+  - BOPs are carried over session-to-session and updated lap-by-lap for Practice 1/2 and Qualifying 1/2
+  - BOPs are carried over to the Race session but...
+    - BOPs are fixed for the duration of the Race session
+    - Or, BOPs continue to be updated lap-by-lap
+      ^ I think this will be necessary so should be the default for now. Can use config to tweak behaviour.
+  - BOPs are implemented as Weight Penalties but other techniques could be used
+    - Power penalties ie. reduce engine horsepower
+    - Fuel penalties ie. reduce fuel flow (if that's a thing in GTR2)
+    - Brake Power Penalties ie. PLR
+    - Brake Grip Penalties ie. PLR
+    - Corner Grip Penalties ie. PLR
+    - Per-driver AI Difficulty 
+      ^ This is an interesting option. Each driver gets their own difficulty level instead of one for the whole field.
+    - Review PLR for "AI Power Calibration:
+        AI Power Calibration="0" // Adjustments with AI strength (0=none, or add the following: 1=power, 2=gearing, 4=fuel)
+
 Reminders
 
 - A DLL in the future will make some things much more automatic. Won't have to startup the app every time you start GTR2. So a lot of the annoyances aren't permanent.
